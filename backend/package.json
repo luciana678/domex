@@ -4,6 +4,9 @@
   "description": "backend of the dotex app for the thesis",
   "main": "index.js",
   "type": "module",
+  "engines": {
+    "node": ">=18.0.0 <19.0.0"
+  },
   "scripts": {
     "compile": "tsc",
     "start": "compile && node dist/index.js",
