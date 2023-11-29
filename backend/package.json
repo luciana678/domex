@@ -7,7 +7,7 @@
   "scripts": {
     "compile": "tsc",
     "start": "compile && node dist/index.js",
-    "dev": "console-ninja compile src/index.ts",
+    "dev": "console-ninja nodemon src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts --ext .js",
     "prettier:check": "prettier --check .",
@@ -24,7 +24,9 @@
     "eslint-plugin-import": "2.29.0",
     "eslint-plugin-n": "16.3.1",
     "eslint-plugin-promise": "6.1.1",
+    "nodemon": "3.0.1",
     "prettier": "3.1.0",
+    "ts-node": "10.9.1",
     "typescript": "5.3.2"
   },
   "dependencies": {

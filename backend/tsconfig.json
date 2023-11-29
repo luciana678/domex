@@ -9,6 +9,9 @@
     "noImplicitAny": true,
     "allowJs": true
   },
-  "include": ["**/*.ts" /* Specify files to include here. */, "**/*.js"],
-  "exclude": ["node_modules" /* Specify files to exclude here. */, "dist"]
+  "include": ["**/*.ts", "**/*.js"],
+  "exclude": ["node_modules", "dist"],
+  "ts-node": {
+    "esm": true
+  }
 }
