@@ -3,16 +3,31 @@
   "version": "1.0.0",
   "description": "backend of the dotex app for the thesis",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "tsc": "tsc",
-    "build": "tsc",
-    "start": "tsc && node dist/index.js",
-    "dev": "console-ninja nodemon src/index.ts",
+    "compile": "tsc",
+    "start": "compile && node dist/index.js",
+    "dev": "console-ninja compile src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "lint": "eslint .",
+    "lint": "eslint . --ext .ts --ext .js",
     "prettier:check": "prettier --check .",
     "prettier:format": "prettier --write ."
   },
   "author": "David Scoffield, Valentin Giorgetti",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "6.13.1",
+    "@typescript-eslint/parser": "6.13.1",
+    "eslint": "8.54.0",
+    "eslint-config-prettier": "9.0.0",
+    "eslint-config-standard-with-typescript": "40.0.0",
+    "eslint-plugin-import": "2.29.0",
+    "eslint-plugin-n": "16.3.1",
+    "eslint-plugin-promise": "6.1.1",
+    "prettier": "3.1.0",
+    "typescript": "5.3.2"
+  },
+  "dependencies": {
+    "dotex-back": "link:"
+  }
 }

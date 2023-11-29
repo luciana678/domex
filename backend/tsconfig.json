@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "outDir": "./dist" /* Redirect output structure to the directory. */,
+    "target": "ES2022" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
+    "module": "NodeNext" /* Specify what module code is generated. */,
+    "esModuleInterop": true /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables     "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */,
+    "strict": true /* Enable all strict type-checking options. */,
+    "skipLibCheck": true /* Skip type checking all .d.ts files. */,
+    "noImplicitAny": true,
+    "allowJs": true
+  },
+  "include": ["**/*.ts" /* Specify files to include here. */, "**/*.js"],
+  "exclude": ["node_modules" /* Specify files to exclude here. */, "dist"]
+}
