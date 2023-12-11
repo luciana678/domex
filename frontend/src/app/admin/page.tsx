@@ -1,15 +1,23 @@
-import BasicAccordion from "../components/Accordion";
-import Navbar from "../components/Navbar";
+import { Button } from '@mui/material'
+import BasicAccordion from '../../components/Accordion'
+import Navbar from '../../components/Navbar'
+import NodeList from '../../components/NodeList'
 
 export default function Admin() {
   return (
-    <main className="flex min-h-screen flex-col items-center p-5">
+    <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar />
-      <div className="w-full">
-        <BasicAccordion titulo="Código map" />
-        <BasicAccordion titulo="Código reduce" />
-        <BasicAccordion titulo="Código combiner" />
+      <div className='flex flex-row justify-center w-full gap-20 mb-5'>
+        <div className='w-9/12'>
+          <BasicAccordion titulo='Código map' />
+          <BasicAccordion titulo='Código reduce' />
+          <BasicAccordion titulo='Código combiner' />
+        </div>
+        <NodeList nodes={['Nodo1', 'Nodo2', 'Nodo3']} />
       </div>
+      <Button variant='outlined' color='success'>
+        Iniciar procesamiento
+      </Button>
     </main>
-  );
+  )
 }
