@@ -1,7 +1,7 @@
 {
-  "name": "dotex-back",
+  "name": "domex-back",
   "version": "1.0.0",
-  "description": "backend of the dotex app for the thesis",
+  "description": "backend of the domex app for the thesis",
   "main": "index.js",
   "type": "module",
   "engines": {
