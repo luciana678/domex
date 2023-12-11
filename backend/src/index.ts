@@ -10,6 +10,8 @@ app.get('/', (req: Request, res: Response) => {
   res.json({ greeting: 'Hello world!' })
 })
 
-app.listen(port, () => {
+const httpServer = app.listen(port, () => {
   LoggerService.info(`🚀 server started at http://localhost:${port}`)
 })
+
+export { app, httpServer }
