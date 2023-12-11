@@ -23,6 +23,9 @@ module.exports = {
     ecmaVersion: 'latest',
     sourceType: 'module',
   },
-  rules: {},
-  ignorePatterns: ['dist', 'node_modules', '.eslintrc.cjs'],
+  rules: {
+    '@typescript-eslint/strict-boolean-expressions': 'off',
+    '@typescript-eslint/no-extraneous-class': 'off',
+  },
+  ignorePatterns: ['dist', 'node_modules', '.eslintrc.cjs', 'logs'],
 }
