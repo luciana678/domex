@@ -3,7 +3,11 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 
-export default function NodeList({ nodes }) {
+type Props = {
+  nodes: string[]
+}
+
+export default function NodeList({ nodes }: Props) {
   return (
     <Card sx={{ minWidth: 275 }}>
       <CardContent>
