@@ -1,6 +1,6 @@
 'use client'
 
-import { Editor, EditorProps } from '@monaco-editor/react'
+import { Editor, type EditorProps } from '@monaco-editor/react'
 
 type Props = EditorProps & {
   readOnly?: boolean
@@ -20,7 +20,9 @@ export default function CodeEditor({
       defaultLanguage={defaultLanguage}
       defaultValue={defaultValue}
       theme={theme}
-      options={{ readOnly }}
+      options={{
+        readOnly,
+      }}
       {...editorProps}
     />
   )
