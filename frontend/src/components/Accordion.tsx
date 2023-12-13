@@ -1,41 +1,38 @@
-import * as React from "react";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import Typography from "@mui/material/Typography";
-import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import { Button } from "@mui/material";
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
+import { Button } from '@mui/material'
+import Accordion from '@mui/material/Accordion'
+import AccordionDetails from '@mui/material/AccordionDetails'
+import AccordionSummary from '@mui/material/AccordionSummary'
+import Typography from '@mui/material/Typography'
+import CodeEditor from './CodeEditor'
 
-export default function BasicAccordion({ titulo }) {
+export default function BasicAccordion({ title, code }: { title: string; code: string }) {
   return (
     <Accordion
       sx={{
-        width: "100%",
+        width: '100%',
         mb: 2.5,
-      }}
-    >
+      }}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
-        <div className="flex w-full">
+        <div className='flex w-full'>
           <Typography
             sx={{
               flexGrow: 1,
-            }}
-          >
-            {titulo}
+            }}>
+            {title}
           </Typography>
           <Button
             sx={{
               ml: 5,
             }}
-            variant="outlined"
-          >
+            variant='outlined'>
             Cargar archivo
           </Button>
         </div>
       </AccordionSummary>
-      <AccordionDetails className="w-full">
-        <textarea></textarea>
+      <AccordionDetails className='w-full h-[200px] p-0'>
+        <CodeEditor defaultValue={code} />
       </AccordionDetails>
     </Accordion>
-  );
+  )
 }
