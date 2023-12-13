@@ -9,9 +9,9 @@ export default function Admin() {
       <Navbar />
       <div className='flex flex-row justify-center w-full gap-20 mb-5'>
         <div className='w-9/12'>
-          <BasicAccordion titulo='Código map' />
-          <BasicAccordion titulo='Código reduce' />
-          <BasicAccordion titulo='Código combiner' />
+          <BasicAccordion title='Código map' />
+          <BasicAccordion title='Código reduce' />
+          <BasicAccordion title='Código combiner' />
         </div>
         <NodeList nodes={['Nodo1', 'Nodo2', 'Nodo3']} />
       </div>

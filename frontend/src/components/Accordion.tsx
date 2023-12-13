@@ -5,7 +5,7 @@ import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import Typography from '@mui/material/Typography'
 
-export default function BasicAccordion({ titulo }: { titulo: string }) {
+export default function BasicAccordion({ title }: { title: string }) {
   return (
     <Accordion
       sx={{
@@ -18,7 +18,7 @@ export default function BasicAccordion({ titulo }: { titulo: string }) {
             sx={{
               flexGrow: 1,
             }}>
-            {titulo}
+            {title}
           </Typography>
           <Button
             sx={{
