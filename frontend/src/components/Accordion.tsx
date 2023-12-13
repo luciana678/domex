@@ -6,7 +6,7 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import Typography from '@mui/material/Typography'
 import CodeEditor from './CodeEditor'
 
-export default function BasicAccordion({ title }: { title: string }) {
+export default function BasicAccordion({ title, code }: { title: string; code: string }) {
   return (
     <Accordion
       sx={{
@@ -31,7 +31,7 @@ export default function BasicAccordion({ title }: { title: string }) {
         </div>
       </AccordionSummary>
       <AccordionDetails className='w-full h-[200px] p-0'>
-        <CodeEditor readOnly defaultValue={title} />
+        <CodeEditor defaultValue={code} />
       </AccordionDetails>
     </Accordion>
   )
