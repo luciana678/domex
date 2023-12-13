@@ -4,6 +4,7 @@ import Accordion from '@mui/material/Accordion'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import Typography from '@mui/material/Typography'
+import CodeEditor from './CodeEditor'
 
 export default function BasicAccordion({ title }: { title: string }) {
   return (
@@ -29,8 +30,8 @@ export default function BasicAccordion({ title }: { title: string }) {
           </Button>
         </div>
       </AccordionSummary>
-      <AccordionDetails className='w-full'>
-        <textarea></textarea>
+      <AccordionDetails className='w-full h-[200px] p-0'>
+        <CodeEditor readOnly defaultValue={title} />
       </AccordionDetails>
     </Accordion>
   )
