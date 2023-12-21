@@ -6,7 +6,16 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import Typography from '@mui/material/Typography'
 import CodeEditor from './CodeEditor'
 
-export default function BasicAccordion({ title, code }: { title: string; code: string }) {
+export default function BasicAccordion({
+  title,
+  code,
+  showLoadFileButton = true,
+  codeEditorProps,
+}: {
+  title: string
+  code: string
+  showLoadFileButton?: boolean
+}) {
   return (
     <Accordion
       className='shadow-sm border rounded-md'
@@ -22,17 +31,19 @@ export default function BasicAccordion({ title, code }: { title: string; code: s
             }}>
             {title}
           </Typography>
-          <Button
-            sx={{
-              ml: 5,
-            }}
-            variant='outlined'>
-            Cargar archivo
-          </Button>
+          {showLoadFileButton && (
+            <Button
+              sx={{
+                ml: 5,
+              }}
+              variant='outlined'>
+              Cargar archivo
+            </Button>
+          )}
         </div>
       </AccordionSummary>
       <AccordionDetails className='w-full h-[200px] p-0'>
-        <CodeEditor defaultValue={code} />
+        <CodeEditor defaultValue={code} {...codeEditorProps} />
       </AccordionDetails>
     </Accordion>
   )

@@ -1,43 +1,47 @@
 import { Button } from '@mui/material'
 import BasicAccordion from '../../components/Accordion'
 import Navbar from '../../components/Navbar'
-import NodeList from '../../components/NodeList'
 import { placeholdersFunctions } from '@/constants/functionCodes'
-import Results from '@/components/Results'
+import InputSelector from '@/components/InputSelector'
 
-export default function Master() {
-  const data = [
-    { key: 'Nombre', value: 'John Doe' },
-    { key: 'Edad', value: 25 },
-    { key: 'Ubicación', value: 'Ciudad XYZ' },
-  ]
-
+export default function Slave() {
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
-      <Navbar title='Administrar cluster' />
+      <Navbar title='Unido al cluster' />
       <div className='flex flex-row justify-center w-full gap-20 mb-5'>
         <div className='w-9/12'>
           <BasicAccordion
             title={placeholdersFunctions.map.title}
             code={placeholdersFunctions.map.code}
+            showLoadFileButton={false}
+            codeEditorProps={{
+              readOnly: true,
+            }}
           />
           <BasicAccordion
             title={placeholdersFunctions.reduce.title}
             code={placeholdersFunctions.reduce.code}
+            showLoadFileButton={false}
+            codeEditorProps={{
+              readOnly: true,
+            }}
           />
           <BasicAccordion
             title={placeholdersFunctions.combiner.title}
             code={placeholdersFunctions.combiner.code}
+            showLoadFileButton={false}
+            codeEditorProps={{
+              readOnly: true,
+            }}
           />
         </div>
         <div className='flex flex-col w-3/12'>
-          <NodeList nodes={['Nodo1', 'Nodo2', 'Nodo3']} />
+          <InputSelector />
         </div>
       </div>
       <Button variant='outlined' color='success'>
         Iniciar procesamiento
       </Button>
-      <Results className='flex flex-col w-full mt-5' data={data} />
     </main>
   )
 }
