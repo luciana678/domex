@@ -9,6 +9,7 @@ import CodeEditor from './CodeEditor'
 export default function BasicAccordion({ title, code }: { title: string; code: string }) {
   return (
     <Accordion
+      className='shadow-sm border rounded-md'
       sx={{
         width: '100%',
         mb: 2.5,

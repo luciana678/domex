@@ -9,14 +9,9 @@ type Props = {
 
 export default function NodeList({ nodes }: Props) {
   return (
-    <Card sx={{ minWidth: 275 }}>
+    <Card className='bg-white p-4 shadow-lg border border-gray-300 rounded-md min-w-[275]'>
       <CardContent>
-        <Typography
-          sx={{
-            textAlign: 'center',
-          }}>
-          Nodos
-        </Typography>
+        <h2 className='text-lg font-semibold text-center mb-3'>Nodos</h2>
         {nodes.map((node, index) => (
           <Typography
             sx={{

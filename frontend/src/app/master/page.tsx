@@ -3,8 +3,15 @@ import BasicAccordion from '../../components/Accordion'
 import Navbar from '../../components/Navbar'
 import NodeList from '../../components/NodeList'
 import { placeholdersFunctions } from '@/constants/functionCodes'
+import Results from '@/components/Results'
 
-export default function Admin() {
+export default function Master() {
+  const data = [
+    { key: 'Nombre', value: 'John Doe' },
+    { key: 'Edad', value: 25 },
+    { key: 'Ubicación', value: 'Ciudad XYZ' },
+  ]
+
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar />
@@ -23,11 +30,14 @@ export default function Admin() {
             code={placeholdersFunctions.combiner.code}
           />
         </div>
-        <NodeList nodes={['Nodo1', 'Nodo2', 'Nodo3']} />
+        <div className='flex flex-col w-3/12'>
+          <NodeList nodes={['Nodo1', 'Nodo2', 'Nodo3']} />
+        </div>
       </div>
       <Button variant='outlined' color='success'>
         Iniciar procesamiento
       </Button>
+      <Results className='flex flex-col w-full mt-5' data={data} />
     </main>
   )
 }
