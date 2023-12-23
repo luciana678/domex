@@ -19,7 +19,8 @@
     "monaco-editor": "^0.45.0",
     "next": "14.0.4",
     "react": "^18",
-    "react-dom": "^18"
+    "react-dom": "^18",
+    "socket.io-client": "^4.7.2"
   },
   "devDependencies": {
     "@types/node": "^20",
