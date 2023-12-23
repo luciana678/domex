@@ -6,9 +6,10 @@ const customLabels = {
     fatal: 0,
     error: 1,
     warning: 2,
-    info: 3,
-    http: 4,
-    debug: 5,
+    socket: 3,
+    info: 4,
+    http: 5,
+    debug: 6,
   },
   colors: {
     fatal: 'redBG',
@@ -17,6 +18,7 @@ const customLabels = {
     info: 'green',
     http: 'magenta',
     debug: 'blue',
+    socket: 'cyan',
   },
 }
 

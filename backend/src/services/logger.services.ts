@@ -31,6 +31,11 @@ export default class LoggerService {
     logger.debug(arrayParams)
   }
 
+  static socket(...params: any[]): void {
+    const arrayParams = this.#formatParams(params, ' ')
+    logger.log('socket', arrayParams)
+  }
+
   static readonly #formatParams = (params: any, separator: string): string => {
     return params
       .map((param: any) => (typeof param === 'object' ? JSON.stringify(param, null, 2) : param))
