@@ -1,10 +1,6 @@
 export class LocalStorage {
   static get(key: string) {
-    if (typeof window === 'undefined') {
-      return null
-    }
-
-    const value = localStorage.getItem(key)
+    const value = window?.localStorage.getItem(key)
 
     if (value) {
       return JSON.parse(value)
@@ -14,37 +10,31 @@ export class LocalStorage {
   }
 
   static set(key: string, value: any) {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    localStorage.setItem(key, JSON.stringify(value))
+    window?.localStorage.setItem(key, JSON.stringify(value))
   }
 
   static remove(key: string) {
-    if (typeof window === 'undefined') {
-      return
-    }
+    window?.localStorage.removeItem(key)
+  }
 
-    localStorage.removeItem(key)
+  static removeWithFilter(key: string, filter: (item: any) => boolean) {
+    const value = window?.localStorage.getItem(key)
+
+    if (value) {
+      const parsedValue = JSON.parse(value)
+      const newValue = parsedValue.filter(filter)
+      window?.localStorage.setItem(key, JSON.stringify(newValue))
+    }
   }
 
   static clear() {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    localStorage.clear()
+    window?.localStorage.clear()
   }
 }
 
 export class SessionStorage {
   static get(key: string) {
-    if (typeof window === 'undefined') {
-      return null
-    }
-
-    const value = sessionStorage.getItem(key)
+    const value = window?.sessionStorage.getItem(key)
 
     if (value) {
       return JSON.parse(value)
@@ -54,26 +44,14 @@ export class SessionStorage {
   }
 
   static set(key: string, value: any) {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    sessionStorage.setItem(key, JSON.stringify(value))
+    window?.sessionStorage.setItem(key, JSON.stringify(value))
   }
 
   static remove(key: string) {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    sessionStorage.removeItem(key)
+    window?.sessionStorage.removeItem(key)
   }
 
   static clear() {
-    if (typeof window === 'undefined') {
-      return
-    }
-
-    sessionStorage.clear()
+    window?.sessionStorage.clear()
   }
 }
