@@ -6,8 +6,8 @@ declare module 'socket.io-client' {
 }
 
 export type RoomSession = {
-  sessionID: string
-  roomID: string
+  sessionID: SessionID
+  roomID: RoomID
   userName: string
 }
 
