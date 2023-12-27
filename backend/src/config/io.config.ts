@@ -1,9 +1,10 @@
 import type http from 'node:http'
 import { Server, type Socket } from 'socket.io'
-import { type RoomID, type SessionID, type UserID } from '../types.js'
-import { InMemoryRoomSessionStore } from '../store/InMemorySessionStore.js'
-import { generateRandomRoomId, generateRandomUUID } from '../utils/helpers.js'
+import { registerRoom } from '../listeners/registerRoom.js'
 import LoggerService from '../services/logger.services.js'
+import { InMemoryRoomSessionStore } from '../store/InMemorySessionStore.js'
+import { type RoomID, type SessionID, type UserID } from '../types.js'
+import { generateRandomRoomId, generateRandomUUID } from '../utils/helpers.js'
 
 // Extend the interface
 declare module 'socket.io' {
@@ -57,65 +58,7 @@ export const createIOServer = (server: http.Server): Server => {
   io.on('connection', async (socket: Socket) => {
     LoggerService.socket('New connection: ' + socket.id)
 
-    // registerWebRTCHandshake(io, socket)
-    // registerRoom(io, socket, roomsSessionStore)
-
-    // persist session
-    roomsSessionStore.saveSession(socket.roomID, socket.sessionID, {
-      userName: socket.userName,
-      userID: socket.userID,
-      connected: true,
-    })
-
-    // emit session details
-    socket.emit('room:session', {
-      sessionID: socket.sessionID,
-      userID: socket.userID,
-      userName: socket.userName,
-      roomID: socket.roomID,
-    })
-
-    // join the room
-    await socket.join(socket.roomID)
-
-    // fetch existing users
-    const users = roomsSessionStore.findAllSessions(socket.roomID)
-    const existingUsers = users.filter((user) => user.userID !== socket.userID)
-    socket.emit('room:users', existingUsers)
-
-    // notify existing users
-    socket.broadcast.to(socket.roomID).emit('room:user-connected', {
-      userID: socket.userID,
-      userName: socket.userName,
-      connected: true,
-    })
-
-    // leave room
-    socket.on('room:leave-room', async () => {
-      LoggerService.socket('A user left the room:', socket.id)
-      roomsSessionStore.removeSession(socket.roomID, socket.sessionID)
-
-      socket.broadcast.to(socket.roomID).emit('room:user-leave', {
-        userID: socket.userID,
-        userName: socket.userName,
-      })
-
-      await socket.leave(socket.roomID)
-    })
-
-    socket.on('disconnect', () => {
-      LoggerService.socket('A user disconnected:', socket.id)
-      roomsSessionStore.saveSession(socket.roomID, socket.sessionID, {
-        userName: socket.userName,
-        userID: socket.userID,
-        connected: false,
-      })
-
-      socket.broadcast.to(socket.roomID).emit('room:user-disconnected', {
-        userID: socket.userID,
-        userName: socket.userName,
-      })
-    })
+    await registerRoom(io, socket, roomsSessionStore)
   })
 
   return io

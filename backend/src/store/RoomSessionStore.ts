@@ -1,4 +1,4 @@
-import { type RoomID, type Session, type SessionID } from '@/types.js'
+import { type RoomID, type SessionID, type Session } from '../types.js'
 
 export interface RoomSessionStore {
   findSession: (roomID: RoomID, sessionID: SessionID) => Session | undefined
