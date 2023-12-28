@@ -1,6 +1,7 @@
 import type http from 'node:http'
 import { Server, type Socket } from 'socket.io'
 import { registerRoom } from '../listeners/registerRoom.js'
+import registerWebRTC from '../listeners/registerWebRTC.js'
 import LoggerService from '../services/logger.services.js'
 import { InMemoryRoomSessionStore } from '../store/InMemorySessionStore.js'
 import { type RoomID, type SessionID, type UserID } from '../types.js'
@@ -59,6 +60,7 @@ export const createIOServer = (server: http.Server): Server => {
     LoggerService.socket('New connection: ' + socket.id)
 
     await registerRoom(io, socket, roomsSessionStore)
+    registerWebRTC(io, socket, roomsSessionStore)
   })
 
   return io

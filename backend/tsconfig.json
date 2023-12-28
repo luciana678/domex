@@ -8,6 +8,10 @@
     "skipLibCheck": true /* Skip type checking all .d.ts files. */,
     "noImplicitAny": true,
     "allowJs": true
+    // TOOD: Check if is posible work with paths. Make problems with ts-node
+    // "paths": {
+    //   "@/*": ["./src/*"]
+    // }
   },
   "include": ["**/*.ts", "**/*.js"],
   "exclude": ["node_modules", "dist", "logs"],

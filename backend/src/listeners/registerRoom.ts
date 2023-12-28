@@ -24,6 +24,8 @@ export const registerRoom = async (
 
   // join the room
   await socket.join(socket.roomID)
+  // join the user's own room
+  await socket.join(socket.userID)
 
   // fetch existing users
   const users = roomsSessionStore.findAllSessions(socket.roomID)
@@ -48,6 +50,7 @@ export const registerRoom = async (
     })
 
     await socket.leave(socket.roomID)
+    await socket.leave(socket.userID)
   })
 
   socket.on('disconnect', () => {
@@ -58,6 +61,7 @@ export const registerRoom = async (
       connected: false,
     })
 
+    console.log(socket.userID)
     socket.broadcast.to(socket.roomID).emit('room:user-disconnected', {
       userID: socket.userID,
       userName: socket.userName,

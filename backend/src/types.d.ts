@@ -11,3 +11,12 @@ export type UserID = UUID
 
 export type RoomSessions = Map<SessionID, Session>
 export type Rooms = Map<RoomID, RoomSessions>
+
+export type ReturningSignalParams = {
+  callerID: UserID
+  signal: SignalData
+}
+
+export type SendingSignalParams = ReturningSignalParams & {
+  userToSignal: UserID
+}
