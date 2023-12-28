@@ -1,13 +1,16 @@
 'use client'
 
-import { User, RoomSession } from '@/types'
-import React, { PropsWithChildren, createContext, useEffect, useState } from 'react'
+import { type Peers, type RoomSession, type User } from '@/types'
+import React, { PropsWithChildren, createContext, useRef, useState } from 'react'
+
+// TODO: Add type to peersRef
 
 export type RoomContextType = {
   clusterUsers: User[]
   setClusterUsers: React.Dispatch<React.SetStateAction<User[]>>
   roomSession: RoomSession | null
   setRoomSession: React.Dispatch<React.SetStateAction<RoomSession | null>>
+  peersRef: React.MutableRefObject<Peers>
 }
 
 const RoomContext = createContext<RoomContextType>({
@@ -15,11 +18,13 @@ const RoomContext = createContext<RoomContextType>({
   setClusterUsers: () => {},
   roomSession: null,
   setRoomSession: () => {},
+  peersRef: { current: {} },
 })
 
 export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [clusterUsers, setClusterUsers] = useState<User[]>([])
   const [roomSession, setRoomSession] = useState<RoomSession | null>(null)
+  const peersRef = useRef<Peers>({})
 
   return (
     <RoomContext.Provider
@@ -28,6 +33,7 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
         setClusterUsers,
         roomSession,
         setRoomSession,
+        peersRef,
       }}>
       {children}
     </RoomContext.Provider>

@@ -5,11 +5,13 @@ import { socket } from '@/socket'
 import { RoomID, RoomSession, SessionID, User, UserID } from '@/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useCallback, useContext, useEffect } from 'react'
+import usePeers from './usePeers'
 
 const useRoom = () => {
   const router = useRouter()
   const pathname = usePathname()
   const { clusterUsers, roomSession, setClusterUsers, setRoomSession } = useContext(RoomContext)
+  const { deletePeer, sendDirectMessage, createPeer, detroyPeers } = usePeers()
 
   const connectRoom = useCallback((auth: { userName?: string; roomID?: RoomID }) => {
     socket.auth = auth
@@ -20,7 +22,27 @@ const useRoom = () => {
     socket.emit('room:leave-room')
     sessionStorage.clear()
     socket.disconnect()
+    // TODO: clear peers
+    detroyPeers()
     router.push('/')
+  }, [detroyPeers, router])
+
+  useEffect(() => {
+    const session = sessionStorage.getItem('session')
+
+    if (!session) {
+      return router.push('/')
+    }
+
+    const parsedSession = JSON.parse(session)
+    // setRoomSession(parsedSession)
+    socket.auth = parsedSession
+    socket.connect()
+
+    return () => {
+      // TODO: move the session to localStorage and clear the sessionStorage
+      socket.disconnect()
+    }
   }, [router])
 
   useEffect(() => {
@@ -49,6 +71,14 @@ const useRoom = () => {
 
     const onUsers = (users: User[]) => {
       setClusterUsers(users)
+      // const peers: SimplePeer.Instance[]
+
+      users.forEach((user) => {
+        // !BUG: cuando recargo la pagina no se guarda bien los on() del peer
+        const peer = createPeer(user.userID, socket.userID)
+        // peers.push(peer)
+      })
+      // setPeers(peers)
     }
 
     const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
@@ -57,6 +87,8 @@ const useRoom = () => {
     }
 
     const onUserDisconnected = ({ userID, userName }: { userID: UserID; userName: string }) => {
+      if (socket.userID === userID) return
+
       // A user has disconnected, update the connected status
       setClusterUsers((prevUsers) =>
         prevUsers.map((user) => {
@@ -66,6 +98,7 @@ const useRoom = () => {
           return user
         }),
       )
+      deletePeer(userID)
     }
 
     const onUserConnected = ({
@@ -118,27 +151,9 @@ const useRoom = () => {
       socket.off('room:user-connected', onUserConnected)
       socket.off('connect_error', onConnectError)
     }
-  }, [clusterUsers, pathname, router, setClusterUsers, setRoomSession])
+  }, [clusterUsers, createPeer, deletePeer, pathname, router, setClusterUsers, setRoomSession])
 
-  useEffect(() => {
-    const session = sessionStorage.getItem('session')
-
-    if (!session) {
-      return router.push('/')
-    }
-
-    const parsedSession = JSON.parse(session)
-    // setRoomSession(parsedSession)
-    socket.auth = parsedSession
-    socket.connect()
-
-    return () => {
-      // TODO: move the session to localStorage and clear the sessionStorage
-      socket.disconnect()
-    }
-  }, [router, setRoomSession])
-
-  return { clusterUsers, roomSession, connectRoom, leaveRoom }
+  return { clusterUsers, roomSession, connectRoom, leaveRoom, sendDirectMessage }
 }
 
 export default useRoom

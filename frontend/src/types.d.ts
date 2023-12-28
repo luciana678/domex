@@ -1,7 +1,10 @@
+import { type UUID } from 'crypto'
+import type SimplePeer from 'simple-peer'
+
 // Extend the interface
 declare module 'socket.io-client' {
   interface Socket {
-    userID: string
+    userID: UserID
   }
 }
 
@@ -12,9 +15,13 @@ export type RoomSession = {
 }
 
 export type User = {
-  userID: string
+  userID: UserID
   userName: string
   connected: boolean
+}
+
+export type Peers = {
+  [userID: UserID]: SimplePeer.Instance
 }
 
 export type RoomID = `${string & { length: 10 }}`
