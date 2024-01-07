@@ -12,15 +12,7 @@ export default function Slave() {
         <div className='w-9/12'>
           <BasicAccordion
             title={placeholdersFunctions.map.title}
-            code={placeholdersFunctions.map.code}
-            showLoadFileButton={false}
-            codeEditorProps={{
-              readOnly: true,
-            }}
-          />
-          <BasicAccordion
-            title={placeholdersFunctions.reduce.title}
-            code={placeholdersFunctions.reduce.code}
+            codeState={[placeholdersFunctions.map.code, null]}
             showLoadFileButton={false}
             codeEditorProps={{
               readOnly: true,
@@ -28,7 +20,15 @@ export default function Slave() {
           />
           <BasicAccordion
             title={placeholdersFunctions.combiner.title}
-            code={placeholdersFunctions.combiner.code}
+            codeState={[placeholdersFunctions.combiner.code, null]}
+            showLoadFileButton={false}
+            codeEditorProps={{
+              readOnly: true,
+            }}
+          />
+          <BasicAccordion
+            title={placeholdersFunctions.reduce.title}
+            codeState={[placeholdersFunctions.reduce.code, null]}
             showLoadFileButton={false}
             codeEditorProps={{
               readOnly: true,
