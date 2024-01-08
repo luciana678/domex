@@ -7,8 +7,8 @@ import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import DeleteIcon from '@mui/icons-material/Delete'
 
-export default function InputSelector() {
-  const [selectedFiles, setSelectedFiles] = useState([])
+export default function InputSelector({ filesState }) {
+  const [selectedFiles, setSelectedFiles] = filesState
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files

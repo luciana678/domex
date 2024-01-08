@@ -1,10 +1,105 @@
+'use client'
+
 import { Button } from '@mui/material'
 import BasicAccordion from '../../components/Accordion'
 import Navbar from '../../components/Navbar'
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import InputSelector from '@/components/InputSelector'
+import { usePython } from 'react-py'
+import { useState } from 'react'
 
 export default function Slave() {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+
+  async function concatenateFiles(files) {
+    try {
+      const readPromises = files.map((file) => file.text())
+      const contents = await Promise.all(readPromises)
+      const concatenatedContent = contents.join('\n')
+      return concatenatedContent
+    } catch (error) {
+      console.error('Error concatenando archivos:', error)
+      throw error
+    }
+  }
+
+  const mapCode = `
+def fmap(value):
+  words = value.split()
+  for w in words:
+      context.write(w, 1)
+`
+
+  const reduceCode = `
+def fred(key, values):
+  print("ENTRO CON", key, values)
+  context.write(key, sum(values))
+`
+
+  const code = `
+import os
+import json
+print("ENTRE A EJECUTAR")
+
+class Context:
+
+  def __init__(self):
+    self.map_results = {}
+    self.reduce_results = {}
+    self.results = self.map_results
+
+  def write(self, key, value):
+    if key in self.results:
+      self.results[key] += [value]
+    else:
+      self.results[key] = [value]
+
+  def reduce(self):
+    self.results = self.reduce_results
+    for key, values in self.map_results.items():
+      fred(key, values)
+
+context = Context()
+
+with open('/map_code.py') as map_code:
+  exec(map_code.read())
+
+print("map func seteada", fmap)
+
+with open('/input.txt') as input:
+  results = list(map(fmap, input.readlines()))
+
+with open('/map_results.txt', 'w') as result_file:
+  json.dump(context.map_results, result_file)
+
+with open('/reduce_code.py') as reduce_code:
+  exec(reduce_code.read())
+
+context.reduce()
+
+with open('/reduce_results.txt', 'w') as result_file:
+  json.dump(context.reduce_results, result_file)
+
+  print("results", context.__dict__, fred)
+
+`
+
+  const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython()
+
+  const runCode = async () => {
+    await writeFile('/input.txt', await concatenateFiles(selectedFiles))
+    await writeFile('/map_code.py', mapCode)
+    await writeFile('/reduce_code.py', reduceCode)
+    isReady && runPython(code)
+  }
+
+  const readMapResults = async () => {
+    const mapResults = await readFile('/map_results.txt')
+    const reduceResults = await readFile('/reduce_results.txt')
+    console.log('mapResults', mapResults)
+    console.log('reduceResults', reduceResults)
+  }
+
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title='Unido al cluster' />
@@ -36,11 +131,21 @@ export default function Slave() {
           />
         </div>
         <div className='flex flex-col w-3/12'>
-          <InputSelector />
+          <InputSelector filesState={[selectedFiles, setSelectedFiles]} />
         </div>
       </div>
-      <Button variant='outlined' color='success'>
+      <Button variant='outlined' color='success' onClick={() => runCode()}>
         Iniciar procesamiento
+      </Button>
+
+      <pre className='mt-4 text-left'>
+        SALIDA:
+        <textarea>{stdout}</textarea>
+        <code className='text-red-500'>{stderr}</code>
+      </pre>
+
+      <Button variant='outlined' color='error' onClick={() => readMapResults()}>
+        Leer resultados
       </Button>
     </main>
   )
