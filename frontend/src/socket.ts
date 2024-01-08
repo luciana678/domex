@@ -6,5 +6,5 @@ export const socket = io(ENVS.SERVER.URL, {
 })
 
 socket.onAny((event, ...args) => {
-  console.log(event, args)
+  console.log('---', event, args)
 })
