@@ -84,6 +84,7 @@ const useRoom = () => {
     const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
       // A user has left, remove it from the list
       setClusterUsers((prevUsers) => prevUsers.filter((user) => user.userID !== userID))
+      deletePeer(userID)
     }
 
     const onUserDisconnected = ({ userID, userName }: { userID: UserID; userName: string }) => {
