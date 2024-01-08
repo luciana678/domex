@@ -3,8 +3,6 @@
 import { type Peers, type RoomSession, type User } from '@/types'
 import React, { PropsWithChildren, createContext, useRef, useState } from 'react'
 
-// TODO: Add type to peersRef
-
 export type RoomContextType = {
   clusterUsers: User[]
   setClusterUsers: React.Dispatch<React.SetStateAction<User[]>>
