@@ -8,7 +8,8 @@ export type RoomContextType = {
   setClusterUsers: React.Dispatch<React.SetStateAction<User[]>>
   roomSession: RoomSession | null
   setRoomSession: React.Dispatch<React.SetStateAction<RoomSession | null>>
-  peersRef: React.MutableRefObject<Peers>
+  peers: Peers
+  setPeers: React.Dispatch<React.SetStateAction<Peers>>
 }
 
 const RoomContext = createContext<RoomContextType>({
@@ -16,13 +17,14 @@ const RoomContext = createContext<RoomContextType>({
   setClusterUsers: () => {},
   roomSession: null,
   setRoomSession: () => {},
-  peersRef: { current: {} },
+  peers: {},
+  setPeers: () => {},
 })
 
 export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [clusterUsers, setClusterUsers] = useState<User[]>([])
   const [roomSession, setRoomSession] = useState<RoomSession | null>(null)
-  const peersRef = useRef<Peers>({})
+  const [peers, setPeers] = useState<Peers>({})
 
   return (
     <RoomContext.Provider
@@ -31,7 +33,8 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
         setClusterUsers,
         roomSession,
         setRoomSession,
-        peersRef,
+        peers,
+        setPeers,
       }}>
       {children}
     </RoomContext.Provider>

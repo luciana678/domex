@@ -5,35 +5,39 @@ import { useCallback, useContext, useEffect, useState } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 
 const usePeers = () => {
-  const { peersRef, clusterUsers, roomSession } = useContext(RoomContext)
+  const { clusterUsers, roomSession, peers, setPeers } = useContext(RoomContext)
 
   const detroyPeers = useCallback(() => {
-    const peers = Object.values(peersRef.current) as SimplePeer.Instance[]
+    const peersValues = Object.values(peers)
 
-    peers.forEach((peer) => {
+    peersValues.forEach((peer) => {
       peer.destroy()
     })
 
-    peersRef.current = {}
-  }, [peersRef])
+    setPeers({})
+  }, [peers, setPeers])
 
   const deletePeer = useCallback(
     (userID: UserID) => {
-      peersRef.current[userID]?.destroy()
-      delete peersRef.current[userID]
+      peers[userID]?.destroy()
+      setPeers((peers) => {
+        const newPeers = { ...peers }
+        delete newPeers[userID]
+        return newPeers
+      })
     },
-    [peersRef],
+    [peers, setPeers],
   )
 
   const sendDirectMessage = useCallback(
     (userID: UserID, data: any) => {
-      const peer = peersRef.current[userID]
+      const peer = peers[userID]
 
       if (peer) {
         peer.send(data)
       }
     },
-    [peersRef],
+    [peers],
   )
 
   const onEventsOfPeer = useCallback(
@@ -91,13 +95,11 @@ const usePeers = () => {
         socket.emit('webrtc:sending-signal', { userToSignal, callerID, signal })
       })
 
-      // onEventsOfPeer(peer, userToSignal)
-
-      peersRef.current[userToSignal] = peer
+      setPeers((peers) => ({ ...peers, [userToSignal]: peer }))
 
       return peer
     },
-    [peersRef],
+    [setPeers],
   )
 
   const addPeer = useCallback(
@@ -114,13 +116,11 @@ const usePeers = () => {
 
       peer.signal(incomingSignal)
 
-      // onEventsOfPeer(peer, callerID)
-
-      peersRef.current[callerID] = peer
+      setPeers((peers) => ({ ...peers, [callerID]: peer }))
 
       return peer
     },
-    [peersRef],
+    [setPeers],
   )
 
   useEffect(() => {
@@ -129,7 +129,7 @@ const usePeers = () => {
     }
 
     const onWebRTCReceivingReturnedSignal = (payload: { signal: SignalData; userID: UserID }) => {
-      const peer = peersRef.current[payload.userID]
+      const peer = peers[payload.userID]
       if (peer) {
         peer.signal(payload.signal)
       }
@@ -142,14 +142,12 @@ const usePeers = () => {
       socket.off('webrtc:user-joined', onWebRTCUserJoined)
       socket.off('webrtc:receiving-returned-signal', onWebRTCReceivingReturnedSignal)
     }
-  }, [addPeer, peersRef])
+  }, [addPeer, peers])
 
   useEffect(() => {
-    const peers = Object.entries(peersRef.current) as [UserID, SimplePeer.Instance][]
+    const peersEntries = Object.entries(peers) as [UserID, SimplePeer.Instance][]
 
-    console.log('PEERS:', peers)
-
-    const offFunctions = peers.map(([userID, peer]) => {
+    const offFunctions = peersEntries.map(([userID, peer]) => {
       return onEventsOfPeer(peer, userID)
     })
 
@@ -160,7 +158,7 @@ const usePeers = () => {
 
       offFunctions.forEach((off) => off())
     }
-  }, [onEventsOfPeer, peersRef])
+  }, [onEventsOfPeer, peers])
 
   return { deletePeer, sendDirectMessage, createPeer, detroyPeers }
 }
