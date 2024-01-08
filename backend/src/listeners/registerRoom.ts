@@ -55,6 +55,10 @@ export const registerRoom = async (
 
   socket.on('disconnect', () => {
     LoggerService.socket('A user disconnected:', socket.id)
+
+    const session = roomsSessionStore.findSession(socket.roomID, socket.sessionID)
+    if (!session) return
+
     roomsSessionStore.saveSession(socket.roomID, socket.sessionID, {
       userName: socket.userName,
       userID: socket.userID,
