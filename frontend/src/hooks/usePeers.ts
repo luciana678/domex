@@ -1,7 +1,7 @@
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { User, UserID } from '@/types'
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect, useState } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 
 const usePeers = () => {
@@ -35,10 +35,6 @@ const usePeers = () => {
     },
     [peersRef],
   )
-
-  useEffect(() => {
-    console.log(roomSession?.userName, clusterUsers)
-  }, [clusterUsers, roomSession?.userName])
 
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
@@ -84,6 +80,8 @@ const usePeers = () => {
 
   const createPeer = useCallback(
     (userToSignal: UserID, callerID: UserID) => {
+      console.log('Creating peer')
+
       const peer = new SimplePeer({
         initiator: true,
         trickle: false,
@@ -104,6 +102,7 @@ const usePeers = () => {
 
   const addPeer = useCallback(
     (incomingSignal: SignalData, callerID: UserID) => {
+      console.log('Adding peer')
       const peer = new SimplePeer({
         initiator: false,
         trickle: false,
@@ -139,31 +138,25 @@ const usePeers = () => {
     socket.on('webrtc:user-joined', onWebRTCUserJoined)
     socket.on('webrtc:receiving-returned-signal', onWebRTCReceivingReturnedSignal)
 
-    const peers = Object.values(peersRef.current) as SimplePeer.Instance[]
-
     return () => {
       socket.off('webrtc:user-joined', onWebRTCUserJoined)
       socket.off('webrtc:receiving-returned-signal', onWebRTCReceivingReturnedSignal)
-
-      peers.forEach((peer) => {
-        peer.destroy()
-      })
     }
   }, [addPeer, peersRef])
 
   useEffect(() => {
     const peers = Object.entries(peersRef.current) as [UserID, SimplePeer.Instance][]
 
-    console.log(peers)
+    console.log('PEERS:', peers)
 
     const offFunctions = peers.map(([userID, peer]) => {
       return onEventsOfPeer(peer, userID)
     })
 
     return () => {
-      peers.forEach(([userID, peer]) => {
-        peer.destroy()
-      })
+      // peers.forEach(([userID, peer]) => {
+      //   peer.destroy()
+      // })
 
       offFunctions.forEach((off) => off())
     }
