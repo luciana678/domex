@@ -65,7 +65,6 @@ export const registerRoom = async (
       connected: false,
     })
 
-    console.log(socket.userID)
     socket.broadcast.to(socket.roomID).emit('room:user-disconnected', {
       userID: socket.userID,
       userName: socket.userName,
