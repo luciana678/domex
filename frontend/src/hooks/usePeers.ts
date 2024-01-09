@@ -8,6 +8,7 @@ const usePeers = () => {
   const { clusterUsers, roomSession, peers, setPeers } = useContext(RoomContext)
 
   const detroyPeers = useCallback(() => {
+    console.log('ENTRO AL OTRO DESTROY')
     const peersValues = Object.values(peers)
 
     peersValues.forEach((peer) => {
@@ -19,7 +20,7 @@ const usePeers = () => {
 
   const deletePeer = useCallback(
     (userID: UserID) => {
-      peers[userID]?.destroy()
+      // peers[userID]?.destroy()
       setPeers((peers) => {
         const newPeers = { ...peers }
         delete newPeers[userID]
@@ -56,7 +57,7 @@ const usePeers = () => {
 
       const handlePeerClose = () => {
         console.log('Peer closed')
-        peer.destroy()
+        // peer.destroy()
         // delete peersRef.current[userID]
       }
 

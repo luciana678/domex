@@ -27,6 +27,7 @@ const useRoom = () => {
   }, [detroyPeers, router])
 
   useEffect(() => {
+    console.log('ENTRO AL PRIMER USEEFFECT')
     const session = sessionStorage.getItem('session')
 
     if (!session) {
@@ -44,6 +45,7 @@ const useRoom = () => {
   }, [router])
 
   useEffect(() => {
+    console.log('ENTRO AL SEGUNDO USEEFFECT')
     const onSession = ({
       sessionID,
       userID,
@@ -93,7 +95,8 @@ const useRoom = () => {
           return user
         }),
       )
-      deletePeer(userID)
+      console.log('BORRANDO AL DESCONECTAR', userID, userName)
+      // deletePeer(userID)
     }
 
     const onUserConnected = ({

@@ -18,7 +18,7 @@ export default function NodeList({ nodes }: Props) {
               mb: 1,
             }}
             key={index}>
-            {node}
+            {node.userName}
           </Typography>
         ))}
       </CardContent>

@@ -1,18 +1,16 @@
 'use client'
 
+import Master from '@/app/master/page'
+import Slave from '@/components/Slave'
 import useRoom from '@/hooks/useRoom'
 import { Button } from '@mui/material'
 
 function Room({ params: { id } }: { params: { id: string } }) {
-  const { roomSession, leaveRoom, clusterUsers, sendDirectMessage } = useRoom()
-
-  const handleLeaveRoom = () => {
-    leaveRoom()
-  }
+  const roomProps = useRoom()
 
   return (
     <div>
-      <p>Room id {id}</p>
+      {/* <p>Room id {id}</p>
       <p>{JSON.stringify(roomSession)}</p>
       <Button onClick={handleLeaveRoom} variant='contained' color='warning'>
         Leave
@@ -32,7 +30,11 @@ function Room({ params: { id } }: { params: { id: string } }) {
             </button>
           </div>
         ))}
-      </ul>
+      </ul> 
+      
+      <Slave roomProps={roomProps} />
+    */}
+      <Master roomProps={roomProps} />
     </div>
   )
 }

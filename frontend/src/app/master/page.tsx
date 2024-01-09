@@ -8,7 +8,7 @@ import { placeholdersFunctions } from '@/constants/functionCodes'
 import Results from '@/components/Results'
 import { useState } from 'react'
 
-export default function Master() {
+export default function Master({ roomProps }) {
   const [mapCode, setMapCode] = useState(placeholdersFunctions.map.code)
   const [combinerCode, setCombinerCode] = useState(placeholdersFunctions.combiner.code)
   const [reduceCode, setReduceCode] = useState(placeholdersFunctions.reduce.code)
@@ -19,9 +19,11 @@ export default function Master() {
     { key: 'Ubicación', value: 'Ciudad XYZ' },
   ]
 
+  console.log(roomProps)
+
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
-      <Navbar title='Administrar cluster' />
+      <Navbar title={`Administrarcluster #${roomProps.roomSession?.roomID}`} />
       <div className='flex flex-row justify-center w-full gap-20 mb-5'>
         <div className='w-9/12'>
           <BasicAccordion
@@ -38,7 +40,7 @@ export default function Master() {
           />
         </div>
         <div className='flex flex-col w-3/12'>
-          <NodeList nodes={['Nodo1', 'Nodo2', 'Nodo3']} />
+          <NodeList nodes={roomProps.clusterUsers} />
         </div>
       </div>
       <Button variant='outlined' color='success'>
