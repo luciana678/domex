@@ -8,12 +8,14 @@ import InputSelector from '@/components/InputSelector'
 import { usePython } from 'react-py'
 import { useState } from 'react'
 import { code } from '@/utils/python/tmp'
+import useRoom from '@/hooks/useRoom'
 
-export default function Slave({ roomProps }) {
-  console.log('roomProps', roomProps)
+export default function Slave() {
+  const roomProps = useRoom()
+  const { state } = roomProps
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
 
-  async function concatenateFiles(files) {
+  async function concatenateFiles(files: File[]) {
     try {
       const readPromises = files.map((file) => file.text())
       const contents = await Promise.all(readPromises)
@@ -41,8 +43,8 @@ def fred(key, values):
 
   const runCode = async () => {
     await writeFile('/input.txt', await concatenateFiles(selectedFiles))
-    await writeFile('/map_code.py', mapCode)
-    await writeFile('/reduce_code.py', reduceCode)
+    await writeFile('/map_code.py', state.code.mapCode)
+    await writeFile('/reduce_code.py', state.code.reduceCode)
     isReady && runPython(code)
   }
 
@@ -60,7 +62,7 @@ def fred(key, values):
         <div className='w-9/12'>
           <BasicAccordion
             title={placeholdersFunctions.map.title}
-            codeState={[placeholdersFunctions.map.code, null]}
+            codeState={[state.code.mapCode, null]}
             showLoadFileButton={false}
             codeEditorProps={{
               readOnly: true,
@@ -68,7 +70,7 @@ def fred(key, values):
           />
           <BasicAccordion
             title={placeholdersFunctions.combiner.title}
-            codeState={[placeholdersFunctions.combiner.code, null]}
+            codeState={[state.code.combinerCode, null]}
             showLoadFileButton={false}
             codeEditorProps={{
               readOnly: true,
@@ -76,7 +78,7 @@ def fred(key, values):
           />
           <BasicAccordion
             title={placeholdersFunctions.reduce.title}
-            codeState={[placeholdersFunctions.reduce.code, null]}
+            codeState={[state.code.reduceCode, null]}
             showLoadFileButton={false}
             codeEditorProps={{
               readOnly: true,

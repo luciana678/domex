@@ -34,7 +34,7 @@ const usePeers = () => {
       const peer = peers[userID]
 
       if (peer) {
-        peer.send(data)
+        peer.send(JSON.stringify(data))
       }
     },
     [peers],
@@ -78,7 +78,7 @@ const usePeers = () => {
     [setPeers],
   )
 
-  return { deletePeer, sendDirectMessage, createPeer, destroyPeers, addPeer }
+  return { deletePeer, sendDirectMessage, createPeer, destroyPeers, addPeer, peers }
 }
 
 export default usePeers

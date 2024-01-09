@@ -1,6 +1,6 @@
 'use client'
 
-import Master from '@/app/master/page'
+import Master from '@/components/Master'
 import Slave from '@/components/Slave'
 import useInitializeRoom from '@/hooks/useInitializeRoom'
 import useRoom from '@/hooks/useRoom'
@@ -8,6 +8,8 @@ import { Button } from '@mui/material'
 
 function Room({ params: { id } }: { params: { id: string } }) {
   useInitializeRoom()
+
+  const roomProps = useRoom()
 
   return (
     <div>
@@ -35,7 +37,7 @@ function Room({ params: { id } }: { params: { id: string } }) {
       
       <Slave roomProps={roomProps} />
     */}
-      <Master />
+      {roomProps.roomSession?.userName === '1' ? <Master /> : <Slave />}
     </div>
   )
 }
