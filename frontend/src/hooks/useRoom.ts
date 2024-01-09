@@ -22,7 +22,6 @@ const useRoom = () => {
     socket.emit('room:leave-room')
     sessionStorage.clear()
     socket.disconnect()
-    // TODO: clear peers
     detroyPeers()
     router.push('/')
   }, [detroyPeers, router])
@@ -35,7 +34,6 @@ const useRoom = () => {
     }
 
     const parsedSession = JSON.parse(session)
-    // setRoomSession(parsedSession)
     socket.auth = parsedSession
     socket.connect()
 
@@ -71,14 +69,10 @@ const useRoom = () => {
 
     const onUsers = (users: User[]) => {
       setClusterUsers(users)
-      // const peers: SimplePeer.Instance[]
 
       users.forEach((user) => {
-        // !BUG: cuando recargo la pagina no se guarda bien los on() del peer
         const peer = createPeer(user.userID, socket.userID)
-        // peers.push(peer)
       })
-      // setPeers(peers)
     }
 
     const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
