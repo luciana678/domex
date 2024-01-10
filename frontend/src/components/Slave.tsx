@@ -9,6 +9,7 @@ import { usePython } from 'react-py'
 import { useState } from 'react'
 import { code } from '@/utils/python/tmp'
 import useRoom from '@/hooks/useRoom'
+import NodeList from './NodeList'
 
 export default function Slave() {
   const roomProps = useRoom()
@@ -58,35 +59,42 @@ def fred(key, values):
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomProps.roomSession?.roomID}`} />
-      <div className='flex flex-row justify-center w-full gap-20 mb-5'>
-        <div className='w-9/12'>
-          <BasicAccordion
-            title={placeholdersFunctions.map.title}
-            codeState={[state.code.mapCode, null]}
-            showLoadFileButton={false}
-            codeEditorProps={{
-              readOnly: true,
-            }}
-          />
-          <BasicAccordion
-            title={placeholdersFunctions.combiner.title}
-            codeState={[state.code.combinerCode, null]}
-            showLoadFileButton={false}
-            codeEditorProps={{
-              readOnly: true,
-            }}
-          />
-          <BasicAccordion
-            title={placeholdersFunctions.reduce.title}
-            codeState={[state.code.reduceCode, null]}
-            showLoadFileButton={false}
-            codeEditorProps={{
-              readOnly: true,
-            }}
-          />
-        </div>
-        <div className='flex flex-col w-3/12'>
-          <InputSelector filesState={[selectedFiles, setSelectedFiles]} />
+      <div className='w-full flex flex-col'>
+        <div className='flex flex-row justify-center w-full gap-20 mb-5'>
+          <div className='w-9/12'>
+            <BasicAccordion
+              title={placeholdersFunctions.map.title}
+              codeState={[state.code.mapCode, null]}
+              showLoadFileButton={false}
+              codeEditorProps={{
+                readOnly: true,
+              }}
+            />
+            <BasicAccordion
+              title={placeholdersFunctions.combiner.title}
+              codeState={[state.code.combinerCode, null]}
+              showLoadFileButton={false}
+              codeEditorProps={{
+                readOnly: true,
+              }}
+            />
+            <BasicAccordion
+              title={placeholdersFunctions.reduce.title}
+              codeState={[state.code.reduceCode, null]}
+              showLoadFileButton={false}
+              codeEditorProps={{
+                readOnly: true,
+              }}
+            />
+          </div>
+          <div className='flex flex-col'>
+            <div className='flex-grow w-full'>
+              <NodeList />
+            </div>
+            <div className='flex-grow w-full '>
+              <InputSelector filesState={[selectedFiles, setSelectedFiles]} />
+            </div>
+          </div>
         </div>
       </div>
       <Button variant='outlined' color='success' onClick={() => runCode()}>

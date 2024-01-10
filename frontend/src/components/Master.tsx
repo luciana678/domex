@@ -55,7 +55,7 @@ export default function Master() {
           />
         </div>
         <div className='flex flex-col w-3/12'>
-          <NodeList nodes={clusterUsers} sendDirectMessage={sendDirectMessage} />
+          <NodeList />
         </div>
       </div>
       <Button variant='outlined' color='success' onClick={handleIniciarProcesamiento}>
