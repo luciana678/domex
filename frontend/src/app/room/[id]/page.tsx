@@ -2,11 +2,12 @@
 
 import Master from '@/app/master/page'
 import Slave from '@/components/Slave'
+import useInitializeRoom from '@/hooks/useInitializeRoom'
 import useRoom from '@/hooks/useRoom'
 import { Button } from '@mui/material'
 
 function Room({ params: { id } }: { params: { id: string } }) {
-  const roomProps = useRoom()
+  useInitializeRoom()
 
   return (
     <div>
@@ -34,7 +35,7 @@ function Room({ params: { id } }: { params: { id: string } }) {
       
       <Slave roomProps={roomProps} />
     */}
-      <Master roomProps={roomProps} />
+      <Master />
     </div>
   )
 }

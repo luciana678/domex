@@ -7,8 +7,13 @@ import NodeList from '../../components/NodeList'
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import Results from '@/components/Results'
 import { useState } from 'react'
+import usePeers from '@/hooks/usePeers'
+import useRoom from '@/hooks/useRoom'
 
-export default function Master({ roomProps }) {
+export default function Master() {
+  const { clusterUsers, roomSession } = useRoom()
+  const { sendDirectMessage } = usePeers()
+
   const [mapCode, setMapCode] = useState(placeholdersFunctions.map.code)
   const [combinerCode, setCombinerCode] = useState(placeholdersFunctions.combiner.code)
   const [reduceCode, setReduceCode] = useState(placeholdersFunctions.reduce.code)
@@ -19,11 +24,9 @@ export default function Master({ roomProps }) {
     { key: 'Ubicación', value: 'Ciudad XYZ' },
   ]
 
-  console.log(roomProps)
-
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
-      <Navbar title={`Administrarcluster #${roomProps.roomSession?.roomID}`} />
+      <Navbar title={`Administrarcluster #${roomSession?.roomID}`} />
       <div className='flex flex-row justify-center w-full gap-20 mb-5'>
         <div className='w-9/12'>
           <BasicAccordion
@@ -40,7 +43,7 @@ export default function Master({ roomProps }) {
           />
         </div>
         <div className='flex flex-col w-3/12'>
-          <NodeList nodes={roomProps.clusterUsers} />
+          <NodeList nodes={clusterUsers} sendDirectMessage={sendDirectMessage} />
         </div>
       </div>
       <Button variant='outlined' color='success'>

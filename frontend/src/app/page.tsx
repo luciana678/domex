@@ -1,11 +1,13 @@
 'use client'
 
+import useInitializeRoom from '@/hooks/useInitializeRoom'
 import useRoom from '@/hooks/useRoom'
 import { RoomID } from '@/types'
 import { Button, TextField } from '@mui/material'
 import { useRef, useState } from 'react'
 
 export default function Home() {
+  useInitializeRoom()
   const { connectRoom } = useRoom()
   const [missingUserName, setMissingUserName] = useState(false)
   const [missingClusterId, setMissingClusterId] = useState(false)
