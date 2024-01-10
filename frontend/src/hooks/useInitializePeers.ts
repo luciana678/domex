@@ -78,7 +78,7 @@ const useInitializePeers = () => {
         peer.removeAllListeners()
       })
     }
-  }, [clusterUsers, deletePeer, peers])
+  }, [clusterUsers, deletePeer, peers, dispatch])
 }
 
 export default useInitializePeers

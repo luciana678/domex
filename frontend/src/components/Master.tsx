@@ -9,6 +9,7 @@ import Results from '@/components/Results'
 import { useState } from 'react'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
+import { UserID } from '@/types'
 
 export default function Master() {
   const { clusterUsers, roomSession } = useRoom()
@@ -28,7 +29,7 @@ export default function Master() {
     console.log('Iniciando procesamiento', peers)
     const code = { mapCode, combinerCode, reduceCode }
     Object.entries(peers).forEach(([userID, peer]) => {
-      sendDirectMessage(userID, {
+      sendDirectMessage(userID as UserID, {
         type: 'SET_CODES',
         payload: code,
       })

@@ -1,7 +1,7 @@
 'use client'
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
-import { type Peers, type RoomSession, type User } from '@/types'
+import { ReducerState, type Peers, type RoomSession, type User } from '@/types'
 import React, {
   PropsWithChildren,
   createContext,
@@ -43,9 +43,14 @@ const initialState = {
 
 const actionTypes = {
   SET_CODES: 'SET_CODES',
+} as const
+
+type Action = {
+  type: keyof typeof actionTypes
+  payload: any
 }
 
-const reducer = (state, action) => {
+const reducer = (state: ReducerState, action: Action) => {
   switch (action.type) {
     case actionTypes.SET_CODES:
       return { ...state, code: action.payload }
