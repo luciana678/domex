@@ -91,7 +91,11 @@ export default function BasicAccordion({
         </div>
       </AccordionSummary>
       <AccordionDetails className='w-full h-[200px] p-0'>
-        <CodeEditor value={code} onChange={(value) => setCode(value)} {...codeEditorProps} />
+        <CodeEditor
+          value={code}
+          onChange={(value) => setCode && setCode(value)}
+          {...codeEditorProps}
+        />
       </AccordionDetails>
     </Accordion>
   )

@@ -8,7 +8,7 @@ import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
 
 const useInitializePeers = () => {
-  const { peers, clusterUsers, setPeers, dispatch } = useContext(RoomContext)
+  const { peers, clusterUsers, setPeers, dispatch, setClusterUsers } = useContext(RoomContext)
   const { addPeer, deletePeer } = usePeers()
 
   useEffect(() => {
@@ -39,6 +39,7 @@ const useInitializePeers = () => {
         const decodedData = JSON.parse(data.toString('utf8'))
         // TODO: handle the data here (e.g. dispatch an action)
         const username = clusterUsers.find((user) => user.userID === userID)?.userName
+        decodedData['userID'] = userID
 
         console.log('Data:', decodedData, 'from', username, 'with ID', userID)
         dispatch(decodedData)
@@ -57,6 +58,14 @@ const useInitializePeers = () => {
 
       const handlePeerConnect = () => {
         console.log('Peer connected')
+        setClusterUsers((clusterUsers) =>
+          clusterUsers.map((user) => {
+            if (user.userID === userID) {
+              return { ...user, peerConnected: true }
+            }
+            return user
+          }),
+        )
       }
 
       peer.on('connect', handlePeerConnect)

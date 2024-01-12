@@ -1,5 +1,5 @@
 export const getIceServers = () => {
-  switch (process.env.ICESERVER || 'local') {
+  switch (process.env.NEXT_PUBLIC_ICESERVER || 'local') {
     case 'local':
       return []
     case 'metered':

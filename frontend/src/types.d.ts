@@ -18,8 +18,9 @@ export type RoomSession = {
 export type User = {
   userID: UserID
   userName: string
-  isRoomOwner: boolean
   socketConnected: boolean
+  peerConnected?: boolean
+  isRoomOwner: boolean
 }
 
 export type Peers = {
@@ -36,4 +37,10 @@ export type ReducerState = {
     combinerCode: string
     reduceCode: string
   }
+  combinerResults: { [key: string]: { [innerKey: string]: unknown } }
+  reduceKeys: { [key: string]: unknown }
+  clavesRecibidas: { [key: string]: { [innerKey: string]: number[] } }
+  receiveKeysFrom: string[]
+  resultadoFinal: { [key: string]: any }
+  sendKeys: { [user: string]: any }
 }

@@ -2,7 +2,7 @@
 
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
-export default function Results({ className, data }: { className: string; data: any[] }) {
+export default function Results({ className, data }: { className: string; data: {} }) {
   const columns: GridColDef[] = [
     {
       field: 'key',
@@ -18,11 +18,11 @@ export default function Results({ className, data }: { className: string; data: 
     },
   ]
 
-  const rows = data.map((row, index) => {
+  const rows = Object.entries(data).map(([key, value], index) => {
     return {
       id: index,
-      key: row.key,
-      value: row.value,
+      key: key,
+      value: String(value),
     }
   })
 

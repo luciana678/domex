@@ -40,6 +40,15 @@ const usePeers = () => {
     [peers],
   )
 
+  const broadcastMessage = useCallback(
+    (data: any) => {
+      Object.values(peers).forEach((peer) => {
+        peer.send(JSON.stringify(data))
+      })
+    },
+    [peers],
+  )
+
   const createPeer = useCallback((userToSignal: UserID, callerID: UserID) => {
     const peer = new SimplePeer({
       initiator: true,
@@ -74,7 +83,15 @@ const usePeers = () => {
     return peer
   }, [])
 
-  return { deletePeer, sendDirectMessage, createPeer, destroyPeers, addPeer, peers }
+  return {
+    deletePeer,
+    sendDirectMessage,
+    createPeer,
+    destroyPeers,
+    addPeer,
+    peers,
+    broadcastMessage,
+  }
 }
 
 export default usePeers

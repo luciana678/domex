@@ -7,7 +7,7 @@ import usePeers from '@/hooks/usePeers'
 
 export default function NodeList() {
   const { clusterUsers } = useRoom()
-  const { sendDirectMessage } = usePeers()
+  const { sendDirectMessage, peers } = usePeers()
 
   return (
     <Card className='bg-white p-4 shadow-lg border border-gray-300 rounded-md min-w-[275]'>
@@ -19,7 +19,7 @@ export default function NodeList() {
               sx={{
                 mb: 1,
               }}>
-              {node.userName}
+              {node.userName} {node.socketConnected ? (node.peerConnected ? '🟢' : '🟡') : '🔴'}
             </Typography>
             <button
               onClick={() => {

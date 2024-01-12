@@ -25,7 +25,13 @@ const useRoom = () => {
     router.push('/')
   }, [destroyPeers, router])
 
-  return { clusterUsers, roomSession, connectRoom, leaveRoom, state, roomOwner }
+  const getRoomOwner = useCallback(
+    () =>
+      Object.values(clusterUsers).find((user) => user.isRoomOwner || user.userName === '1') as User,
+    [clusterUsers],
+  )
+
+  return { clusterUsers, roomSession, connectRoom, leaveRoom, state, getRoomOwner }
 }
 
 export default useRoom
