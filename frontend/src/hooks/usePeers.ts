@@ -3,9 +3,11 @@ import { socket } from '@/socket'
 import { UserID } from '@/types'
 import { useCallback, useContext } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
+import { getIceServers } from '@/utils/iceServers'
 
 const usePeers = () => {
   const { peers, setPeers } = useContext(RoomContext)
+  const iceServers = getIceServers()
 
   const destroyPeers = useCallback(() => {
     const peersValues = Object.values(peers)
@@ -45,6 +47,9 @@ const usePeers = () => {
       const peer = new SimplePeer({
         initiator: true,
         trickle: false,
+        config: {
+          iceServers: iceServers,
+        },
       })
 
       peer.on('signal', (signal) => {
@@ -63,6 +68,9 @@ const usePeers = () => {
       const peer = new SimplePeer({
         initiator: false,
         trickle: false,
+        config: {
+          iceServers: iceServers,
+        },
       })
 
       peer.on('signal', (signal) => {
