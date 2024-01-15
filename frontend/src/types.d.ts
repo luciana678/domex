@@ -12,12 +12,14 @@ export type RoomSession = {
   sessionID: SessionID
   roomID: RoomID
   userName: string
+  isRoomOwner: boolean
 }
 
 export type User = {
   userID: UserID
   userName: string
   connected: boolean
+  isRoomOwner: boolean
 }
 
 export type Peers = {

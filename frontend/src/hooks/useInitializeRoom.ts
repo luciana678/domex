@@ -2,18 +2,28 @@
 
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
-import { RoomID, RoomSession, SessionID, User, UserID } from '@/types'
+import { Peers, RoomID, RoomSession, SessionID, User, UserID } from '@/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useContext, useEffect } from 'react'
 import useInitializePeers from './useInitializePeers'
 import usePeers from './usePeers'
+import useRoom from './useRoom'
 
 const useInitializeRoom = () => {
   useInitializePeers()
-  const { clusterUsers, setClusterUsers, setRoomSession } = useContext(RoomContext)
+  const {
+    clusterUsers,
+    setClusterUsers,
+    setRoomSession,
+    roomOwner,
+    setRoomOwner,
+    setPeers,
+    setOwnerPeer,
+  } = useContext(RoomContext)
   const router = useRouter()
   const pathname = usePathname()
   const { deletePeer, createPeer } = usePeers()
+  const { leaveRoom } = useRoom()
 
   useEffect(() => {
     const session = sessionStorage.getItem('session')
@@ -38,13 +48,15 @@ const useInitializeRoom = () => {
       userID,
       roomID,
       userName,
+      isRoomOwner,
     }: {
       sessionID: SessionID
       userID: UserID
       roomID: RoomID
       userName: string
+      isRoomOwner: boolean
     }) => {
-      const session: RoomSession = { sessionID, roomID, userName }
+      const session: RoomSession = { sessionID, roomID, userName, isRoomOwner }
       setRoomSession(session)
       // attach the session ID to the next reconnection attempts
       socket.auth = session
@@ -57,20 +69,31 @@ const useInitializeRoom = () => {
     }
 
     const onUsers = (users: User[]) => {
-      setClusterUsers(users)
+      const owner = users.find((user) => user.isRoomOwner)
+      if (owner) {
+        setRoomOwner(owner)
+        const ownerPeer = createPeer(owner.userID, socket.userID)
+        setOwnerPeer(ownerPeer)
+      }
 
-      users.forEach((user) => {
+      const usersWithoutOwner = users.filter((user) => !user.isRoomOwner)
+      setClusterUsers(usersWithoutOwner)
+
+      const peers = usersWithoutOwner.reduce<Peers>((peers, user) => {
         const peer = createPeer(user.userID, socket.userID)
-      })
+        return { ...peers, [user.userID]: peer }
+      }, {})
+
+      setPeers(peers)
     }
 
-    const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
+    const onUserLeave = ({ userID }: { userID: UserID; userName: string }) => {
       // A user has left, remove it from the list
       setClusterUsers((prevUsers) => prevUsers.filter((user) => user.userID !== userID))
       deletePeer(userID)
     }
 
-    const onUserDisconnected = ({ userID, userName }: { userID: UserID; userName: string }) => {
+    const onUserDisconnected = ({ userID }: { userID: UserID; userName: string }) => {
       if (socket.userID === userID) return
 
       // A user has disconnected, update the connected status
@@ -105,8 +128,41 @@ const useInitializeRoom = () => {
           }),
         )
       } else {
-        setClusterUsers((prevUsers) => [...prevUsers, { userID, userName, connected }])
+        setClusterUsers((prevUsers) => [
+          ...prevUsers,
+          { userID, userName, connected, isRoomOwner: false },
+        ])
       }
+    }
+
+    const onOwnerConnected = ({
+      userID,
+      userName,
+      connected,
+    }: {
+      userID: UserID
+      userName: string
+      connected: boolean
+    }) => {
+      setRoomOwner({ userID, userName, connected, isRoomOwner: true })
+    }
+
+    const onOwnerDisconnected = ({ userID }: { userID: UserID; userName: string }) => {
+      if (socket.userID === userID) return
+
+      setRoomOwner((prevOwner) => {
+        if (prevOwner?.userID === userID) {
+          return { ...prevOwner, connected: false }
+        }
+        return prevOwner
+      })
+    }
+
+    const onOwnerLeave = async ({ userID, userName }: { userID: UserID; userName: string }) => {
+      // TODO: change alert to a modal
+      window.alert('The owner has left the room, you will be redirected to the home page.')
+      await wait(5000)
+      leaveRoom()
     }
 
     const onConnectError = (err: Error) => {
@@ -122,20 +178,38 @@ const useInitializeRoom = () => {
 
     socket.on('room:session', onSession)
     socket.on('room:users', onUsers)
+    socket.on('room:user-connected', onUserConnected)
     socket.on('room:user-leave', onUserLeave)
     socket.on('room:user-disconnected', onUserDisconnected)
-    socket.on('room:user-connected', onUserConnected)
+    socket.on('room:owner-connected', onOwnerConnected)
+    socket.on('room:owner-leave', onOwnerLeave)
+    socket.on('room:owner-disconnected', onOwnerDisconnected)
     socket.on('connect_error', onConnectError)
 
     return () => {
       socket.off('room:session', onSession)
       socket.off('room:users', onUsers)
+      socket.off('room:user-connected', onUserConnected)
       socket.off('room:user-leave', onUserLeave)
       socket.off('room:user-disconnected', onUserDisconnected)
-      socket.off('room:user-connected', onUserConnected)
+      socket.off('room:owner-connected', onOwnerConnected)
+      socket.off('room:owner-leave', onOwnerLeave)
+      socket.off('room:owner-disconnected', onOwnerDisconnected)
       socket.off('connect_error', onConnectError)
     }
-  }, [clusterUsers, createPeer, deletePeer, pathname, router, setClusterUsers, setRoomSession])
+  }, [
+    clusterUsers,
+    createPeer,
+    deletePeer,
+    leaveRoom,
+    pathname,
+    router,
+    setClusterUsers,
+    setOwnerPeer,
+    setPeers,
+    setRoomOwner,
+    setRoomSession,
+  ])
 }
 
 export default useInitializeRoom

@@ -41,7 +41,7 @@ export default function BasicAccordion({
     }
 
     readFile()
-  }, [selectedFile])
+  }, [selectedFile, setCode])
 
   return (
     <Accordion

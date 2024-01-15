@@ -8,14 +8,15 @@ import { Button } from '@mui/material'
 
 function Room({ params: { id } }: { params: { id: string } }) {
   useInitializeRoom()
+  const { roomSession, leaveRoom } = useRoom()
 
   return (
     <div>
-      {/* <p>Room id {id}</p>
       <p>{JSON.stringify(roomSession)}</p>
-      <Button onClick={handleLeaveRoom} variant='contained' color='warning'>
+      <Button onClick={leaveRoom} variant='contained' color='warning'>
         Leave
       </Button>
+      {/* <p>Room id {id}</p>
 
       <p>Users in this room:</p>
       {JSON.stringify(clusterUsers)}
@@ -35,6 +36,7 @@ function Room({ params: { id } }: { params: { id: string } }) {
       
       <Slave roomProps={roomProps} />
     */}
+
       <Master />
     </div>
   )

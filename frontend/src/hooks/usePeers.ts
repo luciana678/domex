@@ -5,7 +5,7 @@ import { useCallback, useContext } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 
 const usePeers = () => {
-  const { peers, setPeers } = useContext(RoomContext)
+  const { peers, setPeers, roomOwner, ownerPeer, setOwnerPeer } = useContext(RoomContext)
 
   const destroyPeers = useCallback(() => {
     const peersValues = Object.values(peers)
@@ -13,12 +13,21 @@ const usePeers = () => {
     peersValues.forEach((peer) => {
       peer.destroy()
     })
-
     setPeers({})
-  }, [peers, setPeers])
+
+    if (ownerPeer) {
+      ownerPeer.destroy()
+      setOwnerPeer(null)
+    }
+  }, [ownerPeer, peers, setOwnerPeer, setPeers])
 
   const deletePeer = useCallback(
     (userID: UserID) => {
+      if (userID === roomOwner?.userID) {
+        ownerPeer?.destroy()
+        return setOwnerPeer(null)
+      }
+
       peers[userID]?.destroy()
       setPeers((peers) => {
         const newPeers = { ...peers }
@@ -26,57 +35,47 @@ const usePeers = () => {
         return newPeers
       })
     },
-    [peers, setPeers],
+    [ownerPeer, peers, roomOwner?.userID, setOwnerPeer, setPeers],
   )
 
   const sendDirectMessage = useCallback(
     (userID: UserID, data: any) => {
-      const peer = peers[userID]
+      const peer = roomOwner?.userID === userID ? ownerPeer : peers[userID]
 
       if (peer) {
         peer.send(data)
       }
     },
-    [peers],
+    [ownerPeer, peers, roomOwner?.userID],
   )
 
-  const createPeer = useCallback(
-    (userToSignal: UserID, callerID: UserID) => {
-      const peer = new SimplePeer({
-        initiator: true,
-        trickle: false,
-      })
+  const createPeer = useCallback((userToSignal: UserID, callerID: UserID) => {
+    const peer = new SimplePeer({
+      initiator: true,
+      trickle: false,
+    })
 
-      peer.on('signal', (signal) => {
-        socket.emit('webrtc:sending-signal', { userToSignal, callerID, signal })
-      })
+    peer.on('signal', (signal) => {
+      socket.emit('webrtc:sending-signal', { userToSignal, callerID, signal })
+    })
 
-      setPeers((peers) => ({ ...peers, [userToSignal]: peer }))
+    return peer
+  }, [])
 
-      return peer
-    },
-    [setPeers],
-  )
+  const addPeer = useCallback((incomingSignal: SignalData, callerID: UserID) => {
+    const peer = new SimplePeer({
+      initiator: false,
+      trickle: false,
+    })
 
-  const addPeer = useCallback(
-    (incomingSignal: SignalData, callerID: UserID) => {
-      const peer = new SimplePeer({
-        initiator: false,
-        trickle: false,
-      })
+    peer.on('signal', (signal) => {
+      socket.emit('webrtc:returning-signal', { signal, callerID })
+    })
 
-      peer.on('signal', (signal) => {
-        socket.emit('webrtc:returning-signal', { signal, callerID })
-      })
+    peer.signal(incomingSignal)
 
-      peer.signal(incomingSignal)
-
-      setPeers((peers) => ({ ...peers, [callerID]: peer }))
-
-      return peer
-    },
-    [setPeers],
-  )
+    return peer
+  }, [])
 
   return { deletePeer, sendDirectMessage, createPeer, destroyPeers, addPeer }
 }

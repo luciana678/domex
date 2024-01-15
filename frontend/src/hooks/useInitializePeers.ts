@@ -8,12 +8,18 @@ import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
 
 const useInitializePeers = () => {
-  const { peers, clusterUsers } = useContext(RoomContext)
+  const { peers, clusterUsers, setPeers, roomOwner, setOwnerPeer, ownerPeer } =
+    useContext(RoomContext)
   const { addPeer, deletePeer } = usePeers()
 
   useEffect(() => {
     const onWebRTCUserJoined = (payload: { signal: SignalData; callerID: UserID }) => {
       const peer = addPeer(payload.signal, payload.callerID)
+      if (payload.callerID === roomOwner?.userID) {
+        setOwnerPeer(peer)
+      } else {
+        setPeers((peers) => ({ ...peers, [payload.callerID]: peer }))
+      }
     }
 
     const onWebRTCReceivingReturnedSignal = (payload: { signal: SignalData; userID: UserID }) => {
@@ -30,10 +36,10 @@ const useInitializePeers = () => {
       socket.off('webrtc:user-joined', onWebRTCUserJoined)
       socket.off('webrtc:receiving-returned-signal', onWebRTCReceivingReturnedSignal)
     }
-  }, [addPeer, peers])
+  }, [addPeer, peers, roomOwner?.userID, setOwnerPeer, setPeers])
 
-  useEffect(() => {
-    const onEventsOfPeer = (peer: SimplePeer.Instance, userID: UserID) => {
+  const onEventsOfPeer = useCallback(
+    (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
         const decodedData = data.toString('utf8')
         // TODO: handle the data here (e.g. dispatch an action)
@@ -64,8 +70,12 @@ const useInitializePeers = () => {
       peer.on('error', handlePeerError)
 
       peer.on('close', handlePeerClose)
-    }
+    },
+    [clusterUsers, deletePeer],
+  )
 
+  useEffect(() => {
+    // Set up the events for the user peers
     const peersEntries = Object.entries(peers) as [UserID, SimplePeer.Instance][]
 
     peersEntries.forEach(([userID, peer]) => {
@@ -77,7 +87,20 @@ const useInitializePeers = () => {
         peer.removeAllListeners()
       })
     }
-  }, [clusterUsers, deletePeer, peers])
+  }, [onEventsOfPeer, peers])
+
+  useEffect(() => {
+    // Set up the events for the owner peer
+    if (ownerPeer && roomOwner?.userID) {
+      onEventsOfPeer(ownerPeer, roomOwner.userID)
+    }
+
+    return () => {
+      if (ownerPeer && roomOwner?.userID) {
+        ownerPeer.removeAllListeners()
+      }
+    }
+  }, [onEventsOfPeer, ownerPeer, roomOwner?.userID])
 }
 
 export default useInitializePeers
