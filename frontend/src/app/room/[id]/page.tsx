@@ -7,37 +7,11 @@ import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
 import { Button } from '@mui/material'
 
-function Room({ params: { id } }: { params: { id: string } }) {
+function Room() {
   useInitializeRoom()
-  const { roomSession, leaveRoom } = useRoom()
+  const { roomSession } = useRoom()
 
-  return (
-    <div>
-      <p>{JSON.stringify(roomSession)}</p>
-      <Button onClick={leaveRoom} variant='contained' color='warning'>
-        Leave
-      </Button>
-      {/*   <p>Room id {id}</p>
-
-      <p>Users in this room:</p>
-      {JSON.stringify(clusterUsers)}
-      <ul>
-        {clusterUsers.map((user) => (
-          <div key={user.userID}>
-            <li>{user.userName}</li>
-            <button
-              onClick={() => {
-                sendDirectMessage(user.userID, 'Hello')
-              }}>
-              Send message
-            </button>
-          </div>
-        ))}
-      </ul> */}
-
-      {roomSession?.isRoomOwner ? <Master /> : <Slave />}
-    </div>
-  )
+  return roomSession?.isRoomOwner ? <Master /> : <Slave />
 }
 
 export default Room
