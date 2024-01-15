@@ -23,7 +23,7 @@ const useInitializePeers = () => {
     }
 
     const onWebRTCReceivingReturnedSignal = (payload: { signal: SignalData; userID: UserID }) => {
-      const peer = peers[payload.userID]
+      const peer = roomOwner?.userID === payload.userID ? ownerPeer : peers[payload.userID]
       if (peer) {
         peer.signal(payload.signal)
       }
@@ -36,14 +36,19 @@ const useInitializePeers = () => {
       socket.off('webrtc:user-joined', onWebRTCUserJoined)
       socket.off('webrtc:receiving-returned-signal', onWebRTCReceivingReturnedSignal)
     }
-  }, [addPeer, peers, roomOwner?.userID, setOwnerPeer, setPeers])
+  }, [addPeer, ownerPeer, peers, roomOwner?.userID, setOwnerPeer, setPeers])
 
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
         const decodedData = JSON.parse(data.toString('utf8'))
         // TODO: handle the data here (e.g. dispatch an action)
-        const username = clusterUsers.find((user) => user.userID === userID)?.userName
+        let username
+        if (userID === roomOwner?.userID) {
+          username = roomOwner?.userName
+        } else {
+          username = clusterUsers.find((user) => user.userID === userID)?.userName
+        }
 
         console.log('Data:', decodedData, 'from', username, 'with ID', userID)
         dispatch(decodedData)
@@ -72,7 +77,7 @@ const useInitializePeers = () => {
 
       peer.on('close', handlePeerClose)
     },
-    [clusterUsers, deletePeer, dispatch],
+    [clusterUsers, deletePeer, dispatch, roomOwner],
   )
 
   useEffect(() => {
