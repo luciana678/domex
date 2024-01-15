@@ -4,6 +4,7 @@ export type Session = {
   userName: string
   userID: UserID
   connected: boolean
+  isRoomOwner: boolean
 }
 export type RoomID = `${string & { length: 10 }}`
 export type SessionID = UUID

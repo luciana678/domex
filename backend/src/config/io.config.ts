@@ -14,6 +14,7 @@ declare module 'socket.io' {
     sessionID: SessionID
     roomID: RoomID
     userName: string
+    isRoomOwner: boolean
   }
 }
 
@@ -40,6 +41,7 @@ export const createIOServer = (server: http.Server): Server => {
         socket.roomID = roomID
         socket.userID = session.userID
         socket.userName = session.userName
+        socket.isRoomOwner = session.isRoomOwner
         return next()
       }
     }
@@ -53,6 +55,7 @@ export const createIOServer = (server: http.Server): Server => {
     socket.userID = generateRandomUUID()
     socket.userName = userName
     socket.roomID = roomID || generateRandomRoomId()
+    socket.isRoomOwner = !!roomID
     next()
   })
 
