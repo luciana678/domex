@@ -103,7 +103,7 @@ def fred(key, values):
 
       <pre className='mt-4 text-left'>
         SALIDA:
-        <textarea value={stdout}></textarea>
+        <textarea defaultValue={stdout}></textarea>
         <code className='text-red-500'>{stderr}</code>
       </pre>
 
