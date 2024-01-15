@@ -8,6 +8,7 @@ import { useContext, useEffect } from 'react'
 import useInitializePeers from './useInitializePeers'
 import usePeers from './usePeers'
 import useRoom from './useRoom'
+import { wait } from '@/utils/general-functions'
 
 const useInitializeRoom = () => {
   useInitializePeers()
