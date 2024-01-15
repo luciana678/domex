@@ -1,13 +1,17 @@
 'use client'
 
-import { useState } from 'react'
+import { Dispatch, SetStateAction, useState } from 'react'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Button from '@mui/material/Button'
 import IconButton from '@mui/material/IconButton'
 import DeleteIcon from '@mui/icons-material/Delete'
 
-export default function InputSelector({ filesState }) {
+export default function InputSelector({
+  filesState,
+}: {
+  filesState: [File[], Dispatch<SetStateAction<File[]>>]
+}) {
   const [selectedFiles, setSelectedFiles] = filesState
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {

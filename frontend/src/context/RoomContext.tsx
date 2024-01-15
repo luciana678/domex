@@ -1,7 +1,8 @@
 'use client'
 
-import { type Peers, type RoomSession, type User } from '@/types'
-import React, { PropsWithChildren, createContext, useRef, useState } from 'react'
+import { placeholdersFunctions } from '@/constants/functionCodes'
+import { ReducerState, type Peers, type RoomSession, type User } from '@/types'
+import React, { PropsWithChildren, createContext, useContext, useReducer, useState } from 'react'
 import SimplePeer from 'simple-peer'
 
 export type RoomContextType = {
@@ -15,8 +16,8 @@ export type RoomContextType = {
   setRoomOwner: React.Dispatch<React.SetStateAction<User | null>>
   ownerPeer: SimplePeer.Instance | null
   setOwnerPeer: React.Dispatch<React.SetStateAction<SimplePeer.Instance | null>>
-  // isRoomOwner: boolean
-  // setIsRoomOwner: React.Dispatch<React.SetStateAction<boolean>>
+  state: any
+  dispatch: React.Dispatch<any>
 }
 
 const RoomContext = createContext<RoomContextType>({
@@ -30,9 +31,35 @@ const RoomContext = createContext<RoomContextType>({
   setRoomOwner: () => {},
   ownerPeer: null,
   setOwnerPeer: () => {},
-  // isRoomOwner: false,
-  // setIsRoomOwner: () => {},
+  state: null,
+  dispatch: () => {},
 })
+
+const initialState = {
+  code: {
+    mapCode: placeholdersFunctions.map.code,
+    combinerCode: placeholdersFunctions.combiner.code,
+    reduceCode: placeholdersFunctions.reduce.code,
+  },
+}
+
+const actionTypes = {
+  SET_CODES: 'SET_CODES',
+} as const
+
+type Action = {
+  type: keyof typeof actionTypes
+  payload: any
+}
+
+const reducer = (state: ReducerState, action: Action) => {
+  switch (action.type) {
+    case actionTypes.SET_CODES:
+      return { ...state, code: action.payload }
+    default:
+      return state
+  }
+}
 
 export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [clusterUsers, setClusterUsers] = useState<User[]>([])
@@ -40,7 +67,7 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [peers, setPeers] = useState<Peers>({})
   const [roomOwner, setRoomOwner] = useState<User | null>(null)
   const [ownerPeer, setOwnerPeer] = useState<SimplePeer.Instance | null>(null)
-  // const [isRoomOwner, setIsRoomOwner] = useState<boolean>(false)
+  const [state, dispatch] = useReducer(reducer, initialState)
 
   return (
     <RoomContext.Provider
@@ -55,8 +82,8 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
         setRoomOwner,
         ownerPeer,
         setOwnerPeer,
-        // isRoomOwner,
-        // setIsRoomOwner,
+        state,
+        dispatch,
       }}>
       {children}
     </RoomContext.Provider>
@@ -64,3 +91,9 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
 }
 
 export default RoomContext
+
+export const useRoomData = () => {
+  const { state, dispatch } = useContext(RoomContext)
+
+  return { state, dispatch }
+}

@@ -49,7 +49,8 @@ export default function BasicAccordion({
       sx={{
         width: '100%',
         mb: 2.5,
-      }}>
+      }}
+      defaultExpanded={true}>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <div className='flex w-full'>
           <Typography

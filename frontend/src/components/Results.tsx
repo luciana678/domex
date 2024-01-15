@@ -1,9 +1,9 @@
 'use client'
 
-import { DataGrid } from '@mui/x-data-grid'
+import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
-export default function Results({ className, data }) {
-  const columns = [
+export default function Results({ className, data }: { className: string; data: any[] }) {
+  const columns: GridColDef[] = [
     {
       field: 'key',
       headerName: 'CLAVE',

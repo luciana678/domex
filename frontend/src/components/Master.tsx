@@ -1,18 +1,19 @@
 'use client'
 
 import { Button } from '@mui/material'
-import BasicAccordion from '../../components/Accordion'
-import Navbar from '../../components/Navbar'
-import NodeList from '../../components/NodeList'
+import BasicAccordion from './Accordion'
+import Navbar from './Navbar'
+import NodeList from './NodeList'
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import Results from '@/components/Results'
 import { useState } from 'react'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
+import { UserID } from '@/types'
 
 export default function Master() {
   const { clusterUsers, roomSession } = useRoom()
-  const { sendDirectMessage } = usePeers()
+  const { sendDirectMessage, peers } = usePeers()
 
   const [mapCode, setMapCode] = useState(placeholdersFunctions.map.code)
   const [combinerCode, setCombinerCode] = useState(placeholdersFunctions.combiner.code)
@@ -23,6 +24,17 @@ export default function Master() {
     { key: 'Edad', value: 25 },
     { key: 'Ubicación', value: 'Ciudad XYZ' },
   ]
+
+  const handleIniciarProcesamiento = () => {
+    console.log('Iniciando procesamiento', peers)
+    const code = { mapCode, combinerCode, reduceCode }
+    Object.entries(peers).forEach(([userID, peer]) => {
+      sendDirectMessage(userID as UserID, {
+        type: 'SET_CODES',
+        payload: code,
+      })
+    })
+  }
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
@@ -43,10 +55,10 @@ export default function Master() {
           />
         </div>
         <div className='flex flex-col w-3/12'>
-          <NodeList nodes={clusterUsers} sendDirectMessage={sendDirectMessage} />
+          <NodeList />
         </div>
       </div>
-      <Button variant='outlined' color='success'>
+      <Button variant='outlined' color='success' onClick={handleIniciarProcesamiento}>
         Iniciar procesamiento
       </Button>
       <Results className='flex flex-col w-full mt-5' data={data} />

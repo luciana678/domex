@@ -29,3 +29,11 @@ export type Peers = {
 export type RoomID = `${string & { length: 10 }}`
 export type SessionID = UUID
 export type UserID = UUID
+
+export type ReducerState = {
+  code: {
+    mapCode: string
+    combinerCode: string
+    reduceCode: string
+  }
+}

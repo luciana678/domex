@@ -1,8 +1,9 @@
 'use client'
 
-import Master from '@/app/master/page'
+import Master from '@/components/Master'
 import Slave from '@/components/Slave'
 import useInitializeRoom from '@/hooks/useInitializeRoom'
+import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
 import { Button } from '@mui/material'
 
@@ -16,7 +17,7 @@ function Room({ params: { id } }: { params: { id: string } }) {
       <Button onClick={leaveRoom} variant='contained' color='warning'>
         Leave
       </Button>
-      {/* <p>Room id {id}</p>
+      {/*   <p>Room id {id}</p>
 
       <p>Users in this room:</p>
       {JSON.stringify(clusterUsers)}
@@ -32,12 +33,9 @@ function Room({ params: { id } }: { params: { id: string } }) {
             </button>
           </div>
         ))}
-      </ul> 
-      
-      <Slave roomProps={roomProps} />
-    */}
+      </ul> */}
 
-      <Master />
+      {roomSession?.isRoomOwner ? <Master /> : <Slave />}
     </div>
   )
 }
