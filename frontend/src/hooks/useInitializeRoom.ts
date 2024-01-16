@@ -12,15 +12,8 @@ import { wait } from '@/utils/general-functions'
 
 const useInitializeRoom = () => {
   useInitializePeers()
-  const {
-    clusterUsers,
-    setClusterUsers,
-    setRoomSession,
-    roomOwner,
-    setRoomOwner,
-    setPeers,
-    setOwnerPeer,
-  } = useContext(RoomContext)
+  const { clusterUsers, setClusterUsers, setRoomSession, setRoomOwner, setPeers, setOwnerPeer } =
+    useContext(RoomContext)
   const router = useRouter()
   const pathname = usePathname()
   const { deletePeer, createPeer } = usePeers()
