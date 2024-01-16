@@ -55,7 +55,7 @@ export const createIOServer = (server: http.Server): Server => {
     socket.userID = generateRandomUUID()
     socket.userName = userName
     socket.roomID = roomID || generateRandomRoomId()
-    socket.isRoomOwner = !!roomID
+    socket.isRoomOwner = !roomID
     next()
   })
 
