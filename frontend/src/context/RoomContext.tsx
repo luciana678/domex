@@ -2,8 +2,14 @@
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import { ReducerState, type Peers, type RoomSession, type User } from '@/types'
-import React, { PropsWithChildren, createContext, useContext, useReducer, useState } from 'react'
-import SimplePeer from 'simple-peer'
+import React, {
+  PropsWithChildren,
+  createContext,
+  useContext,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react'
 
 export type RoomContextType = {
   clusterUsers: User[]
@@ -13,9 +19,6 @@ export type RoomContextType = {
   peers: Peers
   setPeers: React.Dispatch<React.SetStateAction<Peers>>
   roomOwner: User | null
-  setRoomOwner: React.Dispatch<React.SetStateAction<User | null>>
-  ownerPeer: SimplePeer.Instance | null
-  setOwnerPeer: React.Dispatch<React.SetStateAction<SimplePeer.Instance | null>>
   state: any
   dispatch: React.Dispatch<any>
 }
@@ -28,9 +31,6 @@ const RoomContext = createContext<RoomContextType>({
   peers: {},
   setPeers: () => {},
   roomOwner: null,
-  setRoomOwner: () => {},
-  ownerPeer: null,
-  setOwnerPeer: () => {},
   state: null,
   dispatch: () => {},
 })
@@ -65,9 +65,12 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [clusterUsers, setClusterUsers] = useState<User[]>([])
   const [roomSession, setRoomSession] = useState<RoomSession | null>(null)
   const [peers, setPeers] = useState<Peers>({})
-  const [roomOwner, setRoomOwner] = useState<User | null>(null)
-  const [ownerPeer, setOwnerPeer] = useState<SimplePeer.Instance | null>(null)
   const [state, dispatch] = useReducer(reducer, initialState)
+
+  const roomOwner = useMemo(
+    () => clusterUsers.find((user) => user.isRoomOwner) || null,
+    [clusterUsers],
+  )
 
   return (
     <RoomContext.Provider
@@ -79,9 +82,6 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
         peers,
         setPeers,
         roomOwner,
-        setRoomOwner,
-        ownerPeer,
-        setOwnerPeer,
         state,
         dispatch,
       }}>

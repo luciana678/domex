@@ -12,7 +12,7 @@ import { wait } from '@/utils/general-functions'
 
 const useInitializeRoom = () => {
   useInitializePeers()
-  const { clusterUsers, setClusterUsers, setRoomSession, setRoomOwner, setPeers, setOwnerPeer } =
+  const { clusterUsers, setClusterUsers, setRoomSession, setPeers, roomOwner } =
     useContext(RoomContext)
   const router = useRouter()
   const pathname = usePathname()
@@ -63,17 +63,9 @@ const useInitializeRoom = () => {
     }
 
     const onUsers = (users: User[]) => {
-      const owner = users.find((user) => user.isRoomOwner)
-      if (owner) {
-        setRoomOwner(owner)
-        const ownerPeer = createPeer(owner.userID, socket.userID)
-        setOwnerPeer(ownerPeer)
-      }
+      setClusterUsers(users)
 
-      const usersWithoutOwner = users.filter((user) => !user.isRoomOwner)
-      setClusterUsers(usersWithoutOwner)
-
-      const peers = usersWithoutOwner.reduce<Peers>((peers, user) => {
+      const peers = users.reduce<Peers>((peers, user) => {
         const peer = createPeer(user.userID, socket.userID)
         return { ...peers, [user.userID]: peer }
       }, {})
@@ -81,7 +73,19 @@ const useInitializeRoom = () => {
       setPeers(peers)
     }
 
+    const handleOwnerLeave = async () => {
+      // TODO: change alert to a modal
+      window.alert('The owner has left the room, you will be redirected to the home page.')
+      leaveRoom()
+    }
+
     const onUserLeave = ({ userID }: { userID: UserID; userName: string }) => {
+      const isOwner = roomOwner?.userID === userID
+
+      if (isOwner) {
+        return handleOwnerLeave()
+      }
+
       // A user has left, remove it from the list
       setClusterUsers((prevUsers) => prevUsers.filter((user) => user.userID !== userID))
       deletePeer(userID)
@@ -90,7 +94,7 @@ const useInitializeRoom = () => {
     const onUserDisconnected = ({ userID }: { userID: UserID; userName: string }) => {
       if (socket.userID === userID) return
 
-      // A user has disconnected, update the connected status
+      // A user/owner has disconnected, update the connected status
       setClusterUsers((prevUsers) =>
         prevUsers.map((user) => {
           if (user.userID === userID) {
@@ -106,10 +110,12 @@ const useInitializeRoom = () => {
       userID,
       userName,
       connected,
+      isRoomOwner,
     }: {
       userID: UserID
       userName: string
       connected: boolean
+      isRoomOwner: boolean
     }) => {
       // If the user is already in the list, update the connected status, otherwise add it to the list
       if (clusterUsers.some((user) => user.userID === userID)) {
@@ -122,41 +128,8 @@ const useInitializeRoom = () => {
           }),
         )
       } else {
-        setClusterUsers((prevUsers) => [
-          ...prevUsers,
-          { userID, userName, connected, isRoomOwner: false },
-        ])
+        setClusterUsers((prevUsers) => [...prevUsers, { userID, userName, connected, isRoomOwner }])
       }
-    }
-
-    const onOwnerConnected = ({
-      userID,
-      userName,
-      connected,
-    }: {
-      userID: UserID
-      userName: string
-      connected: boolean
-    }) => {
-      setRoomOwner({ userID, userName, connected, isRoomOwner: true })
-    }
-
-    const onOwnerDisconnected = ({ userID }: { userID: UserID; userName: string }) => {
-      if (socket.userID === userID) return
-
-      setRoomOwner((prevOwner) => {
-        if (prevOwner?.userID === userID) {
-          return { ...prevOwner, connected: false }
-        }
-        return prevOwner
-      })
-    }
-
-    const onOwnerLeave = async ({ userID, userName }: { userID: UserID; userName: string }) => {
-      // TODO: change alert to a modal
-      window.alert('The owner has left the room, you will be redirected to the home page.')
-      await wait(5000)
-      leaveRoom()
     }
 
     const onConnectError = (err: Error) => {
@@ -175,9 +148,6 @@ const useInitializeRoom = () => {
     socket.on('room:user-connected', onUserConnected)
     socket.on('room:user-leave', onUserLeave)
     socket.on('room:user-disconnected', onUserDisconnected)
-    socket.on('room:owner-connected', onOwnerConnected)
-    socket.on('room:owner-leave', onOwnerLeave)
-    socket.on('room:owner-disconnected', onOwnerDisconnected)
     socket.on('connect_error', onConnectError)
 
     return () => {
@@ -186,9 +156,6 @@ const useInitializeRoom = () => {
       socket.off('room:user-connected', onUserConnected)
       socket.off('room:user-leave', onUserLeave)
       socket.off('room:user-disconnected', onUserDisconnected)
-      socket.off('room:owner-connected', onOwnerConnected)
-      socket.off('room:owner-leave', onOwnerLeave)
-      socket.off('room:owner-disconnected', onOwnerDisconnected)
       socket.off('connect_error', onConnectError)
     }
   }, [
@@ -197,11 +164,10 @@ const useInitializeRoom = () => {
     deletePeer,
     leaveRoom,
     pathname,
+    roomOwner?.userID,
     router,
     setClusterUsers,
-    setOwnerPeer,
     setPeers,
-    setRoomOwner,
     setRoomSession,
   ])
 }

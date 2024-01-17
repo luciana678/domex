@@ -6,7 +6,7 @@ import SimplePeer, { SignalData } from 'simple-peer'
 import { getIceServers } from '@/utils/iceServers'
 
 const usePeers = () => {
-  const { peers, setPeers, roomOwner, ownerPeer, setOwnerPeer } = useContext(RoomContext)
+  const { peers, setPeers } = useContext(RoomContext)
 
   const destroyPeers = useCallback(() => {
     const peersValues = Object.values(peers)
@@ -15,20 +15,10 @@ const usePeers = () => {
       peer.destroy()
     })
     setPeers({})
-
-    if (ownerPeer) {
-      ownerPeer.destroy()
-      setOwnerPeer(null)
-    }
-  }, [ownerPeer, peers, setOwnerPeer, setPeers])
+  }, [peers, setPeers])
 
   const deletePeer = useCallback(
     (userID: UserID) => {
-      if (userID === roomOwner?.userID) {
-        ownerPeer?.destroy()
-        return setOwnerPeer(null)
-      }
-
       peers[userID]?.destroy()
       setPeers((peers) => {
         const newPeers = { ...peers }
@@ -36,18 +26,18 @@ const usePeers = () => {
         return newPeers
       })
     },
-    [ownerPeer, peers, roomOwner?.userID, setOwnerPeer, setPeers],
+    [peers, setPeers],
   )
 
   const sendDirectMessage = useCallback(
     (userID: UserID, data: any) => {
-      const peer = roomOwner?.userID === userID ? ownerPeer : peers[userID]
+      const peer = peers[userID]
 
       if (peer) {
         peer.send(JSON.stringify(data))
       }
     },
-    [ownerPeer, peers, roomOwner?.userID],
+    [peers],
   )
 
   const createPeer = useCallback((userToSignal: UserID, callerID: UserID) => {
