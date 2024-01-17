@@ -6,6 +6,7 @@ import http from 'node:http'
 import { PORT } from './constants/envVars.js'
 import LoggerService from './services/logger.services.js'
 import { createIOServer } from './config/io.config.js'
+import packageJSON from '../package.json' assert { type: 'json' }
 
 const app = express()
 const server = http.createServer(app)
@@ -18,12 +19,13 @@ app.get('/health', (req: Request, res: Response) => {
     uptime: process.uptime(),
     message: 'OK',
     timestamp: Date.now(),
+    version: packageJSON.version,
   }
 
   try {
     res.status(200).send(health)
   } catch (e) {
-    health.message = String(e) // Convert 'e' to string
+    health.message = String(e)
     res.status(503).send()
   }
 })
