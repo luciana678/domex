@@ -77,7 +77,7 @@ const useInitializeRoom = () => {
       setClusterUsers((prevUsers) =>
         prevUsers.map((user) => {
           if (user.userID === userID) {
-            return { ...user, connected: false }
+            return { ...user, socketConnected: false }
           }
           return user
         }),
@@ -88,24 +88,24 @@ const useInitializeRoom = () => {
     const onUserConnected = ({
       userID,
       userName,
-      connected,
+      socketConnected,
     }: {
       userID: UserID
       userName: string
-      connected: boolean
+      socketConnected: boolean
     }) => {
       // If the user is already in the list, update the connected status, otherwise add it to the list
       if (clusterUsers.some((user) => user.userID === userID)) {
         setClusterUsers((prevUsers) =>
           prevUsers.map((user) => {
             if (user.userID === userID) {
-              return { ...user, connected }
+              return { ...user, socketConnected }
             }
             return user
           }),
         )
       } else {
-        setClusterUsers((prevUsers) => [...prevUsers, { userID, userName, connected }])
+        setClusterUsers((prevUsers) => [...prevUsers, { userID, userName, socketConnected }])
       }
     }
 
