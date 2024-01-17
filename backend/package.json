@@ -1,6 +1,6 @@
 {
   "name": "domex-back",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "backend of the domex app for the thesis",
   "main": "index.js",
   "type": "module",
