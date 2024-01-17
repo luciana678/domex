@@ -18,8 +18,8 @@ export type RoomSession = {
 export type User = {
   userID: UserID
   userName: string
-  connected: boolean
   isRoomOwner: boolean
+  socketConnected: boolean
 }
 
 export type Peers = {
