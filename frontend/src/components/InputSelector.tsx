@@ -28,7 +28,7 @@ export default function InputSelector({
   }
 
   const handleDeleteFile = (index: number) => {
-    setSelectedFiles(selectedFiles.filter((_, i) => i !== index))
+    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index))
   }
 
   return (
@@ -58,6 +58,10 @@ export default function InputSelector({
           multiple
           style={{ display: 'none' }}
           onChange={handleFileChange}
+          onClick={(event) => {
+            const inputElement = event.target as HTMLInputElement
+            inputElement.value = ''
+          }}
         />
         <label htmlFor='fileInput'>
           <Button variant='outlined' color='primary' component='span'>
