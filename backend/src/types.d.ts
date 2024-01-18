@@ -3,7 +3,7 @@ import { type UUID } from 'crypto'
 export type Session = {
   userName: string
   userID: UserID
-  connected: boolean
+  socketConnected: boolean
   isRoomOwner: boolean
 }
 export type RoomID = `${string & { length: 10 }}`

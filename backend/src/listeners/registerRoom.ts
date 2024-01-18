@@ -11,7 +11,7 @@ export const registerRoom = async (
   roomsSessionStore.saveSession(socket.roomID, socket.sessionID, {
     userName: socket.userName,
     userID: socket.userID,
-    connected: true,
+    socketConnected: true,
     isRoomOwner: socket.isRoomOwner,
   })
 
@@ -37,7 +37,7 @@ export const registerRoom = async (
     userID: socket.userID,
     userName: socket.userName,
     isRoomOwner: socket.isRoomOwner,
-    connected: true,
+    socketConnected: true,
   })
 
   socket.on('room:leave-room', async () => {
@@ -72,7 +72,7 @@ export const registerRoom = async (
       userName: socket.userName,
       userID: socket.userID,
       isRoomOwner: socket.isRoomOwner,
-      connected: false,
+      socketConnected: false,
     })
 
     socket.broadcast.to(socket.roomID).emit(`room:user-disconnected`, {
