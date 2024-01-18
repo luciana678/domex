@@ -45,7 +45,7 @@ const initialState = {
   reduceKeys: [],
   sendKeys: [],
   clavesRecibidas: {},
-  receiveKeysFrom: [],
+  receiveKeysFrom: null,
   resultadoFinal: {},
 }
 

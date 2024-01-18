@@ -105,7 +105,7 @@ export default function Master() {
         payload: {
           reduceKeys: userKeys[user],
           sendKeys: sendKeys[user],
-          receiveKeysFrom: receiveKeysFrom[user],
+          receiveKeysFrom: receiveKeysFrom[user] || [],
         },
       }),
     )

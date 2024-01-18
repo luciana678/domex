@@ -41,6 +41,8 @@ export type ReducerState = {
   reduceKeys: { [key: string]: unknown }
   clavesRecibidas: { [key: string]: { [innerKey: string]: number[] } }
   receiveKeysFrom: string[]
-  resultadoFinal: { [key: string]: any }
-  sendKeys: { [user: string]: any }
+  resultadoFinal: { [key: string]: unknown }
+  sendKeys: {
+    [user: UserID]: string[]
+  }
 }

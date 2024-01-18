@@ -80,7 +80,7 @@ export default function Slave() {
 
     Object.entries(state.sendKeys).forEach(([user, keys]) => {
       const keysForUser: { [key: string]: unknown } = {}
-      keys.forEach((key: string | number) => (keysForUser[key] = combinerResults[key]))
+      keys.forEach((key) => (keysForUser[key] = combinerResults[key]))
       sendDirectMessage(user as UserID, {
         type: 'RECIBIR_CLAVES',
         payload: keysForUser,
@@ -97,8 +97,9 @@ export default function Slave() {
 
   useEffect(() => {
     if (finalizado) return
-    if (!state.receiveKeysFrom.length) return
-    if (!(state.receiveKeysFrom.length === Object.keys(state.clavesRecibidas).length)) return
+    if (!mapCombinerEjecutado) return
+    if (!state.receiveKeysFrom) return
+    if (!(state.receiveKeysFrom?.length === Object.keys(state.clavesRecibidas).length)) return
     if (!isReady) return
 
     const newCombinerResults = { ...combinerResults }
@@ -139,6 +140,7 @@ export default function Slave() {
     readFile,
     sendDirectMessage,
     getRoomOwner,
+    mapCombinerEjecutado,
   ])
 
   console.log('state', state)
