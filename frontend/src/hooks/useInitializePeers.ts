@@ -53,6 +53,14 @@ const useInitializePeers = () => {
         console.log('Peer closed')
         peer.destroy()
         deletePeer(userID)
+        setClusterUsers((clusterUsers) =>
+          clusterUsers.map((user) => {
+            if (user.userID === userID) {
+              return { ...user, peerConnected: false }
+            }
+            return user
+          }),
+        )
         // delete peersRef.current[userID]
       }
 
