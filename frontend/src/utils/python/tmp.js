@@ -1,4 +1,4 @@
-export const code = `
+export const PY_MAIN_CODE = `
 
 import os
 import json
