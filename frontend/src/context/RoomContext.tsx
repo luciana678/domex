@@ -1,15 +1,8 @@
 'use client'
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
-import { ReducerState, type Peers, type RoomSession, type User } from '@/types'
-import React, {
-  PropsWithChildren,
-  createContext,
-  useContext,
-  useMemo,
-  useReducer,
-  useState,
-} from 'react'
+import { ReducerState, UserID, type Peers, type RoomSession, type User } from '@/types'
+import React, { PropsWithChildren, createContext, useMemo, useReducer, useState } from 'react'
 
 export type RoomContextType = {
   clusterUsers: User[]
@@ -19,8 +12,22 @@ export type RoomContextType = {
   peers: Peers
   setPeers: React.Dispatch<React.SetStateAction<Peers>>
   roomOwner: User | null
-  state: any
-  dispatch: React.Dispatch<any>
+  state: ReducerState
+  dispatch: React.Dispatch<Action>
+}
+
+const initialState: ReducerState = {
+  code: {
+    mapCode: placeholdersFunctions.map.code,
+    combinerCode: placeholdersFunctions.combiner.code,
+    reduceCode: placeholdersFunctions.reduce.code,
+  },
+  combinerResults: {},
+  reduceKeys: {},
+  sendKeys: [] as unknown as ReducerState['sendKeys'],
+  clavesRecibidas: {},
+  receiveKeysFrom: null,
+  resultadoFinal: {},
 }
 
 const RoomContext = createContext<RoomContextType>({
@@ -31,23 +38,9 @@ const RoomContext = createContext<RoomContextType>({
   peers: {},
   setPeers: () => {},
   roomOwner: null,
-  state: null,
+  state: initialState,
   dispatch: () => {},
 })
-
-const initialState = {
-  code: {
-    mapCode: placeholdersFunctions.map.code,
-    combinerCode: placeholdersFunctions.combiner.code,
-    reduceCode: placeholdersFunctions.reduce.code,
-  },
-  combinerResults: {},
-  reduceKeys: [],
-  sendKeys: [],
-  clavesRecibidas: {},
-  receiveKeysFrom: null,
-  resultadoFinal: {},
-}
 
 const actionTypes = {
   SET_CODES: 'SET_CODES',
@@ -58,10 +51,29 @@ const actionTypes = {
 } as const
 
 type Action = {
-  type: keyof typeof actionTypes
-  userID: string
-  payload: any
-}
+  userID: UserID
+} & (
+  | { type: 'SET_CODES'; payload: ReducerState['code'] }
+  | {
+      type: 'MAP_COMBINER_EJECUTADO'
+      payload: { combinerResults: { [innerKey: string]: number } }
+    }
+  | {
+      type: 'EJECUTAR_REDUCE'
+      payload: {
+        reduceKeys: ReducerState['reduceKeys']
+        sendKeys: ReducerState['sendKeys']
+        receiveKeysFrom: ReducerState['receiveKeysFrom']
+      }
+    }
+  | {
+      type: 'RECIBIR_CLAVES'
+      payload: {
+        [key: string]: unknown[]
+      }
+    }
+  | { type: 'RESULTADO_FINAL'; payload: ReducerState['resultadoFinal'] }
+)
 
 const reducer = (state: ReducerState, action: Action) => {
   switch (action.type) {
@@ -82,12 +94,12 @@ const reducer = (state: ReducerState, action: Action) => {
         receiveKeysFrom: action.payload.receiveKeysFrom,
       }
     case actionTypes.RECIBIR_CLAVES:
-      const results2 = { ...state.clavesRecibidas }
-      results2[action.userID] = action.payload
+      const newReceivedKeys = { ...state.clavesRecibidas }
+      newReceivedKeys[action.userID] = action.payload
 
       return {
         ...state,
-        clavesRecibidas: results2,
+        clavesRecibidas: newReceivedKeys,
       }
     case actionTypes.RESULTADO_FINAL:
       return {

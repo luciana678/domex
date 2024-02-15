@@ -1,26 +1,25 @@
 'use client'
 
+import InputSelector from '@/components/InputSelector'
+import { placeholdersFunctions } from '@/constants/functionCodes'
+import usePeers from '@/hooks/usePeers'
+import useRoom from '@/hooks/useRoom'
+import { CombinerOuputFile, ReduceOutputFile, UserID } from '@/types'
+import { PY_MAIN_CODE } from '@/utils/python/tmp'
 import { Button } from '@mui/material'
+import { useEffect, useState } from 'react'
+import { usePython } from 'react-py'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
-import { placeholdersFunctions } from '@/constants/functionCodes'
-import InputSelector from '@/components/InputSelector'
-import { usePython } from 'react-py'
-import { useEffect, useState } from 'react'
-import { code } from '@/utils/python/tmp'
-import useRoom from '@/hooks/useRoom'
 import NodeList from './NodeList'
-import usePeers from '@/hooks/usePeers'
-import { ReducerState, UserID } from '@/types'
 
 export default function Slave() {
-  const roomProps = useRoom()
-  const { state, getRoomOwner } = roomProps as { state: ReducerState; getRoomOwner: () => any }
+  const { state, roomOwner, roomSession } = useRoom()
   const { sendDirectMessage } = usePeers()
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const [combinerResults, setCombinerResults] = useState({} as any)
-  const [mapCombinerEjecutado, setMapCombinerEjecutado] = useState(false)
-  const [finalizado, setFinalizado] = useState(false)
+  const [combinerResults, setCombinerResults] = useState<CombinerOuputFile>({})
+  const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
+  const [finished, setFinished] = useState(false)
 
   async function concatenateFiles(files: File[]) {
     try {
@@ -34,92 +33,94 @@ export default function Slave() {
     }
   }
 
-  const { runPython, stdout, stderr, writeFile, readFile, isReady, isRunning } = usePython()
+  const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython()
 
   const runCode = async () => {
-    const readCombinerResults = async () => {
+    const readCombinerResults = async (): Promise<CombinerOuputFile> => {
       const mapResults = JSON.parse((await readFile('/map_results.txt')) || '')
-      const combinerResults = JSON.parse((await readFile('/combiner_results.txt')) || '')
+      const combinerResults: CombinerOuputFile = JSON.parse(
+        (await readFile('/combiner_results.txt')) || '',
+      )
       console.log('mapResults', mapResults)
       console.log('combienrResults', combinerResults)
       setCombinerResults(combinerResults)
       return combinerResults
     }
 
-    setMapCombinerEjecutado(false)
+    setMapCombinerExecuted(false)
     await writeFile('/input.txt', await concatenateFiles(selectedFiles))
     await writeFile('/map_code.py', state.code.mapCode)
     await writeFile('/combiner_code.py', state.code.combinerCode)
     await writeFile('/reduce_code.py', state.code.reduceCode)
     console.log('EJECUTO 1')
-    await runPython(code)
-    const results = (await readCombinerResults()) as {
-      [key: string]: { [innerKey: string]: number }
-    }
-    setMapCombinerEjecutado(true)
+    await runPython(PY_MAIN_CODE)
+    const combinerResults = await readCombinerResults()
+
+    console.log(combinerResults)
+    setMapCombinerExecuted(true)
 
     const data = {
       type: 'MAP_COMBINER_EJECUTADO',
       payload: {
-        combinerResults: Object.keys(results).reduce(
-          (result, key) => {
-            result[key] = results[key]?.length
+        combinerResults: Object.keys(combinerResults).reduce(
+          (result: { [key: string]: number }, key: string) => {
+            result[key] = combinerResults[key].length
             return result
           },
-          {} as { [key: string]: number },
+          {},
         ),
       },
     }
-    sendDirectMessage(getRoomOwner().userID, data)
+    sendDirectMessage(roomOwner?.userID as UserID, data)
   }
 
   useEffect(() => {
-    if (!mapCombinerEjecutado) return
-    if (finalizado) return
-    if (!Object.keys(state.reduceKeys).length) return
+    // That means that the combiner has been executed. Now we can send the keys to the other users (reducers)
+    if (finished) return
+    if (!mapCombinerExecuted) return
+    if (!Object.keys(state.sendKeys).length) return
 
     Object.entries(state.sendKeys).forEach(([user, keys]) => {
-      const keysForUser: { [key: string]: unknown } = {}
+      const keysForUser: { [key: string]: unknown[] } = {}
       keys.forEach((key) => (keysForUser[key] = combinerResults[key]))
+
       sendDirectMessage(user as UserID, {
         type: 'RECIBIR_CLAVES',
         payload: keysForUser,
       })
     })
-  }, [
-    combinerResults,
-    finalizado,
-    mapCombinerEjecutado,
-    sendDirectMessage,
-    state.reduceKeys,
-    state.sendKeys,
-  ])
+  }, [combinerResults, finished, mapCombinerExecuted, sendDirectMessage, state.sendKeys])
 
   useEffect(() => {
-    if (finalizado) return
-    if (!mapCombinerEjecutado) return
-    if (!state.receiveKeysFrom) return
+    // Thar useEffect will be executed when all the reducers (users) have sent their keys to the actual user. The map combiner has been executed.
+    if (finished) return
+    if (!mapCombinerExecuted) return
+    // Check if all the keys have been received from the other users.
+    if (!state?.receiveKeysFrom) return
     if (!(state.receiveKeysFrom?.length === Object.keys(state.clavesRecibidas).length)) return
+    // Check if the python module is ready to execute the reduce phase.
     if (!isReady) return
 
+    //  Combine all the keys received from the other users
     const newCombinerResults = { ...combinerResults }
     Object.values(state.clavesRecibidas).forEach((keyList) => {
-      Object.entries(keyList as { [key: string]: unknown }).forEach(([key, values]) => {
-        newCombinerResults[key] = [...(newCombinerResults[key] || []), ...(values as any[])]
+      Object.entries(keyList).forEach(([key, values]) => {
+        newCombinerResults[key] = [...(newCombinerResults[key] || []), ...values]
       })
     })
 
-    const newReduceKeys: { [key: string]: unknown } = {}
+    // Discard the keys that the user will not reduce
+    const newReduceKeys: CombinerOuputFile = {}
     Object.keys(state.reduceKeys).forEach((key) => (newReduceKeys[key] = newCombinerResults[key]))
 
     const readResult = async () => {
       await writeFile('/reduce_keys.json', JSON.stringify(newReduceKeys))
       console.log('EJECUTO 2')
-      await runPython(code)
+      await runPython(PY_MAIN_CODE)
       const data = (await readFile('/reduce_results.txt')) || ''
-      const resultados = JSON.parse(data)
+      const resultados: ReduceOutputFile = JSON.parse(data)
       console.log('RESULTADO FINAL', resultados)
-      sendDirectMessage(getRoomOwner().userID, {
+      sendDirectMessage(roomOwner?.userID as UserID, {
         type: 'RESULTADO_FINAL',
         payload: resultados,
       })
@@ -127,26 +128,26 @@ export default function Slave() {
 
     readResult()
 
-    setFinalizado(true)
+    setFinished(true)
   }, [
+    combinerResults,
+    finished,
+    isReady,
+    mapCombinerExecuted,
+    readFile,
+    roomOwner,
+    runPython,
+    sendDirectMessage,
     state.clavesRecibidas,
     state.receiveKeysFrom,
     state.reduceKeys,
-    isReady,
-    finalizado,
-    combinerResults,
     writeFile,
-    runPython,
-    readFile,
-    sendDirectMessage,
-    getRoomOwner,
-    mapCombinerEjecutado,
   ])
 
   console.log('state', state)
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
-      <Navbar title={`Unido al cluster #${roomProps.roomSession?.roomID}`} />
+      <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
       <div className='w-full flex flex-col'>
         <div className='flex flex-row justify-center w-full gap-20 mb-5'>
           <div className='w-9/12'>

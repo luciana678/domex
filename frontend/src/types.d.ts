@@ -37,12 +37,24 @@ export type ReducerState = {
     combinerCode: string
     reduceCode: string
   }
-  combinerResults: { [key: string]: { [innerKey: string]: unknown } }
-  reduceKeys: { [key: string]: unknown }
-  clavesRecibidas: { [key: string]: { [innerKey: string]: number[] } }
-  receiveKeysFrom: string[]
-  resultadoFinal: { [key: string]: unknown }
+  combinerResults: { [user: UserID]: { [innerKey: string]: number } }
+  reduceKeys: { [key: string]: number }
+  clavesRecibidas: { [user: UserID]: { [innerKey: string]: unknown[] } }
+  receiveKeysFrom: UserID[] | null
+  resultadoFinal: ReduceOutputFile
   sendKeys: {
-    [user: UserID]: string[]
+    [userToSendKeys: UserID]: string[]
   }
+}
+
+export type MapOutputFile = {
+  [key: string]: unknown[]
+}
+
+export type CombinerOuputFile = {
+  [key: string]: unknown[]
+}
+
+export type ReduceOutputFile = {
+  [key: string]: unknown
 }

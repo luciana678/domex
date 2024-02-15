@@ -2,9 +2,9 @@
 
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
-import { RoomID, RoomSession, SessionID, User, UserID } from '@/types'
-import { usePathname, useRouter } from 'next/navigation'
-import { useCallback, useContext, useEffect } from 'react'
+import { RoomID } from '@/types'
+import { useRouter } from 'next/navigation'
+import { useCallback, useContext } from 'react'
 import usePeers from './usePeers'
 
 const useRoom = () => {
@@ -25,13 +25,7 @@ const useRoom = () => {
     router.push('/')
   }, [destroyPeers, router])
 
-  const getRoomOwner = useCallback(
-    () =>
-      Object.values(clusterUsers).find((user) => user.isRoomOwner || user.userName === '1') as User,
-    [clusterUsers],
-  )
-
-  return { clusterUsers, roomSession, connectRoom, leaveRoom, state, getRoomOwner }
+  return { clusterUsers, roomSession, connectRoom, leaveRoom, state, roomOwner }
 }
 
 export default useRoom
