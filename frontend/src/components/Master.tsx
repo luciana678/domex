@@ -36,12 +36,6 @@ export default function Master() {
   const [combinerCode, setCombinerCode] = useState(WordCountCode.combiner)
   const [reduceCode, setReduceCode] = useState(WordCountCode.reduce)
 
-  const data = [
-    { key: 'Nombre', value: 'John Doe' },
-    { key: 'Edad', value: 25 },
-    { key: 'Ubicación', value: 'Ciudad XYZ' },
-  ]
-
   const handleIniciarProcesamiento = () => {
     broadcastMessage({ type: 'SET_CODES', payload: { mapCode, combinerCode, reduceCode } })
   }
