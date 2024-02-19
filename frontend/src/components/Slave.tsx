@@ -43,8 +43,6 @@ export default function Slave() {
       const combinerResults: CombinerOuputFile = JSON.parse(
         (await readFile('/combiner_results.txt')) || '',
       )
-      console.log('mapResults', mapResults)
-      console.log('combienrResults', combinerResults)
       setCombinerResults(combinerResults)
       return combinerResults
     }
@@ -54,11 +52,9 @@ export default function Slave() {
     await writeFile('/map_code.py', mapReduceState.code.mapCode)
     await writeFile('/combiner_code.py', mapReduceState.code.combinerCode)
     await writeFile('/reduce_code.py', mapReduceState.code.reduceCode)
-    console.log('EJECUTO 1')
     await runPython(PY_MAIN_CODE)
     const combinerResults = await readCombinerResults()
 
-    console.log(combinerResults)
     setMapCombinerExecuted(true)
 
     const data = {
@@ -125,11 +121,11 @@ export default function Slave() {
 
     const readResult = async () => {
       await writeFile('/reduce_keys.json', JSON.stringify(newReduceKeys))
-      console.log('EJECUTO 2')
       await runPython(PY_MAIN_CODE)
+
       const data = (await readFile('/reduce_results.txt')) || ''
       const resultados: ReduceOutputFile = JSON.parse(data)
-      console.log('RESULTADO FINAL', resultados)
+
       sendDirectMessage(roomOwner?.userID as UserID, {
         type: 'RESULTADO_FINAL',
         payload: resultados,
@@ -154,7 +150,6 @@ export default function Slave() {
     writeFile,
   ])
 
-  console.log('state', mapReduceState)
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
