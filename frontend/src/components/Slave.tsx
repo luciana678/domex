@@ -150,6 +150,14 @@ export default function Slave() {
     writeFile,
   ])
 
+  const readyToExecute = () => {
+    sendDirectMessage(roomOwner?.userID as UserID, {
+      type: 'READY_TO_EXECUTE',
+    })
+  }
+
+  const startExecution = () => isReady && runCode()
+
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
@@ -191,8 +199,8 @@ export default function Slave() {
           </div>
         </div>
       </div>
-      <Button variant='outlined' color='success' onClick={() => isReady && runCode()}>
-        Iniciar procesamiento
+      <Button variant='outlined' color='success' onClick={readyToExecute}>
+        Listo para ejecutar
       </Button>
 
       <pre className='mt-4 text-left'>

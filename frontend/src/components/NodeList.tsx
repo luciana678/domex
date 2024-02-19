@@ -4,6 +4,7 @@ import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
 import useRoom from '@/hooks/useRoom'
 import usePeers from '@/hooks/usePeers'
+import { getConnectionStatus, getExecutionStatus } from '@/utils/users'
 
 export default function NodeList() {
   const { clusterUsers } = useRoom()
@@ -19,7 +20,7 @@ export default function NodeList() {
               sx={{
                 mb: 1,
               }}>
-              {node.userName} {node.socketConnected ? (node.peerConnected ? '🟢' : '🟡') : '🔴'}
+              {node.userName} {getConnectionStatus(node)} {getExecutionStatus(node)}
             </Typography>
             <button
               onClick={() => {
