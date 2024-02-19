@@ -15,12 +15,16 @@ export type RoomSession = {
   isRoomOwner: boolean
 }
 
-export type User = {
+export type BaseUser = {
   userID: UserID
   userName: string
   socketConnected: boolean
   peerConnected?: boolean
   isRoomOwner: boolean
+}
+
+export type User = BaseUser & {
+  readyToExecuteMap: boolean
 }
 
 export type Peers = {

@@ -2,13 +2,12 @@
 
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
-import { Peers, RoomID, RoomSession, SessionID, User, UserID } from '@/types'
+import { Peers, RoomID, RoomSession, SessionID, BaseUser, UserID, User } from '@/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useContext, useEffect } from 'react'
 import useInitializePeers from './useInitializePeers'
 import usePeers from './usePeers'
 import useRoom from './useRoom'
-import { wait } from '@/utils/general-functions'
 
 const useInitializeRoom = () => {
   useInitializePeers()
@@ -62,10 +61,11 @@ const useInitializeRoom = () => {
       router.push(`/room/${roomID}`)
     }
 
-    const onUsers = (users: User[]) => {
-      setClusterUsers(users)
+    const onUsers = (baseUsers: BaseUser[]) => {
+      const updatedUsers: User[] = baseUsers.map((user) => ({ ...user, readyToExecuteMap: false }))
+      setClusterUsers(updatedUsers)
 
-      const peers = users.reduce<Peers>((peers, user) => {
+      const peers = baseUsers.reduce<Peers>((peers, user) => {
         const peer = createPeer(user.userID, socket.userID)
         return { ...peers, [user.userID]: peer }
       }, {})
@@ -130,7 +130,7 @@ const useInitializeRoom = () => {
       } else {
         setClusterUsers((prevUsers) => [
           ...prevUsers,
-          { userID, userName, socketConnected, isRoomOwner },
+          { userID, userName, socketConnected, isRoomOwner, readyToExecuteMap: false },
         ])
       }
     }
