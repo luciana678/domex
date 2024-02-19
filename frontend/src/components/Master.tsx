@@ -10,6 +10,7 @@ import { useEffect, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
+import useMapReduce from '@/hooks/useMapReduce'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -26,7 +27,8 @@ const WordCountCode = {
 }
 
 export default function Master() {
-  const { clusterUsers, roomSession, state } = useRoom()
+  const { clusterUsers, roomSession } = useRoom()
+  const { mapReduceState } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const [finished, setFinished] = useState(false)
 
@@ -47,19 +49,19 @@ export default function Master() {
   useEffect(() => {
     // If all the combiner results are in, then we can start the reduce phase. Check if isn´t finished yet
     if (finished) return
-    if (!Object.keys(state.combinerResults).length) return
-    if (Object.keys(state.combinerResults).length < clusterUsers.length) return
+    if (!Object.keys(mapReduceState.combinerResults).length) return
+    if (Object.keys(mapReduceState.combinerResults).length < clusterUsers.length) return
 
     const totalCounts: { [key: string]: number } = {}
 
     // Count the total of each key for all the combiners results
-    Object.values(state.combinerResults).forEach((keyList) => {
+    Object.values(mapReduceState.combinerResults).forEach((keyList) => {
       Object.entries(keyList).forEach(([key, count]) => {
         totalCounts[key] = (totalCounts[key] || 0) + count
       })
     })
 
-    const users = Object.keys(state.combinerResults) as UserID[]
+    const users = Object.keys(mapReduceState.combinerResults) as UserID[]
     const keys = Object.keys(totalCounts)
     const keysPerUser = Math.ceil(keys.length / clusterUsers.length)
     // userKeys is an object that contains the keys that each user will reduce
@@ -82,7 +84,7 @@ export default function Master() {
 
     users.forEach((user) => {
       sendKeys[user] = {}
-      Object.keys(state.combinerResults[user]).forEach((key) => {
+      Object.keys(mapReduceState.combinerResults[user]).forEach((key) => {
         if (!userKeys[user][key]) {
           let userWithKey = findUserWithKey(key)
           if (sendKeys[user][userWithKey]) {
@@ -123,7 +125,7 @@ export default function Master() {
     )
 
     setFinished(true)
-  }, [clusterUsers.length, finished, sendDirectMessage, state.combinerResults])
+  }, [clusterUsers.length, finished, sendDirectMessage, mapReduceState.combinerResults])
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
@@ -150,7 +152,7 @@ export default function Master() {
       <Button variant='outlined' color='success' onClick={handleIniciarProcesamiento}>
         Iniciar procesamiento
       </Button>
-      <Results className='flex flex-col w-full mt-5' data={state.resultadoFinal} />
+      <Results className='flex flex-col w-full mt-5' data={mapReduceState.resultadoFinal} />
     </main>
   )
 }

@@ -9,7 +9,7 @@ import usePeers from './usePeers'
 
 const useRoom = () => {
   const router = useRouter()
-  const { clusterUsers, roomSession, state, roomOwner } = useContext(RoomContext)
+  const { clusterUsers, roomSession, roomOwner } = useContext(RoomContext)
   const { destroyPeers } = usePeers()
 
   const connectRoom = useCallback((auth: { userName?: string; roomID?: RoomID }) => {
@@ -25,7 +25,7 @@ const useRoom = () => {
     router.push('/')
   }, [destroyPeers, router])
 
-  return { clusterUsers, roomSession, connectRoom, leaveRoom, state, roomOwner }
+  return { clusterUsers, roomSession, connectRoom, leaveRoom, roomOwner }
 }
 
 export default useRoom

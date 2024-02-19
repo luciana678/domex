@@ -6,10 +6,12 @@ import { UserID } from '@/types'
 import { useCallback, useContext, useEffect } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
+import useMapReduce from './useMapReduce'
 
 const useInitializePeers = () => {
-  const { peers, clusterUsers, setPeers, dispatch, setClusterUsers } = useContext(RoomContext)
+  const { peers, clusterUsers, setPeers, setClusterUsers } = useContext(RoomContext)
   const { addPeer, deletePeer } = usePeers()
+  const { dispatchMapReduce } = useMapReduce()
 
   useEffect(() => {
     const onWebRTCUserJoined = (payload: { signal: SignalData; callerID: UserID }) => {
@@ -42,7 +44,7 @@ const useInitializePeers = () => {
         decodedData['userID'] = userID
 
         console.log('Data:', decodedData, 'from', username, 'with ID', userID)
-        dispatch(decodedData)
+        dispatchMapReduce(decodedData)
       }
 
       const handlePeerError = (err: Error) => {
@@ -84,7 +86,7 @@ const useInitializePeers = () => {
 
       peer.on('close', handlePeerClose)
     },
-    [clusterUsers, deletePeer, dispatch, setClusterUsers],
+    [clusterUsers, deletePeer, dispatchMapReduce, setClusterUsers],
   )
 
   useEffect(() => {

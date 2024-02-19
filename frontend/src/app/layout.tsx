@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { RoomProvider } from '@/context/RoomContext'
+import { MapReduceProvider } from '@/context/MapReduceContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -14,7 +15,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en'>
       <body className={inter.className}>
-        <RoomProvider>{children}</RoomProvider>
+        <RoomProvider>
+          <MapReduceProvider>{children}</MapReduceProvider>
+        </RoomProvider>
       </body>
     </html>
   )

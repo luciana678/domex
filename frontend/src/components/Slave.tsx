@@ -12,10 +12,12 @@ import { usePython } from 'react-py'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
+import useMapReduce from '@/hooks/useMapReduce'
 
 export default function Slave() {
-  const { state, roomOwner, roomSession } = useRoom()
+  const { roomOwner, roomSession } = useRoom()
   const { sendDirectMessage } = usePeers()
+  const { mapReduceState } = useMapReduce()
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [combinerResults, setCombinerResults] = useState<CombinerOuputFile>({})
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
@@ -49,9 +51,9 @@ export default function Slave() {
 
     setMapCombinerExecuted(false)
     await writeFile('/input.txt', await concatenateFiles(selectedFiles))
-    await writeFile('/map_code.py', state.code.mapCode)
-    await writeFile('/combiner_code.py', state.code.combinerCode)
-    await writeFile('/reduce_code.py', state.code.reduceCode)
+    await writeFile('/map_code.py', mapReduceState.code.mapCode)
+    await writeFile('/combiner_code.py', mapReduceState.code.combinerCode)
+    await writeFile('/reduce_code.py', mapReduceState.code.reduceCode)
     console.log('EJECUTO 1')
     await runPython(PY_MAIN_CODE)
     const combinerResults = await readCombinerResults()
@@ -78,9 +80,9 @@ export default function Slave() {
     // That means that the combiner has been executed. Now we can send the keys to the other users (reducers)
     if (finished) return
     if (!mapCombinerExecuted) return
-    if (!Object.keys(state.sendKeys).length) return
+    if (!Object.keys(mapReduceState.sendKeys).length) return
 
-    Object.entries(state.sendKeys).forEach(([user, keys]) => {
+    Object.entries(mapReduceState.sendKeys).forEach(([user, keys]) => {
       const keysForUser: { [key: string]: unknown[] } = {}
       keys.forEach((key) => (keysForUser[key] = combinerResults[key]))
 
@@ -89,21 +91,27 @@ export default function Slave() {
         payload: keysForUser,
       })
     })
-  }, [combinerResults, finished, mapCombinerExecuted, sendDirectMessage, state.sendKeys])
+  }, [combinerResults, finished, mapCombinerExecuted, sendDirectMessage, mapReduceState.sendKeys])
 
   useEffect(() => {
     // Thar useEffect will be executed when all the reducers (users) have sent their keys to the actual user. The map combiner has been executed.
     if (finished) return
     if (!mapCombinerExecuted) return
     // Check if all the keys have been received from the other users.
-    if (!state?.receiveKeysFrom) return
-    if (!(state.receiveKeysFrom?.length === Object.keys(state.clavesRecibidas).length)) return
+    if (!mapReduceState?.receiveKeysFrom) return
+    if (
+      !(
+        mapReduceState.receiveKeysFrom?.length ===
+        Object.keys(mapReduceState.clavesRecibidas).length
+      )
+    )
+      return
     // Check if the python module is ready to execute the reduce phase.
     if (!isReady) return
 
     //  Combine all the keys received from the other users
     const newCombinerResults = { ...combinerResults }
-    Object.values(state.clavesRecibidas).forEach((keyList) => {
+    Object.values(mapReduceState.clavesRecibidas).forEach((keyList) => {
       Object.entries(keyList).forEach(([key, values]) => {
         newCombinerResults[key] = [...(newCombinerResults[key] || []), ...values]
       })
@@ -111,7 +119,9 @@ export default function Slave() {
 
     // Discard the keys that the user will not reduce
     const newReduceKeys: CombinerOuputFile = {}
-    Object.keys(state.reduceKeys).forEach((key) => (newReduceKeys[key] = newCombinerResults[key]))
+    Object.keys(mapReduceState.reduceKeys).forEach(
+      (key) => (newReduceKeys[key] = newCombinerResults[key]),
+    )
 
     const readResult = async () => {
       await writeFile('/reduce_keys.json', JSON.stringify(newReduceKeys))
@@ -138,13 +148,13 @@ export default function Slave() {
     roomOwner,
     runPython,
     sendDirectMessage,
-    state.clavesRecibidas,
-    state.receiveKeysFrom,
-    state.reduceKeys,
+    mapReduceState.clavesRecibidas,
+    mapReduceState.receiveKeysFrom,
+    mapReduceState.reduceKeys,
     writeFile,
   ])
 
-  console.log('state', state)
+  console.log('state', mapReduceState)
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
@@ -153,7 +163,7 @@ export default function Slave() {
           <div className='w-9/12'>
             <BasicAccordion
               title={placeholdersFunctions.map.title}
-              codeState={[state.code.mapCode, null]}
+              codeState={[mapReduceState.code.mapCode, null]}
               showLoadFileButton={false}
               codeEditorProps={{
                 readOnly: true,
@@ -161,7 +171,7 @@ export default function Slave() {
             />
             <BasicAccordion
               title={placeholdersFunctions.combiner.title}
-              codeState={[state.code.combinerCode, null]}
+              codeState={[mapReduceState.code.combinerCode, null]}
               showLoadFileButton={false}
               codeEditorProps={{
                 readOnly: true,
@@ -169,7 +179,7 @@ export default function Slave() {
             />
             <BasicAccordion
               title={placeholdersFunctions.reduce.title}
-              codeState={[state.code.reduceCode, null]}
+              codeState={[mapReduceState.code.reduceCode, null]}
               showLoadFileButton={false}
               codeEditorProps={{
                 readOnly: true,
