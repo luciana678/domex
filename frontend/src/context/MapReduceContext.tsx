@@ -9,12 +9,13 @@ export type MapReduceContextType = {
   dispatchMapReduce: React.Dispatch<Action>
 }
 
-const actionTypes = {
+export const actionTypes = {
   SET_CODES: 'SET_CODES',
   MAP_COMBINER_EJECUTADO: 'MAP_COMBINER_EJECUTADO',
   EJECUTAR_REDUCE: 'EJECUTAR_REDUCE',
   RECIBIR_CLAVES: 'RECIBIR_CLAVES',
   RESULTADO_FINAL: 'RESULTADO_FINAL',
+  READY_TO_EXECUTE: 'READY_TO_EXECUTE',
 } as const
 
 export type Action = {
@@ -40,6 +41,7 @@ export type Action = {
       }
     }
   | { type: 'RESULTADO_FINAL'; payload: ReducerState['resultadoFinal'] }
+  | { type: 'READY_TO_EXECUTE' }
 )
 
 const initialState: ReducerState = {
@@ -94,6 +96,8 @@ const reducer = (state: ReducerState, action: Action) => {
         ...state,
         resultadoFinal: { ...state.resultadoFinal, ...action.payload },
       }
+    case actionTypes.READY_TO_EXECUTE:
+      return state
     default:
       return state
   }

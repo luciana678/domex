@@ -7,7 +7,8 @@ import { useCallback, useContext, useEffect } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
 import useMapReduce from './useMapReduce'
-import { Action } from '@/context/MapReduceContext'
+import { Action, actionTypes } from '@/context/MapReduceContext'
+import { handleActionSignal } from '@/utils/handleActions'
 
 const useInitializePeers = () => {
   const { peers, clusterUsers, setPeers, setClusterUsers } = useContext(RoomContext)
@@ -43,6 +44,7 @@ const useInitializePeers = () => {
         // TODO: handle the data here (e.g. dispatch an action)
         decodedData['userID'] = userID
 
+        handleActionSignal({ action: decodedData, setClusterUsers })
         dispatchMapReduce(decodedData)
       }
 
