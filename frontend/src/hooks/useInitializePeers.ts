@@ -7,6 +7,7 @@ import { useCallback, useContext, useEffect } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
 import useMapReduce from './useMapReduce'
+import { Action } from '@/context/MapReduceContext'
 
 const useInitializePeers = () => {
   const { peers, clusterUsers, setPeers, setClusterUsers } = useContext(RoomContext)
@@ -38,12 +39,10 @@ const useInitializePeers = () => {
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
-        const decodedData = JSON.parse(data.toString('utf8'))
+        const decodedData: Action = JSON.parse(data.toString('utf8'))
         // TODO: handle the data here (e.g. dispatch an action)
-        const username = clusterUsers.find((user) => user.userID === userID)?.userName
         decodedData['userID'] = userID
 
-        console.log('Data:', decodedData, 'from', username, 'with ID', userID)
         dispatchMapReduce(decodedData)
       }
 

@@ -17,7 +17,7 @@ const actionTypes = {
   RESULTADO_FINAL: 'RESULTADO_FINAL',
 } as const
 
-type Action = {
+export type Action = {
   userID: UserID
 } & (
   | { type: 'SET_CODES'; payload: ReducerState['code'] }
