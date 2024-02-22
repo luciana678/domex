@@ -16,11 +16,12 @@ import useMapReduce from '@/hooks/useMapReduce'
 
 export default function Slave() {
   const { roomOwner, roomSession } = useRoom()
-  const { sendDirectMessage } = usePeers()
+  const { sendDirectMessage, broadcastMessage } = usePeers()
   const { mapReduceState } = useMapReduce()
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [combinerResults, setCombinerResults] = useState<CombinerOuputFile>({})
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
+  const [isReadyToExecute, setIsReadyToExecute] = useState(false)
   const [finished, setFinished] = useState(false)
 
   async function concatenateFiles(files: File[]) {
@@ -36,6 +37,16 @@ export default function Slave() {
   }
 
   const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython()
+
+  useEffect(() => {
+    // todavía no se recibió el código map a ejecutar
+    if (mapReduceState.code.mapCode == placeholdersFunctions.map.code) return
+
+    // todavía no se puede ejecutar código python
+    if (!isReady) return
+
+    runCode()
+  }, [mapReduceState.code, isReady])
 
   const runCode = async () => {
     const readCombinerResults = async (): Promise<CombinerOuputFile> => {
@@ -151,7 +162,8 @@ export default function Slave() {
   ])
 
   const readyToExecute = () => {
-    sendDirectMessage(roomOwner?.userID as UserID, {
+    setIsReadyToExecute(true)
+    broadcastMessage({
       type: 'READY_TO_EXECUTE',
     })
   }
@@ -194,17 +206,23 @@ export default function Slave() {
               <NodeList />
             </div>
             <div className='flex-grow w-full '>
-              <InputSelector filesState={[selectedFiles, setSelectedFiles]} />
+              <InputSelector
+                filesState={[selectedFiles, setSelectedFiles]}
+                enableEditing={!isReadyToExecute}
+              />
             </div>
           </div>
         </div>
       </div>
-      <Button variant='outlined' color='success' onClick={readyToExecute}>
+      <Button
+        variant='outlined'
+        color='success'
+        onClick={readyToExecute}
+        disabled={isReadyToExecute}>
         Listo para ejecutar
       </Button>
 
       <pre className='mt-4 text-left'>
-        SALIDA:
         <textarea defaultValue={stdout}></textarea>
         <code className='text-red-500'>{stderr}</code>
       </pre>

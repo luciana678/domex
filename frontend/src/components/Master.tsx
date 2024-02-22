@@ -30,6 +30,7 @@ export default function Master() {
   const { clusterUsers, roomSession } = useRoom()
   const { mapReduceState } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
+  const [allUsersReady, setAllUsersReady] = useState(false)
   const [finished, setFinished] = useState(false)
 
   const [mapCode, setMapCode] = useState(WordCountCode.map)
@@ -39,6 +40,12 @@ export default function Master() {
   const handleIniciarProcesamiento = () => {
     broadcastMessage({ type: 'SET_CODES', payload: { mapCode, combinerCode, reduceCode } })
   }
+
+  useEffect(() => {
+    const totalUsers = clusterUsers.length
+    const readyUsers = clusterUsers.filter((user) => user.readyToExecuteMap).length
+    setAllUsersReady(totalUsers === readyUsers)
+  }, [clusterUsers])
 
   useEffect(() => {
     // If all the combiner results are in, then we can start the reduce phase. Check if isn´t finished yet
@@ -143,7 +150,11 @@ export default function Master() {
           <NodeList />
         </div>
       </div>
-      <Button variant='outlined' color='success' onClick={handleIniciarProcesamiento}>
+      <Button
+        variant='outlined'
+        color='success'
+        onClick={handleIniciarProcesamiento}
+        disabled={!allUsersReady || finished}>
         Iniciar procesamiento
       </Button>
       <Results className='flex flex-col w-full mt-5' data={mapReduceState.resultadoFinal} />

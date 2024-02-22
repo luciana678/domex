@@ -9,8 +9,10 @@ import DeleteIcon from '@mui/icons-material/Delete'
 
 export default function InputSelector({
   filesState,
+  enableEditing,
 }: {
   filesState: [File[], Dispatch<SetStateAction<File[]>>]
+  enableEditing: boolean
 }) {
   const [selectedFiles, setSelectedFiles] = filesState
 
@@ -42,7 +44,7 @@ export default function InputSelector({
             {selectedFiles.map((file, index) => (
               <li key={index} className='flex justify-between items-center'>
                 <span className='flex-grow'>{file.name}</span>
-                <IconButton onClick={() => handleDeleteFile(index)}>
+                <IconButton onClick={() => handleDeleteFile(index)} disabled={!enableEditing}>
                   <DeleteIcon />
                 </IconButton>
               </li>
@@ -64,7 +66,7 @@ export default function InputSelector({
           }}
         />
         <label htmlFor='fileInput'>
-          <Button variant='outlined' color='primary' component='span'>
+          <Button variant='outlined' color='primary' component='span' disabled={!enableEditing}>
             Seleccionar
           </Button>
         </label>
