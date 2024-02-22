@@ -67,6 +67,9 @@ export default function Master() {
     const keysPerUser = Math.ceil(keys.length / clusterUsers.length)
     // userKeys is an object that contains the keys that each user will reduce
     const userKeys: { [key: UserID]: ReducerState['reduceKeys'] } = {} //TODO: check if string is the correct type, can be a serializable type
+    users.forEach((user) => {
+      userKeys[user] = {}
+    })
     let userIndex = 0
 
     // Divide the keys between the users
@@ -118,8 +121,8 @@ export default function Master() {
       sendDirectMessage(user, {
         type: 'EJECUTAR_REDUCE',
         payload: {
-          reduceKeys: userKeys[user],
-          sendKeys: sendKeys[user],
+          reduceKeys: userKeys[user] || {},
+          sendKeys: sendKeys[user] || {},
           receiveKeysFrom: receiveKeysFrom[user] || [],
         },
       }),
