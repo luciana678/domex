@@ -33,10 +33,15 @@ const envFilePath = '.env.local'
 const existingEnvVars = readFileSync(envFilePath, 'utf8')
 
 // Replace the value of NEXT_PUBLIC_SERVER_URL with the obtained IP address
-const updatedEnvVars = existingEnvVars.replace(
+let updatedEnvVars = existingEnvVars.replace(
   /NEXT_PUBLIC_SERVER_URL=.*/,
   `NEXT_PUBLIC_SERVER_URL="http://${privateIPWifi}:5000"`,
 )
+
+// If NEXT_PUBLIC_SERVER_URL is not present, add it to the end of the file
+if (!updatedEnvVars.includes('NEXT_PUBLIC_SERVER_URL')) {
+  updatedEnvVars += `\nNEXT_PUBLIC_SERVER_URL="http://${privateIPWifi}:5000"`
+}
 
 writeFileSync(envFilePath, updatedEnvVars)
 
