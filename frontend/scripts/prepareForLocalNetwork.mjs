@@ -19,8 +19,11 @@ function obtenerIPPrivadaWiFi() {
   return 'Cannot obtain the private IP address of Wi-Fi interface'
 }
 
+const isValidIP = (ip) => /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)
+
 const ipPrivadaWiFi = obtenerIPPrivadaWiFi()
-if (!ipPrivadaWiFi) throw new Error('Cannot obtain the private IP address of Wi-Fi interface')
+if (!ipPrivadaWiFi || !isValidIP(ipPrivadaWiFi))
+  throw new Error('Cannot obtain the private IP address of Wi-Fi interface')
 
 // Replace .env file with the obtained IP address in NEXT_PUBLIC_SERVER_URL
 import { readFileSync, writeFileSync } from 'fs'
