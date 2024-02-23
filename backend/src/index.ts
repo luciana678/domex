@@ -3,7 +3,7 @@ import './config/env.config.js'
 import cors from 'cors'
 import express, { type Request, type Response } from 'express'
 import http from 'node:http'
-import { PORT } from './constants/envVars.js'
+import { HOST, PORT } from './constants/envVars.js'
 import LoggerService from './services/logger.services.js'
 import { createIOServer } from './config/io.config.js'
 import packageJSON from '../package.json' assert { type: 'json' }
@@ -30,8 +30,8 @@ app.get('/health', (req: Request, res: Response) => {
   }
 })
 
-server.listen(PORT, () => {
-  LoggerService.info(`🚀 server started at http://localhost:${PORT}`)
+server.listen(PORT, HOST, () => {
+  LoggerService.info(`🚀 server started at http://${HOST}:${PORT}`)
 })
 
 export { app, io }
