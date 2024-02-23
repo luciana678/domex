@@ -3,9 +3,12 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
     "build": "next build",
+    "dev": "next dev",
     "start": "next start",
+    "prepare:network": "node ./scripts/prepareForLocalNetwork.mjs",
+    "dev:network": "npm run prepare:network && npm run dev -- -H 0.0.0.0",
+    "start:network": "npm run prepare:network && npm run build && npm run start -H 0.0.0.0",
     "lint": "next lint",
     "prettier:check": "prettier --check .",
     "prettier:format": "prettier --write ."
