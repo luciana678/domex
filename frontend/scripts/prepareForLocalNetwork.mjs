@@ -1,30 +1,53 @@
 import { networkInterfaces } from 'os'
 
+const isValidIP = (ip) => /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)
+
 // Function to obtain the private IP address of the Wi-Fi interface
 function getPrivateIPWiFi() {
-  const interfaces = os.networkInterfaces()
+  const interfaces = networkInterfaces()
 
-  // Look for the Wi-Fi interface
-  const wifiInterface = interfaces['Wi-Fi'] || interfaces['wlan0'] || interfaces['wlp2s0'] // This may vary depending on the operating system
+  // Common keywords for Wi-Fi interfaces
+  const wifiKeywords = ['wireless', 'wifi', 'wlan', 'wi-fi', 'wlp', 'wlx']
 
-  if (!wifiInterface) {
-    return 'Wi-Fi interface not found'
-  }
-  // Iterate over the addresses of the Wi-Fi interface
-  for (const detail of wifiInterface) {
-    // Filter IPv4 addresses that are not local
-    if (!detail.internal && detail.family === 'IPv4') {
-      return detail.address
+  // Iterate over all network interfaces
+  for (const interfaceName of Object.keys(interfaces)) {
+    // Check if the interface name contains any of the Wi-Fi keywords (case-insensitive)
+    if (wifiKeywords.some((keyword) => new RegExp(keyword, 'i').test(interfaceName))) {
+      // Iterate over the addresses of the Wi-Fi interface
+      for (const detail of interfaces[interfaceName]) {
+        // Filter IPv4 addresses that are not internal
+        if (!detail.internal && detail.family === 'IPv4' && isValidIP(detail.address)) {
+          return detail.address
+        }
+      }
     }
   }
+
   return 'Cannot obtain the private IP address of Wi-Fi interface'
 }
 
-const isValidIP = (ip) => /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)
-
 const privateIPWifi = getPrivateIPWiFi()
+
 if (!privateIPWifi || !isValidIP(privateIPWifi))
-  throw new Error('Cannot obtain the private IP address of Wi-Fi interface')
+  throw new Error(`
+Cannot obtain the private IP address of Wi-Fi interface. Please check your network connection:
+- Ensure that you are connected to a Wi-Fi network
+- Ensure that the Wi-Fi interface is up and running
+- Ensure that the Wi-Fi interface has a valid private IP address
+
+If you are in Linux, you can check the interfaces and their IP addresses using the following command:
+$ ip -br -c a
+
+If you are in macOS, you can run the following 
+$ ipconfig getifaddr en0
+
+If you are in Windows, you can run the following command to check the private IP address of the Wi-Fi interface:
+$ ipconfig
+
+------------------------------ 
+Please copy the private IP address of the Wi-Fi interface and replace the value of NEXT_PUBLIC_SERVER_URL in the .env file with the obtained IP address.
+------------------------------
+`)
 
 // Replace .env file with the obtained IP address in NEXT_PUBLIC_SERVER_URL
 import { readFileSync, writeFileSync } from 'fs'
