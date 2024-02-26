@@ -44,6 +44,8 @@ const useInitializePeers = () => {
         // TODO: handle the data here (e.g. dispatch an action)
         decodedData['userID'] = userID
 
+        console.log(decodedData)
+
         handleActionSignal({ action: decodedData, setClusterUsers })
         dispatchMapReduce(decodedData)
       }
