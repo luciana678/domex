@@ -38,7 +38,7 @@ export default function Slave() {
 
   const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython()
 
-  const runCode = useCallback(async () => {
+  const runCode = async () => {
     const readCombinerResults = async (): Promise<CombinerOuputFile> => {
       const mapResults = JSON.parse((await readFile('/map_results.txt')) || '')
       const combinerResults: CombinerOuputFile = JSON.parse(
@@ -71,17 +71,7 @@ export default function Slave() {
       },
     }
     sendDirectMessage(roomOwner?.userID as UserID, data)
-  }, [
-    mapReduceState.code.combinerCode,
-    mapReduceState.code.mapCode,
-    mapReduceState.code.reduceCode,
-    readFile,
-    roomOwner?.userID,
-    runPython,
-    selectedFiles,
-    sendDirectMessage,
-    writeFile,
-  ])
+  }
 
   useEffect(() => {
     // todavía no se recibió el código map a ejecutar
@@ -91,7 +81,7 @@ export default function Slave() {
     if (!isReady) return
 
     runCode()
-  }, [mapReduceState.code, isReady, runCode])
+  }, [mapReduceState.code, isReady])
 
   useEffect(() => {
     // That means that the combiner has been executed. Now we can send the keys to the other users (reducers)
