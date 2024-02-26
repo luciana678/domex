@@ -164,6 +164,3 @@ export default function Master() {
     </main>
   )
 }
-function forEach(arg0: (userFrom: UserID) => void) {
-  throw new Error('Function not implemented.')
-}
