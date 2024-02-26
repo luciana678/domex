@@ -7,7 +7,7 @@ import useRoom from '@/hooks/useRoom'
 import { CombinerOuputFile, ReduceOutputFile, UserID } from '@/types'
 import { PY_MAIN_CODE } from '@/utils/python/tmp'
 import { Button } from '@mui/material'
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { usePython } from 'react-py'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
@@ -38,17 +38,7 @@ export default function Slave() {
 
   const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython()
 
-  useEffect(() => {
-    // todavía no se recibió el código map a ejecutar
-    if (mapReduceState.code.mapCode == placeholdersFunctions.map.code) return
-
-    // todavía no se puede ejecutar código python
-    if (!isReady) return
-
-    runCode()
-  }, [mapReduceState.code, isReady])
-
-  const runCode = async () => {
+  const runCode = useCallback(async () => {
     const readCombinerResults = async (): Promise<CombinerOuputFile> => {
       const mapResults = JSON.parse((await readFile('/map_results.txt')) || '')
       const combinerResults: CombinerOuputFile = JSON.parse(
@@ -81,7 +71,27 @@ export default function Slave() {
       },
     }
     sendDirectMessage(roomOwner?.userID as UserID, data)
-  }
+  }, [
+    mapReduceState.code.combinerCode,
+    mapReduceState.code.mapCode,
+    mapReduceState.code.reduceCode,
+    readFile,
+    roomOwner?.userID,
+    runPython,
+    selectedFiles,
+    sendDirectMessage,
+    writeFile,
+  ])
+
+  useEffect(() => {
+    // todavía no se recibió el código map a ejecutar
+    if (mapReduceState.code.mapCode == placeholdersFunctions.map.code) return
+
+    // todavía no se puede ejecutar código python
+    if (!isReady) return
+
+    runCode()
+  }, [mapReduceState.code, isReady, runCode])
 
   useEffect(() => {
     // That means that the combiner has been executed. Now we can send the keys to the other users (reducers)
