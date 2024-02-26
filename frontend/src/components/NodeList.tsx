@@ -24,7 +24,7 @@ export default function NodeList() {
             </Typography>
             <button
               onClick={() => {
-                sendDirectMessage(node.userID, 'Hello')
+                sendDirectMessage(node.userID, { data: 'Hello' })
               }}>
               Send message
             </button>
