@@ -1,30 +1,5 @@
-import { networkInterfaces } from 'os'
-
-const isValidIP = (ip) => /^(\d{1,3}\.){3}\d{1,3}$/.test(ip)
-
-// Function to obtain the private IP address of the Wi-Fi interface
-function getPrivateIPWiFi() {
-  const interfaces = networkInterfaces()
-
-  // Common keywords for Wi-Fi interfaces
-  const wifiKeywords = ['wireless', 'wifi', 'wlan', 'wi-fi', 'wlp', 'wlx']
-
-  // Iterate over all network interfaces
-  for (const interfaceName of Object.keys(interfaces)) {
-    // Check if the interface name contains any of the Wi-Fi keywords (case-insensitive)
-    if (wifiKeywords.some((keyword) => new RegExp(keyword, 'i').test(interfaceName))) {
-      // Iterate over the addresses of the Wi-Fi interface
-      for (const detail of interfaces[interfaceName]) {
-        // Filter IPv4 addresses that are not internal
-        if (!detail.internal && detail.family === 'IPv4' && isValidIP(detail.address)) {
-          return detail.address
-        }
-      }
-    }
-  }
-
-  return 'Cannot obtain the private IP address of Wi-Fi interface'
-}
+import { readFileSync, writeFileSync } from 'fs'
+import { getPrivateIPWiFi, isValidIP } from './ipUtils.mjs'
 
 const privateIPWifi = getPrivateIPWiFi()
 
@@ -50,8 +25,6 @@ Please copy the private IP address of the Wi-Fi interface and replace the value 
 `)
 
 // Replace .env file with the obtained IP address in NEXT_PUBLIC_SERVER_URL
-import { readFileSync, writeFileSync } from 'fs'
-
 const envFilePath = '.env.local'
 const existingEnvVars = readFileSync(envFilePath, 'utf8')
 
