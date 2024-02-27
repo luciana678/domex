@@ -4,4 +4,4 @@ logs
 .env*
 !.env.example
 .vscode
-cert
+certs
