@@ -10,7 +10,7 @@
   "scripts": {
     "compile": "tsc",
     "start": "node dist/src/index.js",
-    "dev": "console-ninja nodemon src/index.ts",
+    "dev": "nodemon src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint . --ext .ts --ext .js",
     "prettier:check": "prettier --check .",
