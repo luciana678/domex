@@ -2,17 +2,17 @@ import './config/env.config.js'
 
 import cors from 'cors'
 import express, { type Request, type Response } from 'express'
-import { createServer as createServerHTTPS } from 'node:https'
-import { createServer as createServerHTTP } from 'node:http'
-import { HOST, HTTPS, PORT } from './constants/envVars.js'
-import LoggerService from './services/logger.services.js'
-import { createIOServer } from './config/io.config.js'
-import packageJSON from '../package.json' assert { type: 'json' }
 import { readFileSync } from 'node:fs'
+import { createServer as createServerHTTP } from 'node:http'
+import { createServer as createServerHTTPS } from 'node:https'
+import packageJSON from '../package.json' assert { type: 'json' }
+import { createIOServer } from './config/io.config.js'
+import { HOST, HTTPS, PORT, SERVER_CERT_NAME, SERVER_KEY_NAME } from './constants/envVars.js'
+import LoggerService from './services/logger.services.js'
 
 const options = {
-  key: readFileSync('./certs/server.key'),
-  cert: readFileSync('./certs/server.crt'),
+  key: readFileSync(`./certs/${SERVER_KEY_NAME}`),
+  cert: readFileSync(`./certs/${SERVER_CERT_NAME}`),
 }
 
 const app = express()
