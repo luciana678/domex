@@ -30,28 +30,35 @@ class Context:
 
 context = Context()
 
+sizes = {}
+
 if os.path.exists('/reduce_keys.json'):
+
   with open('/reduce_code.py') as reduce_code:
     exec(reduce_code.read())
 
   with open('/reduce_keys.json') as reduce_keys_file:
     reduce_keys = json.load(reduce_keys_file)
+  sizes['reduceInput'] = os.path.getsize("/reduce_keys.json")
 
   context.reduce(reduce_keys)
 
   with open('/reduce_results.txt', 'w') as result_file:
     json.dump(context.reduce_results, result_file)
+  sizes['reduceOutput'] = os.path.getsize("/reduce_results.txt")
 
 else:
 
   with open('/map_code.py') as map_code:
     exec(map_code.read())
-
+    
   with open('/input.txt') as input:
     results = list(map(fmap, input.readlines()))
+  sizes['mapInput'] = os.path.getsize("/input.txt")
 
   with open('/map_results.txt', 'w') as result_file:
     json.dump(context.map_results, result_file)
+  sizes['mapOutput'] = os.path.getsize('/map_results.txt')
 
   with open('/combiner_code.py') as combiner_code:
     exec(combiner_code.read())
@@ -60,5 +67,8 @@ else:
 
   with open('/combiner_results.txt', 'w') as result_file:
     json.dump(context.combine_results, result_file) 
+  sizes['combinerOutput'] = os.path.getsize('/combiner_results.txt')
 
+with open('/sizes.json', 'w') as sizes_file:
+  json.dump(sizes, sizes_file)
 `

@@ -4,13 +4,21 @@ import Results from '@/components/Results'
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
-import { ReducerState, UserID } from '@/types'
+import {
+  FinalResults,
+  KeyValuesCount,
+  MapCombinerResults,
+  ReducerState,
+  UserID,
+  UserResults,
+} from '@/types'
 import { Button } from '@mui/material'
 import { useEffect, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
 import useMapReduce from '@/hooks/useMapReduce'
+import { MasterStatistics } from '@/components/Statistics'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -31,11 +39,22 @@ export default function Master() {
   const { mapReduceState } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const [allUsersReady, setAllUsersReady] = useState(false)
-  const [finished, setFinished] = useState(false)
+  const [finalResults, setFinalResults] = useState<FinalResults>({
+    mapTotalCount: {},
+    combinerTotalCount: {},
+  })
+  const finished = !!Object.keys(finalResults.mapTotalCount).length
 
   const [mapCode, setMapCode] = useState(WordCountCode.map)
   const [combinerCode, setCombinerCode] = useState(WordCountCode.combiner)
   const [reduceCode, setReduceCode] = useState(WordCountCode.reduce)
+
+  const getTotalCounts = (totalCounts: KeyValuesCount, result: UserResults) =>
+    Object.values(result).forEach((keyList) => {
+      Object.entries(keyList).forEach(([key, count]) => {
+        totalCounts[key] = (totalCounts[key] || 0) + count
+      })
+    })
 
   const handleIniciarProcesamiento = () => {
     broadcastMessage({ type: 'SET_CODES', payload: { mapCode, combinerCode, reduceCode } })
@@ -53,17 +72,16 @@ export default function Master() {
     if (!Object.keys(mapReduceState.combinerResults).length) return
     if (Object.keys(mapReduceState.combinerResults).length < clusterUsers.length) return
 
-    const totalCounts: { [key: string]: number } = {}
+    // Count the total of each key for all the map results
+    const mapTotalCount: KeyValuesCount = {}
+    getTotalCounts(mapTotalCount, mapReduceState.mapResults)
 
     // Count the total of each key for all the combiners results
-    Object.values(mapReduceState.combinerResults).forEach((keyList) => {
-      Object.entries(keyList).forEach(([key, count]) => {
-        totalCounts[key] = (totalCounts[key] || 0) + count
-      })
-    })
+    const combinerTotalCount: KeyValuesCount = {}
+    getTotalCounts(combinerTotalCount, mapReduceState.combinerResults)
 
     const users = Object.keys(mapReduceState.combinerResults) as UserID[]
-    const keys = Object.keys(totalCounts)
+    const keys = Object.keys(combinerTotalCount)
     const keysPerUser = Math.ceil(keys.length / clusterUsers.length)
     // userKeys is an object that contains the keys that each user will reduce
     const userKeys: { [key: UserID]: ReducerState['reduceKeys'] } = {} //TODO: check if string is the correct type, can be a serializable type
@@ -75,7 +93,7 @@ export default function Master() {
     // Divide the keys between the users
     for (let i = 0; i < keys.length; i += keysPerUser) {
       userKeys[users[userIndex]] = Object.fromEntries(
-        keys.slice(i, i + keysPerUser).map((key) => [key, totalCounts[key]]),
+        keys.slice(i, i + keysPerUser).map((key) => [key, combinerTotalCount[key]]),
       )
       userIndex++
     }
@@ -128,8 +146,11 @@ export default function Master() {
       }),
     )
 
-    setFinished(true)
-  }, [clusterUsers.length, finished, sendDirectMessage, mapReduceState.combinerResults])
+    setFinalResults({
+      mapTotalCount,
+      combinerTotalCount,
+    })
+  }, [clusterUsers.length, sendDirectMessage, mapReduceState.combinerResults, finished])
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
@@ -160,7 +181,8 @@ export default function Master() {
         disabled={!allUsersReady || finished}>
         Iniciar procesamiento
       </Button>
-      <Results className='flex flex-col w-full mt-5' data={mapReduceState.resultadoFinal} />
+      <Results className='flex flex-col w-full mt-5' data={mapReduceState.reduceResult} />
+      {finished && <MasterStatistics {...finalResults} />}
     </main>
   )
 }
