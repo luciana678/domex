@@ -1,0 +1,28 @@
+version: '3'
+
+services:
+  cert-generator:
+    build:
+      context: .
+      dockerfile: Dockerfile-cert-generator
+    volumes:
+      - ./certs:/certs
+      - ./scripts/generate_cert.sh:/generate_cert.sh
+    command: sh -c "./generate_cert.sh"
+
+  backend:
+    build:
+      context: .
+      dockerfile: prod.Dockerfile
+    ports:
+      - '5443:5000'
+    volumes:
+      - ./certs/server.key:/usr/src/app/certs/server.key
+      - ./certs/server.crt:/usr/src/app/certs/server.crt
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      HOST: 0.0.0.0
+      HTTPS: true
+    depends_on:
+      - cert-generator

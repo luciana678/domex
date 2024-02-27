@@ -1,0 +1,14 @@
+certs
+dist
+.vscode
+node_modules/*
+
+# local env files
+.env.local
+
+docker
+
+logs
+README.md
+.gitignore
+Dockerfile
