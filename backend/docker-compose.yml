@@ -21,7 +21,7 @@ services:
     ports:
       - '5443:5000'
     volumes:
-      - ./certs:/usr/src/app/certs
+      - ./certs:/app/certs
     environment:
       NODE_ENV: production
       PORT: 5000
