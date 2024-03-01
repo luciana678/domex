@@ -4,7 +4,7 @@ import useInitializeRoom from '@/hooks/useInitializeRoom'
 import useRoom from '@/hooks/useRoom'
 import { RoomID } from '@/types'
 import { Button, TextField } from '@mui/material'
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 export default function Home() {
   useInitializeRoom()
@@ -22,6 +22,18 @@ export default function Home() {
 
     return thereIsUserName
   }
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/health`)
+      .then((res) => {
+        console.log({ res, value: res.json() })
+      })
+      .catch((err) => {
+        console.log(err)
+      })
+
+    console.log({ env: process.env, var: process.env.NEXT_PUBLIC_SERVER_URL })
+  }, [])
 
   const handleCreateCluster = () => {
     const thereIsUserName = checkUserName()
