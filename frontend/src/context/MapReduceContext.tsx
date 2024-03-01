@@ -1,7 +1,7 @@
 'use client'
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
-import { ReducerState, UserID } from '@/types'
+import { ReducerState, Sizes, UserID } from '@/types'
 import { PropsWithChildren, createContext, useReducer } from 'react'
 
 export type MapReduceContextType = {
@@ -24,7 +24,10 @@ export type Action = {
   | { type: 'SET_CODES'; payload: ReducerState['code'] }
   | {
       type: 'MAP_COMBINER_EJECUTADO'
-      payload: { combinerResults: { [innerKey: string]: number } }
+      payload: {
+        combinerResults: { [innerKey: string]: number }
+        mapResults: { [innerKey: string]: number }
+      }
     }
   | {
       type: 'EJECUTAR_REDUCE'
@@ -44,6 +47,14 @@ export type Action = {
   | { type: 'READY_TO_EXECUTE' }
 )
 
+export const initialSizes: Sizes = {
+  mapInput: 0,
+  mapOutput: 0,
+  combinerOutput: 0,
+  reduceInput: 0,
+  reduceOutput: 0,
+}
+
 const initialState: ReducerState = {
   code: {
     mapCode: placeholdersFunctions.map.code,
@@ -51,11 +62,13 @@ const initialState: ReducerState = {
     reduceCode: placeholdersFunctions.reduce.code,
   },
   combinerResults: {},
+  mapResults: {},
   reduceKeys: {},
   sendKeys: [] as unknown as ReducerState['sendKeys'],
   clavesRecibidas: {},
   receiveKeysFrom: null,
-  resultadoFinal: {},
+  reduceResult: {},
+  sizes: initialSizes,
 }
 
 const MapReduceContext = createContext<MapReduceContextType>({
@@ -73,6 +86,10 @@ const reducer = (state: ReducerState, action: Action) => {
         combinerResults: {
           ...state.combinerResults,
           [action.userID]: action.payload.combinerResults,
+        },
+        mapResults: {
+          ...state.mapResults,
+          [action.userID]: action.payload.mapResults,
         },
       }
     case actionTypes.EJECUTAR_REDUCE:
@@ -92,9 +109,19 @@ const reducer = (state: ReducerState, action: Action) => {
         },
       }
     case actionTypes.RESULTADO_FINAL:
+      const currentSizes = state.sizes
+      const newSizes = action.payload.sizes
+      for (const key in currentSizes) {
+        newSizes[key] += currentSizes[key]
+      }
+      const newReduceResult = {
+        ...state.reduceResult,
+        ...action.payload.reduceResult,
+      }
       return {
         ...state,
-        resultadoFinal: { ...state.resultadoFinal, ...action.payload },
+        reduceResult: newReduceResult,
+        sizes: newSizes,
       }
     case actionTypes.READY_TO_EXECUTE:
       return state

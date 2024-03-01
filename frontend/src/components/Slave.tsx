@@ -4,25 +4,32 @@ import InputSelector from '@/components/InputSelector'
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
-import { CombinerOuputFile, ReduceOutputFile, UserID } from '@/types'
+import { KeyValues, MapCombinerResults, KeyValue, UserID, Sizes } from '@/types'
 import { PY_MAIN_CODE } from '@/utils/python/tmp'
 import { Button } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { usePython } from 'react-py'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
 import useMapReduce from '@/hooks/useMapReduce'
+import { initialSizes } from '@/context/MapReduceContext'
 
 export default function Slave() {
   const { roomOwner, roomSession } = useRoom()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const { mapReduceState } = useMapReduce()
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const [combinerResults, setCombinerResults] = useState<CombinerOuputFile>({})
-  const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
+  const [mapCombinerResults, setMapCombinerResults] = useState<MapCombinerResults>({
+    mapResults: {},
+    combinerResults: {},
+  })
+  const mapCombinerExecuted =
+    selectedFiles.length > 0 ? Object.keys(mapCombinerResults.mapResults).length > 0 : true
+  const combinerResults = mapCombinerResults.combinerResults
   const [isReadyToExecute, setIsReadyToExecute] = useState(false)
   const [finished, setFinished] = useState(false)
+  const sizes = useRef<Sizes>(initialSizes)
 
   async function concatenateFiles(files: File[]) {
     try {
@@ -36,38 +43,46 @@ export default function Slave() {
     }
   }
 
+  const updateSizes = async () => {
+    const newSizes: Sizes = JSON.parse((await readFile('/sizes.json')) || '')
+    for (const key in newSizes) {
+      sizes.current[key] = newSizes[key]
+    }
+  }
+
+  const countKeyValues = (combinerResults: KeyValues) =>
+    Object.keys(combinerResults).reduce((result: { [key: string]: number }, key: string) => {
+      result[key] = combinerResults[key].length
+      return result
+    }, {})
+
   const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython()
 
   const runCode = async () => {
-    const readCombinerResults = async (): Promise<CombinerOuputFile> => {
-      const mapResults = JSON.parse((await readFile('/map_results.txt')) || '')
-      const combinerResults: CombinerOuputFile = JSON.parse(
-        (await readFile('/combiner_results.txt')) || '',
-      )
-      setCombinerResults(combinerResults)
-      return combinerResults
+    const readMapCombinerResults = async (): Promise<MapCombinerResults> => {
+      const mapResults: KeyValues = JSON.parse((await readFile('/map_results.txt')) || '')
+      const combinerResults: KeyValues = JSON.parse((await readFile('/combiner_results.txt')) || '')
+      return { mapResults, combinerResults }
     }
 
-    setMapCombinerExecuted(false)
+    setMapCombinerResults({
+      mapResults: {},
+      combinerResults: {},
+    })
     await writeFile('/input.txt', await concatenateFiles(selectedFiles))
     await writeFile('/map_code.py', mapReduceState.code.mapCode)
     await writeFile('/combiner_code.py', mapReduceState.code.combinerCode)
     await writeFile('/reduce_code.py', mapReduceState.code.reduceCode)
     await runPython(PY_MAIN_CODE)
-    const combinerResults = await readCombinerResults()
-
-    setMapCombinerExecuted(true)
+    const mapCombinerResults = await readMapCombinerResults()
+    setMapCombinerResults(mapCombinerResults)
+    await updateSizes()
 
     const data = {
       type: 'MAP_COMBINER_EJECUTADO',
       payload: {
-        combinerResults: Object.keys(combinerResults).reduce(
-          (result: { [key: string]: number }, key: string) => {
-            result[key] = combinerResults[key].length
-            return result
-          },
-          {},
-        ),
+        combinerResults: countKeyValues(mapCombinerResults.combinerResults),
+        mapResults: countKeyValues(mapCombinerResults.mapResults),
       },
     }
     sendDirectMessage(roomOwner?.userID as UserID, data)
@@ -125,7 +140,7 @@ export default function Slave() {
     })
 
     // Discard the keys that the user will not reduce
-    const newReduceKeys: CombinerOuputFile = {}
+    const newReduceKeys: KeyValues = {}
     Object.keys(mapReduceState.reduceKeys).forEach(
       (key) => (newReduceKeys[key] = newCombinerResults[key]),
     )
@@ -135,11 +150,12 @@ export default function Slave() {
       await runPython(PY_MAIN_CODE)
 
       const data = (await readFile('/reduce_results.txt')) || ''
-      const resultados: ReduceOutputFile = JSON.parse(data)
+      const reduceResult: KeyValue = JSON.parse(data)
+      await updateSizes()
 
       sendDirectMessage(roomOwner?.userID as UserID, {
         type: 'RESULTADO_FINAL',
-        payload: resultados,
+        payload: { reduceResult, sizes: sizes.current },
       })
     }
 
@@ -151,14 +167,10 @@ export default function Slave() {
     finished,
     isReady,
     mapCombinerExecuted,
-    readFile,
     roomOwner,
-    runPython,
-    sendDirectMessage,
     mapReduceState.clavesRecibidas,
     mapReduceState.receiveKeysFrom,
     mapReduceState.reduceKeys,
-    writeFile,
   ])
 
   const readyToExecute = () => {
@@ -167,8 +179,6 @@ export default function Slave() {
       type: 'READY_TO_EXECUTE',
     })
   }
-
-  const startExecution = () => isReady && runCode()
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
