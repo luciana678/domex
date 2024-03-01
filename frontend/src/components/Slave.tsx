@@ -46,7 +46,7 @@ export default function Slave() {
   const updateSizes = async () => {
     const newSizes: Sizes = JSON.parse((await readFile('/sizes.json')) || '')
     for (const key in newSizes) {
-      sizes.current[key] = newSizes[key]
+      sizes.current[key as keyof Sizes] = newSizes[key as keyof Sizes]
     }
   }
 

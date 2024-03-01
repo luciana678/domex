@@ -43,7 +43,10 @@ export type Action = {
         [key: string]: unknown[]
       }
     }
-  | { type: 'RESULTADO_FINAL'; payload: ReducerState['resultadoFinal'] }
+  | {
+      type: 'RESULTADO_FINAL'
+      payload: { sizes: Sizes; reduceResult: ReducerState['reduceResult'] }
+    }
   | { type: 'READY_TO_EXECUTE' }
 )
 
@@ -112,7 +115,7 @@ const reducer = (state: ReducerState, action: Action) => {
       const currentSizes = state.sizes
       const newSizes = action.payload.sizes
       for (const key in currentSizes) {
-        newSizes[key] += currentSizes[key]
+        newSizes[key as keyof Sizes] += currentSizes[key as keyof Sizes]
       }
       const newReduceResult = {
         ...state.reduceResult,

@@ -1,6 +1,6 @@
 import useMapReduce from '@/hooks/useMapReduce'
 import useRoom from '@/hooks/useRoom'
-import { FinalResults, KeyValuesCount } from '@/types'
+import { FinalResults, KeyValuesCount, UserID } from '@/types'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
@@ -10,7 +10,7 @@ export function StatisticsCard({
   statistics,
 }: {
   title: string
-  statistics: { label: string; value: string }[]
+  statistics: { label: string; value: string | number }[]
 }) {
   return (
     <Card className='w-[400px] bg-white shadow-lg m-2'>
@@ -34,7 +34,7 @@ export function MasterStatistics({ mapTotalCount, combinerTotalCount }: FinalRes
   const sizes = mapReduceState.sizes || {}
   const combinerResults = mapReduceState.combinerResults
   const cantidadNodosMap = Object.keys(combinerResults).filter(
-    (user) => Object.values(combinerResults[user]).length > 0,
+    (user) => Object.values(combinerResults[user as UserID]).length > 0,
   ).length
 
   const sumValues = (dict: KeyValuesCount) =>

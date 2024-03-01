@@ -1,24 +1,17 @@
 'use client'
 
 import Results from '@/components/Results'
+import { MasterStatistics } from '@/components/Statistics'
 import { placeholdersFunctions } from '@/constants/functionCodes'
+import useMapReduce from '@/hooks/useMapReduce'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
-import {
-  FinalResults,
-  KeyValuesCount,
-  MapCombinerResults,
-  ReducerState,
-  UserID,
-  UserResults,
-} from '@/types'
+import { FinalResults, KeyValuesCount, ReducerState, UserID, UserResults } from '@/types'
 import { Button } from '@mui/material'
 import { useEffect, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
-import useMapReduce from '@/hooks/useMapReduce'
-import { MasterStatistics } from '@/components/Statistics'
 
 const WordCountCode = {
   map: `def fmap(value):
