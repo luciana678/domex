@@ -33,9 +33,14 @@ const usePeers = () => {
     (userID: UserID, data: any) => {
       const peer = peers[userID]
 
-      if (peer) {
-        peer.send(JSON.stringify(data))
-      }
+      if (!peer) return 0
+
+      const payloadSize = data.payload ? Buffer.byteLength(JSON.stringify(data.payload)) : 0
+      data.payloadSize = payloadSize
+
+      peer.send(JSON.stringify(data))
+
+      return payloadSize
     },
     [peers],
   )

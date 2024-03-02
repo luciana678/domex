@@ -48,9 +48,10 @@ export type ReducerState = {
   sizes: Sizes
   clavesRecibidas: { [user: UserID]: { [innerKey: string]: unknown[] } }
   receiveKeysFrom: UserID[] | null
-  sendKeys: {
+  sendKeys: null | {
     [userToSendKeys: UserID]: string[]
   }
+  mapNodesCount: int
 }
 
 export type KeyValuesCount = {
@@ -75,9 +76,16 @@ export type MapCombinerResults = {
 }
 
 export type Sizes = {
+  inputFiles: int
   mapInput: int
   mapOutput: int
   combinerOutput: int
+  totalKeysSent: int
+  totalValuesSent: int
+  totalBytesSent: int
+  totalKeysReceived: int
+  totalValuesReceived: int
+  totalBytesReceived: int
   reduceInput: int
   reduceOutput: int
 }
@@ -85,4 +93,12 @@ export type Sizes = {
 export type FinalResults = {
   mapTotalCount: KeyValuesCount
   combinerTotalCount: KeyValuesCount
+  sizes: Sizes
+  mapNodesCount?: int
+  reducerNodesCount?: int
+}
+
+export type Statistics = {
+  title: string
+  statistics: { label: string; value: string | number }[]
 }

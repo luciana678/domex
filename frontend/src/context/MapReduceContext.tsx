@@ -1,7 +1,7 @@
 'use client'
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
-import { ReducerState, Sizes, UserID } from '@/types'
+import { KeyValuesCount, ReducerState, Sizes, UserID } from '@/types'
 import { PropsWithChildren, createContext, useReducer } from 'react'
 
 export type MapReduceContextType = {
@@ -20,13 +20,15 @@ export const actionTypes = {
 
 export type Action = {
   userID: UserID
+  payload: unknown
+  payloadSize: number
 } & (
   | { type: 'SET_CODES'; payload: ReducerState['code'] }
   | {
       type: 'MAP_COMBINER_EJECUTADO'
       payload: {
-        combinerResults: { [innerKey: string]: number }
-        mapResults: { [innerKey: string]: number }
+        combinerResults: KeyValuesCount
+        mapResults: KeyValuesCount
       }
     }
   | {
@@ -51,9 +53,16 @@ export type Action = {
 )
 
 export const initialSizes: Sizes = {
+  inputFiles: 0,
   mapInput: 0,
   mapOutput: 0,
   combinerOutput: 0,
+  totalKeysSent: 0,
+  totalValuesSent: 0,
+  totalBytesSent: 0,
+  totalKeysReceived: 0,
+  totalValuesReceived: 0,
+  totalBytesReceived: 0,
   reduceInput: 0,
   reduceOutput: 0,
 }
@@ -67,11 +76,12 @@ const initialState: ReducerState = {
   combinerResults: {},
   mapResults: {},
   reduceKeys: {},
-  sendKeys: [] as unknown as ReducerState['sendKeys'],
+  sendKeys: null,
   clavesRecibidas: {},
   receiveKeysFrom: null,
   reduceResult: {},
   sizes: initialSizes,
+  mapNodesCount: 0,
 }
 
 const MapReduceContext = createContext<MapReduceContextType>({
@@ -106,16 +116,20 @@ const reducer = (state: ReducerState, action: Action) => {
     case actionTypes.RECIBIR_CLAVES:
       return {
         ...state,
+        sizes: {
+          ...state.sizes,
+          totalBytesReceived: state.sizes.totalBytesReceived + action.payloadSize,
+        },
         clavesRecibidas: {
           ...state.clavesRecibidas,
           [action.userID]: action.payload,
         },
       }
     case actionTypes.RESULTADO_FINAL:
-      const currentSizes = state.sizes
-      const newSizes = action.payload.sizes
-      for (const key in currentSizes) {
-        newSizes[key as keyof Sizes] += currentSizes[key as keyof Sizes]
+      const currentSizes = { ...state.sizes }
+      const newSizes = { ...action.payload.sizes }
+      for (const key in newSizes) {
+        currentSizes[key as keyof Sizes] += newSizes[key as keyof Sizes]
       }
       const newReduceResult = {
         ...state.reduceResult,
@@ -124,7 +138,8 @@ const reducer = (state: ReducerState, action: Action) => {
       return {
         ...state,
         reduceResult: newReduceResult,
-        sizes: newSizes,
+        sizes: currentSizes,
+        mapNodesCount: newSizes.inputFiles ? state.mapNodesCount + 1 : state.mapNodesCount,
       }
     case actionTypes.READY_TO_EXECUTE:
       return state

@@ -1,7 +1,7 @@
 'use client'
 
 import Results from '@/components/Results'
-import { MasterStatistics } from '@/components/Statistics'
+import { Statistics } from '@/components/Statistics'
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import useMapReduce from '@/hooks/useMapReduce'
 import usePeers from '@/hooks/usePeers'
@@ -12,6 +12,8 @@ import { useEffect, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
+import { initialSizes } from '@/context/MapReduceContext'
+import useStatistics from '@/hooks/useStatisticts'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -35,12 +37,15 @@ export default function Master() {
   const [finalResults, setFinalResults] = useState<FinalResults>({
     mapTotalCount: {},
     combinerTotalCount: {},
+    sizes: initialSizes,
   })
   const finished = !!Object.keys(finalResults.mapTotalCount).length
 
   const [mapCode, setMapCode] = useState(WordCountCode.map)
   const [combinerCode, setCombinerCode] = useState(WordCountCode.combiner)
   const [reduceCode, setReduceCode] = useState(WordCountCode.reduce)
+
+  const statistics = useStatistics(finalResults)
 
   const getTotalCounts = (totalCounts: KeyValuesCount, result: UserResults) =>
     Object.values(result).forEach((keyList) => {
@@ -102,10 +107,11 @@ export default function Master() {
       Object.keys(mapReduceState.combinerResults[user]).forEach((key) => {
         if (!userKeys[user][key]) {
           let userWithKey = findUserWithKey(key)
-          if (sendKeys[user][userWithKey]) {
-            sendKeys[user][userWithKey].push(key)
+          const userSendKeys = (sendKeys[user] as ReducerState['sendKeys']) || {}
+          if (userSendKeys[userWithKey]) {
+            userSendKeys[userWithKey].push(key)
           } else {
-            sendKeys[user][userWithKey] = [key]
+            userSendKeys[userWithKey] = [key]
           }
         }
       })
@@ -118,7 +124,9 @@ export default function Master() {
     const usersToSendKeys = Object.keys(sendKeys) as UserID[]
     usersToSendKeys.forEach((userFrom) => {
       // users that will receive keys from userFrom
-      const usersTo = Object.keys(sendKeys[userFrom]) as UserID[]
+      const usersTo = Object.keys(
+        (sendKeys[userFrom] as ReducerState['sendKeys']) || {},
+      ) as UserID[]
       usersTo.forEach((userTo) => {
         if (!receiveKeysFrom[userTo]) {
           receiveKeysFrom[userTo] = [userFrom]
@@ -139,11 +147,23 @@ export default function Master() {
       }),
     )
 
-    setFinalResults({
+    setFinalResults((prev) => ({
+      ...prev,
       mapTotalCount,
       combinerTotalCount,
-    })
+      reducerNodesCount: Object.keys(userKeys).filter(
+        (user) => Object.values(userKeys[user as UserID]).length > 0,
+      ).length,
+    }))
   }, [clusterUsers.length, sendDirectMessage, mapReduceState.combinerResults, finished])
+
+  useEffect(() => {
+    setFinalResults((prev) => ({
+      ...prev,
+      sizes: mapReduceState.sizes,
+      mapNodesCount: mapReduceState.mapNodesCount,
+    }))
+  }, [mapReduceState.sizes, mapReduceState.mapNodesCount])
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
@@ -174,8 +194,12 @@ export default function Master() {
         disabled={!allUsersReady || finished}>
         Iniciar procesamiento
       </Button>
-      <Results className='flex flex-col w-full mt-5' data={mapReduceState.reduceResult} />
-      {finished && <MasterStatistics {...finalResults} />}
+      <Results
+        className='flex flex-col w-full mt-5'
+        title='Resultados'
+        data={mapReduceState.reduceResult}
+      />
+      {finished && <Statistics statistics={statistics} />}
     </main>
   )
 }

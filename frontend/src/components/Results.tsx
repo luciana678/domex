@@ -3,7 +3,15 @@
 import { Typography } from '@mui/material'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
-export default function Results({ className, data }: { className: string; data: {} }) {
+export default function Results({
+  title,
+  className,
+  data,
+}: {
+  title: string
+  className: string
+  data: {}
+}) {
   const columns: GridColDef[] = [
     {
       field: 'key',
@@ -30,7 +38,7 @@ export default function Results({ className, data }: { className: string; data: 
   return (
     <div className={`bg-white p-4 shadow-lg border border-gray-300 rounded-md ${className}`}>
       <Typography variant='h4' component='div' className='text-center mb-3'>
-        Resultados
+        {title}
       </Typography>
       <DataGrid
         columns={columns}
