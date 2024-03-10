@@ -155,7 +155,13 @@ export default function Master() {
         (user) => Object.values(userKeys[user as UserID]).length > 0,
       ).length,
     }))
-  }, [clusterUsers.length, sendDirectMessage, mapReduceState.combinerResults, finished])
+  }, [
+    clusterUsers.length,
+    sendDirectMessage,
+    mapReduceState.combinerResults,
+    finished,
+    mapReduceState.mapResults,
+  ])
 
   useEffect(() => {
     setFinalResults((prev) => ({
