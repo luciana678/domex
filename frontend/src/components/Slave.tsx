@@ -227,6 +227,13 @@ export default function Slave() {
     mapReduceState.clavesRecibidas,
     mapReduceState.receiveKeysFrom,
     mapReduceState.reduceKeys,
+    mapReduceState.sizes.totalBytesReceived,
+    writeFile,
+    runPython,
+    readFile,
+    readSizes,
+    sendDirectMessage,
+    finalResults.sizes,
   ])
 
   const readyToExecute = () => {
