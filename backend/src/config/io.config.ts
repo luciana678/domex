@@ -1,4 +1,5 @@
 import type http from 'node:http'
+import type https from 'node:https'
 import { Server, type Socket } from 'socket.io'
 import { registerRoom } from '../listeners/registerRoom.js'
 import registerWebRTC from '../listeners/registerWebRTC.js'
@@ -18,7 +19,7 @@ declare module 'socket.io' {
   }
 }
 
-export const createIOServer = (server: http.Server): Server => {
+export const createIOServer = (server: http.Server | https.Server): Server => {
   // Socket.io
   const io = new Server(server, {
     cors: {
@@ -34,15 +35,21 @@ export const createIOServer = (server: http.Server): Server => {
     const sessionID = socket.handshake.auth.sessionID as SessionID
     const roomID = socket.handshake.auth.roomID as RoomID
 
-    if (sessionID && roomID) {
-      const session = roomsSessionStore.findSession(roomID, sessionID)
-      if (session) {
-        socket.sessionID = sessionID
-        socket.roomID = roomID
-        socket.userID = session.userID
-        socket.userName = session.userName
-        socket.isRoomOwner = session.isRoomOwner
-        return next()
+    if (roomID) {
+      if (!roomsSessionStore.existsRoom(roomID)) {
+        return next(new Error('Room does not exist'))
+      }
+
+      if (sessionID) {
+        const session = roomsSessionStore.findSession(roomID, sessionID)
+        if (session) {
+          socket.sessionID = sessionID
+          socket.roomID = roomID
+          socket.userID = session.userID
+          socket.userName = session.userName
+          socket.isRoomOwner = session.isRoomOwner
+          return next()
+        }
       }
     }
 

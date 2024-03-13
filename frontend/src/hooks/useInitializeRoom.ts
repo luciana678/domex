@@ -144,6 +144,18 @@ const useInitializeRoom = () => {
           router.push('/')
         }
       }
+
+      // TODO: Manage better the error messages UI
+      if (err.message === 'Room does not exist') {
+        console.error('Room does not exist')
+        sessionStorage.removeItem('session')
+
+        if (pathname !== '/') {
+          router.push('/')
+        }
+
+        window.alert('The room does not exist')
+      }
     }
 
     socket.on('room:session', onSession)

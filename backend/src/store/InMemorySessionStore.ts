@@ -39,4 +39,8 @@ export class InMemoryRoomSessionStore implements RoomSessionStore {
   removeRoom = (roomID: RoomID): void => {
     this.rooms.delete(roomID)
   }
+
+  existsRoom = (roomID: RoomID): boolean => {
+    return this.rooms.has(roomID)
+  }
 }
