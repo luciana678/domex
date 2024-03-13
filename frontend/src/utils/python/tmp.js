@@ -60,13 +60,18 @@ else:
     json.dump(context.map_results, result_file)
   sizes['mapOutput'] = os.path.getsize('/map_results.txt')
 
+  empty_combine = False
   with open('/combiner_code.py') as combiner_code:
-    exec(combiner_code.read())
+    code = combiner_code.read()
+    empty_combine = not code.strip()
+    exec(code)
 
-  context.combine()
+  if not empty_combine:
+    context.combine()
 
   with open('/combiner_results.txt', 'w') as result_file:
-    json.dump(context.combine_results, result_file) 
+    results = context.map_results if empty_combine else context.combine_results
+    json.dump(results, result_file) 
   sizes['combinerOutput'] = os.path.getsize('/combiner_results.txt')
 
 with open('/sizes.json', 'w') as sizes_file:
