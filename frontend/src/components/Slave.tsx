@@ -74,7 +74,7 @@ export default function Slave() {
     if (mapCombinerExecuted) return
 
     // the map code has not been received yet
-    if (mapReduceState.code.mapCode === placeholdersFunctions.map.code) return //? Changed to "===" ?
+    if (mapReduceState.code.mapCode === placeholdersFunctions.map.code) return
 
     // yet the python code cannot be executed
     if (!isReady) return
