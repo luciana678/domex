@@ -23,12 +23,12 @@ const FileFolderRow = ({
   return (
     <div className='flex justify-between w-full'>
       <button
-        className={`flex items-center  h-8 ${
+        className={`flex items-center h-8 ${
           type === 'folder' ? 'pointer' : null
         } bg-transparent border-none `}
         onClick={handleClick}>
         {type === 'folder' ? <FolderIcon /> : <DescriptionIcon />}
-        <h5 className='ml-2'>{name}</h5>
+        <h5 className='ml-2 font-normal text-xs'>{name}</h5>
       </button>
 
       {type === 'file' ? (
@@ -62,7 +62,7 @@ const FolderTree = ({
   return (
     <>
       {tree.isFolder ? (
-        <div className=''>
+        <div className='mt-3'>
           <FileFolderRow type={'folder'} name={tree.name} handleClick={handleClick} />
 
           <div style={{ display: expand ? 'block' : 'none' }}>
