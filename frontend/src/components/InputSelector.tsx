@@ -1,11 +1,12 @@
 'use client'
 
-import { Dispatch, SetStateAction, useState } from 'react'
+import { Tree } from '@/types'
+import CloudUploadIcon from '@mui/icons-material/CloudUpload'
+import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
-import Button from '@mui/material/Button'
-import IconButton from '@mui/material/IconButton'
-import DeleteIcon from '@mui/icons-material/Delete'
+import { Dispatch, SetStateAction } from 'react'
+import FolderTree from './ui/FolderTree'
 
 export default function InputSelector({
   filesState,
@@ -15,6 +16,20 @@ export default function InputSelector({
   enableEditing: boolean
 }) {
   const [selectedFiles, setSelectedFiles] = filesState
+
+  const treeFiles: Tree = {
+    name: '/',
+    isFolder: true,
+    items:
+      selectedFiles.length > 0
+        ? selectedFiles.map((file) => {
+            return {
+              name: file.name,
+              isFolder: false,
+            }
+          })
+        : undefined,
+  }
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -29,27 +44,25 @@ export default function InputSelector({
     }
   }
 
-  const handleDeleteFile = (index: number) => {
-    setSelectedFiles((prevFiles) => prevFiles.filter((_, i) => i !== index))
+  const handleDeleteFile = (name: string) => {
+    console.log({ name, selectedFiles })
+    setSelectedFiles((prevFiles) => prevFiles.filter((file) => file.name !== name))
   }
 
   return (
     <div>
       <Card className='bg-white p-4 shadow-lg border border-gray-300 rounded-md min-w-[275]'>
+        <h2 className='text-lg font-semibold text-center mb-3'>
+          Archivos de entrada seleccionados
+        </h2>
         <CardContent>
-          <h2 className='text-lg font-semibold text-center mb-3'>
-            Archivos de entrada seleccionados
-          </h2>
-          <ul>
-            {selectedFiles.map((file, index) => (
-              <li key={index} className='flex justify-between items-center'>
-                <span className='flex-grow'>{file.name}</span>
-                <IconButton onClick={() => handleDeleteFile(index)} disabled={!enableEditing}>
-                  <DeleteIcon />
-                </IconButton>
-              </li>
-            ))}
-          </ul>
+          {selectedFiles.length > 0 ? (
+            <FolderTree
+              tree={treeFiles}
+              handleDeleteFile={handleDeleteFile}
+              enableDeleteFile={enableEditing}
+            />
+          ) : null}
         </CardContent>
       </Card>
       <div className='mt-3 flex justify-center'>
@@ -66,7 +79,11 @@ export default function InputSelector({
           }}
         />
         <label htmlFor='fileInput'>
-          <Button variant='outlined' color='primary' component='span' disabled={!enableEditing}>
+          <Button
+            component='span'
+            variant='contained'
+            startIcon={<CloudUploadIcon />}
+            disabled={!enableEditing}>
             Seleccionar
           </Button>
         </label>

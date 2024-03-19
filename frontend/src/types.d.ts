@@ -102,3 +102,9 @@ export type Statistics = {
   title: string
   statistics: { label: string; value: string | number }[]
 }
+
+export type Tree = {
+  isFolder: boolean
+  name: string
+  items?: Tree[]
+}
