@@ -5,6 +5,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Button from '@mui/material/Button'
 import { Dispatch, SetStateAction } from 'react'
 import FolderTree from './ui/FolderTree'
+import { ENVS } from '@/constants/envs'
 
 export default function InputSelector({
   filesState,
@@ -13,6 +14,9 @@ export default function InputSelector({
   filesState: [File[], Dispatch<SetStateAction<File[]>>]
   enableEditing: boolean
 }) {
+  const { ACCEPT: ACCEPT_TYPE, MAX_SIZE } = ENVS.GENERAL.FILES
+  const MAX_SIZE_MB = MAX_SIZE / 1024 / 1024
+
   const [selectedFiles, setSelectedFiles] = filesState
 
   const treeFiles: Tree = {
@@ -31,15 +35,20 @@ export default function InputSelector({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
-    if (files) {
-      const txtFiles = Array.from(files).filter((file) => file.type === 'text/plain')
-      setSelectedFiles((prevFiles) => {
-        const uniqueFiles = txtFiles.filter(
-          (newFile) => !prevFiles.some((oldFile) => oldFile.name === newFile.name),
-        )
-        return [...prevFiles, ...uniqueFiles]
-      })
-    }
+    // Check if there are files
+    if (!files) return
+
+    // Filter the text files and the ones that his size is less than MAX_SIZE
+    const txtFiles = Array.from(files)
+      .filter((file) => file.type === 'text/plain')
+      .filter((file) => file.size < MAX_SIZE)
+
+    setSelectedFiles((prevFiles) => {
+      const uniqueFiles = txtFiles.filter(
+        (newFile) => !prevFiles.some((oldFile) => oldFile.name === newFile.name),
+      )
+      return [...prevFiles, ...uniqueFiles]
+    })
   }
 
   const handleDeleteFile = (name: string) => {
@@ -53,7 +62,7 @@ export default function InputSelector({
         <input
           type='file'
           id='fileInput'
-          accept='.txt'
+          accept={ACCEPT_TYPE}
           multiple
           style={{ display: 'none' }}
           onChange={handleFileChange}
@@ -72,7 +81,7 @@ export default function InputSelector({
           </Button>
         </label>
         <span className='text-center text-pretty opacity-80 text-sm'>
-          Deben ser .txt de máximo 5Mb cada uno
+          Deben ser {ACCEPT_TYPE} de máximo {MAX_SIZE_MB}Mb cada uno
         </span>
       </div>
       {selectedFiles.length > 0 ? (
