@@ -50,22 +50,8 @@ export default function InputSelector({
   }
 
   return (
-    <div>
-      <Card className='bg-white p-4 shadow-lg border border-gray-300 rounded-md min-w-[275]'>
-        <h2 className='text-lg font-semibold text-center mb-3'>
-          Archivos de entrada seleccionados
-        </h2>
-        <CardContent>
-          {selectedFiles.length > 0 ? (
-            <FolderTree
-              tree={treeFiles}
-              handleDeleteFile={handleDeleteFile}
-              enableDeleteFile={enableEditing}
-            />
-          ) : null}
-        </CardContent>
-      </Card>
-      <div className='mt-3 flex justify-center'>
+    <>
+      <div className='flex justify-center flex-col'>
         <input
           type='file'
           id='fileInput'
@@ -84,10 +70,20 @@ export default function InputSelector({
             variant='contained'
             startIcon={<CloudUploadIcon />}
             disabled={!enableEditing}>
-            Seleccionar
+            Seleccionar archivos
           </Button>
         </label>
+        <span className='text-center text-pretty opacity-80 text-sm'>
+          Deben ser .txt de máximo 5Mb cada uno
+        </span>
       </div>
-    </div>
+      {selectedFiles.length > 0 ? (
+        <FolderTree
+          tree={treeFiles}
+          handleDeleteFile={handleDeleteFile}
+          enableDeleteFile={enableEditing}
+        />
+      ) : null}
+    </>
   )
 }
