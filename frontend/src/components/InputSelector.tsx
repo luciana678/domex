@@ -3,8 +3,6 @@
 import { Tree } from '@/types'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Button from '@mui/material/Button'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
 import { Dispatch, SetStateAction } from 'react'
 import FolderTree from './ui/FolderTree'
 
