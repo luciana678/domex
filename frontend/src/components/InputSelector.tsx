@@ -62,7 +62,7 @@ export default function InputSelector({
             inputElement.value = ''
           }}
         />
-        <label htmlFor='fileInput'>
+        <label htmlFor='fileInput' className='mx-auto'>
           <Button
             component='span'
             variant='contained'
