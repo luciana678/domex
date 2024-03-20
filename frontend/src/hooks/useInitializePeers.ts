@@ -9,11 +9,13 @@ import usePeers from './usePeers'
 import useMapReduce from './useMapReduce'
 import { Action, actionTypes } from '@/context/MapReduceContext'
 import { handleActionSignal } from '@/utils/handleActions'
+import useFiles from './useFiles'
 
 const useInitializePeers = () => {
-  const { peers, clusterUsers, setPeers, setClusterUsers } = useContext(RoomContext)
+  const { peers, setPeers, setClusterUsers } = useContext(RoomContext)
   const { addPeer, deletePeer } = usePeers()
   const { dispatchMapReduce } = useMapReduce()
+  const { handleReceivingFiles } = useFiles()
 
   useEffect(() => {
     const onWebRTCUserJoined = (payload: { signal: SignalData; callerID: UserID }) => {
@@ -46,6 +48,7 @@ const useInitializePeers = () => {
 
         handleActionSignal({ action: decodedData, setClusterUsers })
         dispatchMapReduce(decodedData)
+        handleReceivingFiles(decodedData)
       }
 
       const handlePeerError = (err: Error) => {
