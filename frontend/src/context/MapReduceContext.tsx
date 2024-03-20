@@ -16,6 +16,7 @@ export const actionTypes = {
   RECIBIR_CLAVES: 'RECIBIR_CLAVES',
   RESULTADO_FINAL: 'RESULTADO_FINAL',
   READY_TO_EXECUTE: 'READY_TO_EXECUTE',
+  UPDATE_FILES: 'UPDATE_FILES',
 } as const
 
 export type Action = {
@@ -50,6 +51,10 @@ export type Action = {
       payload: { sizes: Sizes; reduceResult: ReducerState['reduceResult'] }
     }
   | { type: 'READY_TO_EXECUTE' }
+  | {
+      type: 'UPDATE_FILES'
+      payload: { fileNames: string[] }
+    }
 )
 
 export const initialSizes: Sizes = {
