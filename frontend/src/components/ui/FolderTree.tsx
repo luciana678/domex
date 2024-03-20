@@ -23,7 +23,7 @@ const FileFolderRow = ({
   return (
     <div className='flex justify-between'>
       <button
-        className={`flex items-center h-8 max-w-[300px] ${
+        className={`flex items-center h-8 max-w-[280px] ${
           type === 'folder' ? 'cursor-pointer' : null
         } bg-transparent border-none `}
         onClick={handleClick}>
