@@ -105,6 +105,7 @@ export type Statistics = {
 
 export type Tree = {
   isFolder: boolean
+  isLocal?: boolean
   name: string
   items?: Tree[]
 }
