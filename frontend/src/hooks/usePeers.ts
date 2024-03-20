@@ -38,7 +38,7 @@ const usePeers = () => {
       const payloadSize = data.payload ? Buffer.byteLength(JSON.stringify(data.payload)) : 0
       data.payloadSize = payloadSize
 
-      peer.send(JSON.stringify(data))
+      peer.write(JSON.stringify(data))
 
       return payloadSize
     },
@@ -47,11 +47,11 @@ const usePeers = () => {
 
   const broadcastMessage = useCallback(
     (data: any) => {
-      Object.values(peers).forEach((peer) => {
-        peer.send(JSON.stringify(data))
+      Object.keys(peers).forEach((userID) => {
+        sendDirectMessage(userID as UserID, data)
       })
     },
-    [peers],
+    [peers, sendDirectMessage],
   )
 
   const createPeer = useCallback((userToSignal: UserID, callerID: UserID) => {
