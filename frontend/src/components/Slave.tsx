@@ -284,7 +284,7 @@ export default function Slave() {
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
       <div className='w-full flex flex-col'>
-        <div className='flex flex-col lg:flex-row justify-center w-full gap-20 mb-5'>
+        <div className='flex flex-col lg:flex-row justify-center w-full gap-10 mb-5'>
           <div className='w-full'>
             <BasicAccordion
               title={placeholdersFunctions.map.title}
@@ -311,7 +311,7 @@ export default function Slave() {
               }}
             />
           </div>
-          <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center'>
+          <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center lg:max-w-[300px]'>
             <NodeList />
             <InputSelector enableEditing={!isReadyToExecute} />
           </div>
