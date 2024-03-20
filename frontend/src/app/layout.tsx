@@ -1,8 +1,9 @@
+import { FilesProvider } from '@/context/FilesContext'
+import { MapReduceProvider } from '@/context/MapReduceContext'
+import { RoomProvider } from '@/context/RoomContext'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { RoomProvider } from '@/context/RoomContext'
-import { MapReduceProvider } from '@/context/MapReduceContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -16,7 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang='en'>
       <body className={inter.className}>
         <RoomProvider>
-          <MapReduceProvider>{children}</MapReduceProvider>
+          <MapReduceProvider>
+            <FilesProvider>{children}</FilesProvider>
+          </MapReduceProvider>
         </RoomProvider>
       </body>
     </html>
