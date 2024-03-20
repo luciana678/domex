@@ -24,7 +24,7 @@ const useFiles = () => {
 
   let fileTrees: Tree[] = [
     ...Object.entries(nodesFiles)
-      .filter(([userId, fileNames]) => fileNames.length > 0)
+      .filter(([_, fileNames]) => fileNames.length > 0)
       .map(([userId, fileNames]) => {
         const username = clusterUsers.find((user) => user.userID === userId)?.userName
 
