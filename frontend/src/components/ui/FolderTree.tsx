@@ -21,16 +21,14 @@ const FileFolderRow = ({
   handleDeleteFile,
 }: FileFolderRowProps) => {
   return (
-    <div className='flex justify-between w-full'>
+    <div className='flex justify-between'>
       <button
-        className={`flex items-center h-8 ${
-          type === 'folder' ? 'pointer' : null
+        className={`flex items-center h-8 max-w-[300px] ${
+          type === 'folder' ? 'cursor-pointer' : null
         } bg-transparent border-none `}
         onClick={handleClick}>
         {type === 'folder' ? <FolderIcon /> : <DescriptionIcon />}
-        <div className={`ml-2 text-xs truncate max-w-xs ${type === 'file' ? 'font-normal' : ''}`}>
-          {name}
-        </div>
+        <h5 className={`ml-2 text-xs truncate ${type === 'file' ? 'font-normal' : ''}`}>{name}</h5>
       </button>
 
       {type === 'file' ? (
@@ -64,7 +62,7 @@ const FolderTree = ({
   return (
     <>
       {tree.isFolder ? (
-        <div className='mt-3'>
+        <div>
           <FileFolderRow type={'folder'} name={tree.name} handleClick={handleClick} />
 
           <div style={{ display: expand ? 'block' : 'none' }} className='pl-3'>
