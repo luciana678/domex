@@ -3,10 +3,12 @@ import { useContext, useEffect } from 'react'
 import usePeers from './usePeers'
 import { Action, actionTypes } from '@/context/MapReduceContext'
 import { Tree } from '@/types'
+import useRoom from './useRoom'
 
 const useFiles = () => {
   const { selectedFiles, setSelectedFiles, nodesFiles, setNodesFiles } = useContext(FilesContext)
   const { broadcastMessage } = usePeers()
+  const { clusterUsers } = useRoom()
 
   const ownFileTree: Tree = {
     name: '/ (local)',
@@ -24,8 +26,10 @@ const useFiles = () => {
     ...Object.entries(nodesFiles)
       .filter(([userId, fileNames]) => fileNames.length > 0)
       .map(([userId, fileNames]) => {
+        const username = clusterUsers.find((user) => user.userID === userId)?.userName
+
         return {
-          name: `/ (remote) ${userId}`,
+          name: `/ (remote) ${username}`,
           isFolder: true,
           items: fileNames.map((file) => {
             return {
