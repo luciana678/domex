@@ -1,37 +1,16 @@
 'use client'
 
-import { Tree } from '@/types'
+import { ENVS } from '@/constants/envs'
+import useFiles from '@/hooks/useFiles'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Button from '@mui/material/Button'
-import { Dispatch, SetStateAction } from 'react'
 import FolderTree from './ui/FolderTree'
-import { ENVS } from '@/constants/envs'
 
-export default function InputSelector({
-  filesState,
-  enableEditing,
-}: {
-  filesState: [File[], Dispatch<SetStateAction<File[]>>]
-  enableEditing: boolean
-}) {
+export default function InputSelector({ enableEditing }: { enableEditing: boolean }) {
   const { ACCEPT: ACCEPT_TYPE, MAX_SIZE } = ENVS.GENERAL.FILES
   const MAX_SIZE_MB = MAX_SIZE / 1024 / 1024
 
-  const [selectedFiles, setSelectedFiles] = filesState
-
-  const treeFiles: Tree = {
-    name: '/',
-    isFolder: true,
-    items:
-      selectedFiles.length > 0
-        ? selectedFiles.map((file) => {
-            return {
-              name: file.name,
-              isFolder: false,
-            }
-          })
-        : undefined,
-  }
+  const { deleteFile, addFiles, fileTrees } = useFiles()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -43,21 +22,15 @@ export default function InputSelector({
       .filter((file) => file.type === 'text/plain')
       .filter((file) => file.size < MAX_SIZE)
 
-    setSelectedFiles((prevFiles) => {
-      const uniqueFiles = txtFiles.filter(
-        (newFile) => !prevFiles.some((oldFile) => oldFile.name === newFile.name),
-      )
-      return [...prevFiles, ...uniqueFiles]
-    })
+    addFiles(txtFiles)
   }
 
   const handleDeleteFile = (name: string) => {
-    console.log({ name, selectedFiles })
-    setSelectedFiles((prevFiles) => prevFiles.filter((file) => file.name !== name))
+    deleteFile(name)
   }
 
   return (
-    <>
+    <div>
       <div className='flex justify-center flex-col'>
         <input
           type='file'
@@ -84,13 +57,14 @@ export default function InputSelector({
           Deben ser {ACCEPT_TYPE} de máximo {MAX_SIZE_MB}Mb cada uno
         </span>
       </div>
-      {selectedFiles.length > 0 ? (
+      {fileTrees.map((fileTree) => (
         <FolderTree
-          tree={treeFiles}
+          key={fileTree.name}
+          tree={fileTree}
           handleDeleteFile={handleDeleteFile}
           enableDeleteFile={enableEditing}
         />
-      ) : null}
-    </>
+      ))}
+    </div>
   )
 }
