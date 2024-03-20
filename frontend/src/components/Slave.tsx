@@ -283,8 +283,8 @@ export default function Slave() {
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
       <div className='w-full flex flex-col'>
-        <div className='flex flex-row justify-center w-full gap-20 mb-5'>
-          <div className='w-9/12'>
+        <div className='flex flex-col lg:flex-row justify-center w-full gap-20 mb-5'>
+          <div className='w-full'>
             <BasicAccordion
               title={placeholdersFunctions.map.title}
               codeState={[mapReduceState.code.mapCode, null]}
@@ -310,16 +310,9 @@ export default function Slave() {
               }}
             />
           </div>
-          <div className='flex flex-col'>
-            <div className='flex-grow w-full'>
-              <NodeList />
-            </div>
-            <div className='flex-grow w-full '>
-              <InputSelector
-                filesState={[selectedFiles, setSelectedFiles]}
-                enableEditing={!isReadyToExecute}
-              />
-            </div>
+          <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center'>
+            <NodeList />
+            <InputSelector enableEditing={!isReadyToExecute} />
           </div>
         </div>
       </div>
