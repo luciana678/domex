@@ -11,7 +11,7 @@ export default function NodeList() {
   const { sendDirectMessage, peers } = usePeers()
 
   return (
-    <Card className='bg-white p-4 shadow-lg border border-gray-300 rounded-md min-w-[275]'>
+    <Card className='bg-white shadow-lg border border-gray-300 rounded-md w-full max-w-[500px]'>
       <CardContent>
         <h2 className='text-lg font-semibold text-center mb-3'>Nodos</h2>
         {clusterUsers.map((node, index) => (
