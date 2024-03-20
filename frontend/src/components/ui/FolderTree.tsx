@@ -28,7 +28,9 @@ const FileFolderRow = ({
         } bg-transparent border-none `}
         onClick={handleClick}>
         {type === 'folder' ? <FolderIcon /> : <DescriptionIcon />}
-        <h5 className='ml-2 font-normal text-xs'>{name}</h5>
+        <div className={`ml-2 text-xs truncate max-w-xs ${type === 'file' ? 'font-normal' : ''}`}>
+          {name}
+        </div>
       </button>
 
       {type === 'file' ? (
@@ -65,7 +67,7 @@ const FolderTree = ({
         <div className='mt-3'>
           <FileFolderRow type={'folder'} name={tree.name} handleClick={handleClick} />
 
-          <div style={{ display: expand ? 'block' : 'none' }}>
+          <div style={{ display: expand ? 'block' : 'none' }} className='pl-3'>
             {tree.items?.map((item) => {
               return (
                 <FolderTree
@@ -84,7 +86,7 @@ const FolderTree = ({
             type={'file'}
             name={tree.name}
             handleDeleteFile={handleDeleteFile}
-            enableDeleteFile={enableDeleteFile}
+            enableDeleteFile={enableDeleteFile && !!tree.isLocal}
           />
         </div>
       )}
