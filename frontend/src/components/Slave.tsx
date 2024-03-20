@@ -4,6 +4,7 @@ import InputSelector from '@/components/InputSelector'
 import { Statistics } from '@/components/Statistics'
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import { initialSizes } from '@/context/MapReduceContext'
+import useFiles from '@/hooks/useFiles'
 import useMapReduce from '@/hooks/useMapReduce'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
@@ -28,7 +29,7 @@ export default function Slave() {
   const { roomOwner, roomSession } = useRoom()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const { mapReduceState } = useMapReduce()
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([])
+  const { selectedFiles } = useFiles()
   const [mapCombinerResults, setMapCombinerResults] =
     useState<MapCombinerResults>(initialMapCombinerResults)
   const [reduceResults, setReduceResults] = useState<KeyValue>({})
