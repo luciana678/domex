@@ -30,7 +30,7 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
   }
 
   return (
-    <div>
+    <div className='w-full'>
       <div className='flex justify-center flex-col'>
         <input
           type='file'
@@ -57,14 +57,16 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
           Deben ser {ACCEPT_TYPE} de máximo {MAX_SIZE_MB}Mb cada uno
         </span>
       </div>
-      {fileTrees.map((fileTree) => (
-        <FolderTree
-          key={fileTree.name}
-          tree={fileTree}
-          handleDeleteFile={handleDeleteFile}
-          enableDeleteFile={enableEditing}
-        />
-      ))}
+      <div className='pt-3'>
+        {fileTrees.map((fileTree) => (
+          <FolderTree
+            key={fileTree.name}
+            tree={fileTree}
+            handleDeleteFile={handleDeleteFile}
+            enableDeleteFile={enableEditing}
+          />
+        ))}
+      </div>
     </div>
   )
 }
