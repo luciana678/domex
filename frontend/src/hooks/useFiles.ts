@@ -22,7 +22,7 @@ const useFiles = () => {
     }),
   }
 
-  let fileTrees: Tree[] = [
+  const nodesFileTree: Tree[] = [
     ...Object.entries(nodesFiles)
       .filter(([_, fileNames]) => fileNames.length > 0)
       .map(([userId, fileNames]) => {
@@ -41,9 +41,7 @@ const useFiles = () => {
       }),
   ]
 
-  if (ownFileTree.items?.length) {
-    fileTrees = [ownFileTree, ...fileTrees]
-  }
+  const fileTrees = ownFileTree.items?.length ? [ownFileTree, ...nodesFileTree] : nodesFileTree
 
   useEffect(() => {
     const fileNames = selectedFiles.map((file) => file.name)
@@ -71,7 +69,7 @@ const useFiles = () => {
     }
   }
 
-  return { selectedFiles, deleteFile, addFiles, handleReceivingFiles, fileTrees }
+  return { selectedFiles, fileTrees, deleteFile, addFiles, handleReceivingFiles }
 }
 
 export default useFiles
