@@ -19,7 +19,7 @@ const WordCountCode = {
   map: `def fmap(value):
   words = value.split()
   for w in words:
-      context.write(w, 1)
+    context.write(w, 1)
   `,
   combiner: `def fcomb(key, values):
   context.write(key, sum(values))
