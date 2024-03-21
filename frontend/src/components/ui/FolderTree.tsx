@@ -45,15 +45,13 @@ const FileFolderRow = ({
   )
 }
 
-const FolderTree = ({
-  tree,
-  handleDeleteFile,
-  enableDeleteFile,
-}: {
+type FolderTreeProps = {
   tree: Tree
-  handleDeleteFile: (name: string) => void
   enableDeleteFile: boolean
-}) => {
+  handleDeleteFile?: (name: string) => void
+}
+
+const FolderTree = ({ tree, handleDeleteFile, enableDeleteFile }: FolderTreeProps) => {
   const [expand, setExpand] = useState(true)
   const handleClick = () => {
     setExpand(!expand)
