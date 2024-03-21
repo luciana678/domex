@@ -311,7 +311,7 @@ export default function Slave() {
               }}
             />
           </div>
-          <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center lg:max-w-[300px]'>
+          <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full  min-w-fit lg:max-w-[300px]'>
             <NodeList />
             <InputSelector enableEditing={!isReadyToExecute} />
           </div>
