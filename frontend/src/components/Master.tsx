@@ -14,6 +14,8 @@ import Navbar from './Navbar'
 import NodeList from './NodeList'
 import { initialSizes } from '@/context/MapReduceContext'
 import useStatistics from '@/hooks/useStatisticts'
+import FolderTree from './ui/FolderTree'
+import useFiles from '@/hooks/useFiles'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -33,6 +35,7 @@ export default function Master() {
   const { clusterUsers, roomSession } = useRoom()
   const { mapReduceState } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
+  const { fileTrees } = useFiles()
   const [allUsersReady, setAllUsersReady] = useState(false)
   const [finalResults, setFinalResults] = useState<FinalResults>({
     mapTotalCount: {},
@@ -174,8 +177,8 @@ export default function Master() {
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Administrar cluster #${roomSession?.roomID}`} />
-      <div className='flex flex-row justify-center w-full gap-20 mb-5'>
-        <div className='w-9/12'>
+      <div className='flex flex-col lg:flex-row justify-center w-full gap-10 mb-5'>
+        <div className='w-full'>
           <BasicAccordion
             title={placeholdersFunctions.map.title}
             codeState={[mapCode, setMapCode]}
@@ -189,8 +192,14 @@ export default function Master() {
             codeState={[reduceCode, setReduceCode]}
           />
         </div>
-        <div className='flex flex-col w-3/12'>
+        <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full min-w-fit lg:max-w-[300px]'>
           <NodeList />
+
+          <div className='pt-3 w-60'>
+            {fileTrees.map((fileTree) => (
+              <FolderTree key={fileTree.name} tree={fileTree} enableDeleteFile={false} />
+            ))}
+          </div>
         </div>
       </div>
       <Button
