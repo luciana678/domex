@@ -4,7 +4,7 @@ import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { RoomID } from '@/types'
 import { useRouter } from 'next/navigation'
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import usePeers from './usePeers'
 
 const useRoom = () => {
@@ -15,6 +15,10 @@ const useRoom = () => {
   const connectRoom = useCallback((auth: { userName?: string; roomID?: RoomID }) => {
     socket.auth = auth
     socket.connect()
+  }, [])
+
+  useEffect(() => {
+    return () => window.addEventListener('beforeunload', (_) => leaveRoom())
   }, [])
 
   const leaveRoom = useCallback(() => {
