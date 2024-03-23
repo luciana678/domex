@@ -49,4 +49,6 @@ export class InMemoryRoomSessionStore implements RoomSessionStore {
     if (!room) return
     room.locked = true
   }
+
+  isLocked = (roomID: RoomID): boolean => !!this.rooms.get(roomID)?.locked
 }

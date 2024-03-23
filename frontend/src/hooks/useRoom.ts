@@ -21,6 +21,8 @@ const useRoom = () => {
     return () => window.addEventListener('beforeunload', (_) => leaveRoom())
   }, [])
 
+  const lockRoom = useCallback(() => socket.emit('room:lock-room'), [])
+
   const leaveRoom = useCallback(() => {
     socket.emit('room:leave-room')
     sessionStorage.clear()
@@ -29,7 +31,7 @@ const useRoom = () => {
     router.push('/')
   }, [destroyPeers, router])
 
-  return { clusterUsers, roomSession, connectRoom, leaveRoom, roomOwner }
+  return { clusterUsers, roomSession, connectRoom, leaveRoom, lockRoom, roomOwner }
 }
 
 export default useRoom
