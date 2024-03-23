@@ -65,7 +65,7 @@ export default function Master() {
   useEffect(() => {
     const totalUsers = clusterUsers.length
     const readyUsers = clusterUsers.filter((user) => user.readyToExecuteMap).length
-    setAllUsersReady(totalUsers === readyUsers)
+    setAllUsersReady(totalUsers > 0 && totalUsers === readyUsers)
   }, [clusterUsers])
 
   useEffect(() => {
