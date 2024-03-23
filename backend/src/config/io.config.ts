@@ -40,6 +40,10 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
         return next(new Error('Room does not exist'))
       }
 
+      if (roomsSessionStore.isLocked(roomID)) {
+        return next(new Error('Room is locked'))
+      }
+
       if (sessionID) {
         const session = roomsSessionStore.findSession(roomID, sessionID)
         if (session) {

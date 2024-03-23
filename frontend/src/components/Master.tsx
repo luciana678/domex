@@ -32,7 +32,7 @@ const WordCountCode = {
 }
 
 export default function Master() {
-  const { clusterUsers, roomSession } = useRoom()
+  const { clusterUsers, roomSession, lockRoom } = useRoom()
   const { mapReduceState } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const { fileTrees } = useFiles()
@@ -58,6 +58,7 @@ export default function Master() {
     })
 
   const handleIniciarProcesamiento = () => {
+    lockRoom()
     broadcastMessage({ type: 'SET_CODES', payload: { mapCode, combinerCode, reduceCode } })
   }
 
