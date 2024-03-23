@@ -11,29 +11,29 @@ export class InMemoryRoomSessionStore implements RoomSessionStore {
   findSession = (roomID: RoomID, sessionID: SessionID): Session | undefined => {
     const room = this.rooms.get(roomID)
     if (!room) return undefined
-    return room.get(sessionID)
+    return room.sessions.get(sessionID)
   }
 
   saveSession = (roomID: RoomID, sessionID: SessionID, session: Session): void => {
     const room = this.rooms.get(roomID)
     if (!room) {
-      const newRoom = new Map([[sessionID, session]])
+      const newRoom = { sessions: new Map([[sessionID, session]]), locked: false }
       this.rooms.set(roomID, newRoom)
     } else {
-      room.set(sessionID, session)
+      room.sessions.set(sessionID, session)
     }
   }
 
   findAllSessions = (roomID: RoomID): Session[] => {
     const room = this.rooms.get(roomID)
     if (!room) return []
-    return [...room.values()]
+    return [...room.sessions.values()]
   }
 
   removeSession = (roomID: RoomID, sessionID: SessionID): void => {
     const room = this.rooms.get(roomID)
     if (!room) return
-    room.delete(sessionID)
+    room.sessions.delete(sessionID)
   }
 
   removeRoom = (roomID: RoomID): void => {
@@ -42,5 +42,11 @@ export class InMemoryRoomSessionStore implements RoomSessionStore {
 
   existsRoom = (roomID: RoomID): boolean => {
     return this.rooms.has(roomID)
+  }
+
+  lockRoom = (roomID: RoomID): void => {
+    const room = this.rooms.get(roomID)
+    if (!room) return
+    room.locked = true
   }
 }
