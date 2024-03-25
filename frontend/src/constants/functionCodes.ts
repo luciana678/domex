@@ -1,17 +1,17 @@
 export const placeholdersFunctions = {
   map: {
     title: 'Código map',
-    code: `def fmap(key, value, context):
+    code: `def fmap(value):
     `,
   },
   reduce: {
     title: 'Código reduce',
-    code: `def freduce(key, values, context):
+    code: `def fred(key, values):
     `,
   },
   combiner: {
     title: 'Código combiner',
-    code: `def fcomb (key, values, context):
+    code: `def fcomb(key, values):
     `,
   },
 } as const

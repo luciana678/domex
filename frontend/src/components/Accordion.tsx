@@ -12,11 +12,13 @@ import { useEffect, useState } from 'react'
 export default function BasicAccordion({
   title,
   codeState,
+  error = '',
   showLoadFileButton = true,
   codeEditorProps,
 }: {
   title: string
   codeState: any
+  error?: string
   showLoadFileButton?: boolean
   codeEditorProps?: any
 }) {
@@ -61,6 +63,7 @@ export default function BasicAccordion({
           </Typography>
           {showLoadFileButton && (
             <>
+              <span className='text-red-500'>{error}</span>
               <input
                 type='file'
                 id={title}
