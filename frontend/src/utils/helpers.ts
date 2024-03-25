@@ -14,3 +14,28 @@ export async function concatenateFiles(files: File[]) {
     throw error
   }
 }
+
+export const isValidFunctionHeader = (
+  code: string,
+  functionName: string,
+  argCount: number,
+): boolean => {
+  let argsRegexPart = '\\s*\\w+\\s*'
+  argsRegexPart = argsRegexPart + `,${argsRegexPart}`.repeat(argCount - 1)
+  const regex = new RegExp(`^\\s*def\\s+${functionName}\\(\\s*${argsRegexPart}\\s*\\)\\s*:`)
+
+  return regex.test(code)
+}
+
+export const validatePythonCode = `
+try:
+  with open('/code.py') as code:
+    exec(code.read())
+except:
+  is_valid = False
+else:
+  is_valid = True
+finally:
+  with open('/is_valid', 'w') as f:
+    f.write(str(is_valid))
+`

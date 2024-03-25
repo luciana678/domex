@@ -16,6 +16,7 @@ import { initialSizes } from '@/context/MapReduceContext'
 import useStatistics from '@/hooks/useStatisticts'
 import FolderTree from './ui/FolderTree'
 import useFiles from '@/hooks/useFiles'
+import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -44,11 +45,21 @@ export default function Master() {
   })
   const finished = !!Object.keys(finalResults.mapTotalCount).length
 
-  const [mapCode, setMapCode] = useState(WordCountCode.map)
-  const [combinerCode, setCombinerCode] = useState(WordCountCode.combiner)
-  const [reduceCode, setReduceCode] = useState(WordCountCode.reduce)
+  const [code, setCode] = useState({
+    mapCode: WordCountCode.map,
+    combinerCode: WordCountCode.combiner,
+    reduceCode: WordCountCode.reduce,
+  })
+
+  const [codeErrors, setCodeErrors] = useState({
+    mapCode: '',
+    combinerCode: '',
+    reduceCode: '',
+  })
 
   const statistics = useStatistics(finalResults)
+
+  const { isValidPythonCode } = usePythonCodeValidator(code, setCodeErrors)
 
   const getTotalCounts = (totalCounts: KeyValuesCount, result: UserResults) =>
     Object.values(result).forEach((keyList) => {
@@ -57,9 +68,11 @@ export default function Master() {
       })
     })
 
-  const handleIniciarProcesamiento = () => {
+  const handleIniciarProcesamiento = async () => {
+    const isValid = await isValidPythonCode()
+    if (!isValid) return
     lockRoom()
-    broadcastMessage({ type: 'SET_CODES', payload: { mapCode, combinerCode, reduceCode } })
+    broadcastMessage({ type: 'SET_CODES', payload: code })
   }
 
   useEffect(() => {
@@ -182,15 +195,24 @@ export default function Master() {
         <div className='w-full'>
           <BasicAccordion
             title={placeholdersFunctions.map.title}
-            codeState={[mapCode, setMapCode]}
+            codeState={[code.mapCode, (newCode: string) => setCode({ ...code, mapCode: newCode })]}
+            error={codeErrors.mapCode}
           />
           <BasicAccordion
             title={placeholdersFunctions.combiner.title}
-            codeState={[combinerCode, setCombinerCode]}
+            codeState={[
+              code.combinerCode,
+              (newCode: string) => setCode({ ...code, combinerCode: newCode }),
+            ]}
+            error={codeErrors.combinerCode}
           />
           <BasicAccordion
             title={placeholdersFunctions.reduce.title}
-            codeState={[reduceCode, setReduceCode]}
+            codeState={[
+              code.reduceCode,
+              (newCode: string) => setCode({ ...code, reduceCode: newCode }),
+            ]}
+            error={codeErrors.reduceCode}
           />
         </div>
         <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full min-w-fit lg:max-w-[300px]'>
