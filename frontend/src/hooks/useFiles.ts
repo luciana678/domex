@@ -1,8 +1,8 @@
 import FilesContext from '@/context/FilesContext'
+import { Action, actionTypes } from '@/context/MapReduceContext'
+import { Tree, UserID } from '@/types'
 import { useContext, useEffect } from 'react'
 import usePeers from './usePeers'
-import { Action, actionTypes } from '@/context/MapReduceContext'
-import { Tree } from '@/types'
 import useRoom from './useRoom'
 
 const useFiles = () => {
@@ -44,9 +44,26 @@ const useFiles = () => {
   const fileTrees = ownFileTree.items?.length ? [ownFileTree, ...nodesFileTree] : nodesFileTree
 
   useEffect(() => {
+    // Broadcast own files to all peers
     const fileNames = selectedFiles.map((file) => file.name)
     broadcastMessage({ type: 'UPDATE_FILES', payload: { fileNames } })
   }, [broadcastMessage, selectedFiles])
+
+  useEffect(() => {
+    // Remove files from nodes that are no longer in the cluster
+    setNodesFiles((prevFiles) => {
+      const newFiles = { ...prevFiles }
+      const nodeUserIDs = Object.keys(prevFiles) as UserID[]
+
+      nodeUserIDs.forEach((userID) => {
+        if (!clusterUsers.some((user) => user.userID === userID)) {
+          delete newFiles[userID]
+        }
+      })
+
+      return newFiles
+    })
+  }, [clusterUsers, setNodesFiles])
 
   const deleteFile = (name: string) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((file) => file.name !== name))
