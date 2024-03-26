@@ -39,6 +39,7 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
           multiple
           style={{ display: 'none' }}
           onChange={handleFileChange}
+          disabled={!enableEditing}
           onClick={(event) => {
             const inputElement = event.target as HTMLInputElement
             inputElement.value = ''
