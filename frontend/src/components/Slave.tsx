@@ -42,9 +42,16 @@ export default function Slave() {
 
   const [isReadyToExecute, setIsReadyToExecute] = useState(false)
   const [keysSent, setKeysSent] = useState(false)
+  const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
   const [executing, setExecuting] = useState(false)
+  const [mapExecuted, setMapExecuted] = useState(false)
+
+  const { runPython, stdout, stderr, writeFile, readFile, isReady, readErrors } =
+    usePythonCodeValidator()
+
+  const statistics = useStatistics(finalResults)
 
   useEffect(() => {
     if (mapReduceState.resetState) {
@@ -61,10 +68,11 @@ export default function Slave() {
     }
   }, [mapReduceState.resetState])
 
-  const { runPython, stdout, stderr, writeFile, readFile, isReady, readErrors } =
-    usePythonCodeValidator()
+  useEffect(() => {
+    if (mapExecuted) return
 
-  const statistics = useStatistics(finalResults)
+    setMapExecuted(stdout.includes('MAP EJECUTADO SATISFACTORIAMENTE'))
+  }, [stdout])
 
   const updateSizes = (newSizes: Partial<Sizes>) =>
     setFinalResults((prevResults) => ({
@@ -101,6 +109,8 @@ export default function Slave() {
     // yet the python code cannot be executed
     if (!isReady) return
 
+    setStarted(true)
+
     const runCode = async () => {
       const readMapCombinerResults = async (): Promise<MapCombinerResults> => {
         const mapResults: KeyValues = JSON.parse((await readFile('/map_results.txt')) || '')
@@ -120,6 +130,7 @@ export default function Slave() {
       const errors = await readErrors()
       if (errors) {
         setExecuting(false)
+        setStarted(false)
         return
       }
 
@@ -270,6 +281,7 @@ export default function Slave() {
       const errors = await readErrors()
       if (errors) {
         setExecuting(false)
+        setStarted(false)
         return
       }
 
@@ -342,6 +354,8 @@ export default function Slave() {
                 readOnly: true,
               }}
               error={mapReduceState.output.stderr.mapCode}
+              loading={started && !mapExecuted}
+              finished={mapExecuted}
             />
             <BasicAccordion
               title={placeholdersFunctions.combiner.title}
@@ -351,6 +365,8 @@ export default function Slave() {
                 readOnly: true,
               }}
               error={mapReduceState.output.stderr.combinerCode}
+              loading={mapExecuted && !mapCombinerExecuted}
+              finished={mapCombinerExecuted}
             />
             <BasicAccordion
               title={placeholdersFunctions.reduce.title}
@@ -360,6 +376,8 @@ export default function Slave() {
                 readOnly: true,
               }}
               error={mapReduceState.output.stderr.reduceCode}
+              loading={mapCombinerExecuted && !finished}
+              finished={finished}
             />
           </div>
           <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full  min-w-fit lg:max-w-[300px]'>

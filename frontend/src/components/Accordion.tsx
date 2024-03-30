@@ -1,7 +1,8 @@
 'use client'
 
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
-import { Button } from '@mui/material'
+import { Button, CircularProgress } from '@mui/material'
+import DoneIcon from '@mui/icons-material/Done'
 import Accordion from '@mui/material/Accordion'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
@@ -13,12 +14,16 @@ export default function BasicAccordion({
   title,
   codeState,
   error = '',
+  loading = false,
+  finished = false,
   showLoadFileButton = true,
   codeEditorProps,
 }: {
   title: string
   codeState: any
   error: string
+  loading?: boolean
+  finished?: boolean
   showLoadFileButton?: boolean
   codeEditorProps?: any
 }) {
@@ -52,7 +57,7 @@ export default function BasicAccordion({
         width: '100%',
         mb: 2.5,
       }}
-      defaultExpanded={true}>
+      defaultExpanded>
       <AccordionSummary expandIcon={<ExpandMoreIcon />}>
         <div className='flex w-full'>
           <Typography
@@ -62,6 +67,8 @@ export default function BasicAccordion({
             {title}
           </Typography>
           <span className='text-red-500 mr-2'>{error}</span>
+          {loading && <CircularProgress size={25} />}
+          {finished && <DoneIcon color='success' fontSize='large' />}
           {showLoadFileButton && (
             <>
               <input

@@ -54,9 +54,9 @@ if os.path.exists('/reduce_keys.json'):
   with open('/reduce_results.txt', 'w') as result_file:
     json.dump(context.reduce_results, result_file)
   sizes['reduceOutput'] = os.path.getsize("/reduce_results.txt")
+  print("REDUCE EJECUTADO SATISFACTORIAMENTE")
 
 else:
-
   with open('/map_code.py') as map_code:
     exec(map_code.read())
     
@@ -67,6 +67,7 @@ else:
   with open('/map_results.txt', 'w') as result_file:
     json.dump(context.map_results, result_file)
   sizes['mapOutput'] = os.path.getsize('/map_results.txt')
+  print("MAP EJECUTADO SATISFACTORIAMENTE")
 
   empty_combine = False
   with open('/combiner_code.py') as combiner_code:
@@ -81,6 +82,7 @@ else:
     results = context.map_results if empty_combine else context.combine_results
     json.dump(results, result_file) 
   sizes['combinerOutput'] = os.path.getsize('/combiner_results.txt')
+  print("COMBINE EJECUTADO SATISFACTORIAMENTE")
 
 with open('/sizes.json', 'w') as sizes_file:
   json.dump(sizes, sizes_file)

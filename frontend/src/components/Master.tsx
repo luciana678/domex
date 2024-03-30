@@ -7,7 +7,7 @@ import useMapReduce from '@/hooks/useMapReduce'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
 import { FinalResults, KeyValuesCount, ReducerState, UserID, UserResults } from '@/types'
-import { Button } from '@mui/material'
+import { LoadingButton } from '@mui/lab'
 import { useEffect, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
@@ -46,6 +46,7 @@ export default function Master() {
   const { fileTrees } = useFiles()
   const [allUsersReady, setAllUsersReady] = useState(false)
   const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
+  const [loading, setLoading] = useState(false)
 
   const finished = mapReduceState.finishedNodes === clusterUsers.length
 
@@ -74,6 +75,7 @@ export default function Master() {
     const action: Action = { type: 'SET_CODES', payload: code }
     broadcastMessage(action)
     dispatchMapReduce(action)
+    setLoading(true)
   }
 
   useEffect(() => {
@@ -226,13 +228,15 @@ export default function Master() {
           </div>
         </div>
       </div>
-      <Button
+      <LoadingButton
         variant='outlined'
         color='success'
         onClick={handleIniciarProcesamiento}
+        loading={loading && !finished}
+        loadingPosition='center'
         disabled={!allUsersReady || finished}>
         Iniciar procesamiento
-      </Button>
+      </LoadingButton>
 
       <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
       {finished && (
