@@ -14,11 +14,12 @@ import { concatenateFiles } from '@/utils/helpers'
 import { PY_MAIN_CODE } from '@/utils/python/tmp'
 import { Button } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
-import { usePython } from 'react-py'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
 import Results from './Results'
+import Output from './Output'
+import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
 
 const initialMapCombinerResults: MapCombinerResults = {
   mapResults: {},
@@ -43,10 +44,25 @@ export default function Slave() {
   const [keysSent, setKeysSent] = useState(false)
   const [finished, setFinished] = useState(false)
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
+  const [executing, setExecuting] = useState(false)
 
-  const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython({
-    packages: { micropip: ['pyodide-http'] },
-  })
+  useEffect(() => {
+    if (mapReduceState.resetState) {
+      setMapCombinerResults(initialMapCombinerResults)
+      setReduceResults({})
+      setFinalResults({
+        mapTotalCount: {},
+        combinerTotalCount: {},
+        sizes: initialSizes,
+      })
+      setKeysSent(false)
+      setFinished(false)
+      setMapCombinerExecuted(false)
+    }
+  }, [mapReduceState.resetState])
+
+  const { runPython, stdout, stderr, writeFile, readFile, isReady, readErrors } =
+    usePythonCodeValidator()
 
   const statistics = useStatistics(finalResults)
 
@@ -74,7 +90,10 @@ export default function Slave() {
   useEffect(() => {
     // This useEffect will be executed when the map code has been received and the python module is ready to execute the map phase.
     // The map combiner fase was be executed.
+    if (executing) return
     if (mapCombinerExecuted) return
+
+    if (mapReduceState.errors) return
 
     // the map code has not been received yet
     if (mapReduceState.code.mapCode === placeholdersFunctions.map.code) return
@@ -97,7 +116,15 @@ export default function Slave() {
       await writeFile('/combiner_code.py', mapReduceState.code.combinerCode)
       await writeFile('/reduce_code.py', mapReduceState.code.reduceCode)
       await runPython(PY_MAIN_CODE)
+
+      const errors = await readErrors()
+      if (errors) {
+        setExecuting(false)
+        return
+      }
+
       const mapCombinerResults = await readMapCombinerResults()
+      setMapCombinerExecuted(true)
       setMapCombinerResults(mapCombinerResults)
       const newSizes = await readSizes()
       updateSizes(newSizes)
@@ -117,14 +144,17 @@ export default function Slave() {
         },
       }
       sendDirectMessage(roomOwner?.userID as UserID, data)
+
+      setExecuting(false)
     }
 
     runCode()
-
-    setMapCombinerExecuted(true)
+    setExecuting(true)
   }, [
+    executing,
     isReady,
     mapCombinerExecuted,
+    mapReduceState.errors,
     mapReduceState.code.combinerCode,
     mapReduceState.code.mapCode,
     mapReduceState.code.reduceCode,
@@ -135,6 +165,9 @@ export default function Slave() {
     selectedFiles,
     sendDirectMessage,
     writeFile,
+    mapCombinerResults,
+    stderr,
+    readErrors,
   ])
 
   useEffect(() => {
@@ -186,7 +219,11 @@ export default function Slave() {
 
   useEffect(() => {
     // That useEffect will be executed when all the reducers (users) have sent their keys to the actual user. The map combiner has been executed.
+
+    if (executing) return
+
     if (finished) return
+    if (mapReduceState.errors) return
     if (!mapCombinerExecuted) return
     if (!keysSent) return
     // Check if the python module is ready to execute the reduce phase.
@@ -230,6 +267,12 @@ export default function Slave() {
       await writeFile('/reduce_keys.json', JSON.stringify(newReduceKeys))
       await runPython(PY_MAIN_CODE)
 
+      const errors = await readErrors()
+      if (errors) {
+        setExecuting(false)
+        return
+      }
+
       const data = (await readFile('/reduce_results.txt')) || ''
       const reduceResult: KeyValue = JSON.parse(data)
       setReduceResults(reduceResult)
@@ -248,19 +291,20 @@ export default function Slave() {
         },
       })
 
-      return reduceSizes
+      updateSizes({ ...receivedDataSizes, ...reduceSizes })
+      setFinished(true)
+      setExecuting(false)
     }
 
-    const reduceSizes = readResult()
-
-    setFinished(true)
-
-    updateSizes({ ...receivedDataSizes, ...reduceSizes })
+    setExecuting(true)
+    readResult()
   }, [
+    executing,
     keysSent,
     finished,
     isReady,
     mapCombinerExecuted,
+    mapReduceState.errors,
     roomOwner,
     mapReduceState.clavesRecibidas,
     mapReduceState.receiveKeysFrom,
@@ -273,6 +317,7 @@ export default function Slave() {
     sendDirectMessage,
     finalResults.sizes,
     mapCombinerResults.combinerResults,
+    readErrors,
   ])
 
   const readyToExecute = () => {
@@ -285,6 +330,7 @@ export default function Slave() {
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
+
       <div className='w-full flex flex-col'>
         <div className='flex flex-col lg:flex-row justify-center w-full gap-10 mb-5'>
           <div className='w-full'>
@@ -295,6 +341,7 @@ export default function Slave() {
               codeEditorProps={{
                 readOnly: true,
               }}
+              error={mapReduceState.output.stderr.mapCode}
             />
             <BasicAccordion
               title={placeholdersFunctions.combiner.title}
@@ -303,6 +350,7 @@ export default function Slave() {
               codeEditorProps={{
                 readOnly: true,
               }}
+              error={mapReduceState.output.stderr.combinerCode}
             />
             <BasicAccordion
               title={placeholdersFunctions.reduce.title}
@@ -311,6 +359,7 @@ export default function Slave() {
               codeEditorProps={{
                 readOnly: true,
               }}
+              error={mapReduceState.output.stderr.reduceCode}
             />
           </div>
           <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full  min-w-fit lg:max-w-[300px]'>
@@ -319,6 +368,7 @@ export default function Slave() {
           </div>
         </div>
       </div>
+
       <Button
         variant='outlined'
         color='success'
@@ -327,10 +377,7 @@ export default function Slave() {
         Listo para ejecutar
       </Button>
 
-      <pre className='mt-4 text-left'>
-        <textarea defaultValue={stdout}></textarea>
-        <code className='text-red-500'>{stderr}</code>
-      </pre>
+      <Output stderr={mapReduceState.errors} stdout={stdout} />
 
       {finished && (
         <>

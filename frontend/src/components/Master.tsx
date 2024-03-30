@@ -12,11 +12,12 @@ import { useEffect, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
-import { initialSizes } from '@/context/MapReduceContext'
+import { Action, initialSizes } from '@/context/MapReduceContext'
 import useStatistics from '@/hooks/useStatisticts'
 import FolderTree from './ui/FolderTree'
 import useFiles from '@/hooks/useFiles'
 import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
+import Output from '@/components/Output'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -32,18 +33,21 @@ const WordCountCode = {
   `,
 }
 
+const initialFinalResults: FinalResults = {
+  mapTotalCount: {},
+  combinerTotalCount: {},
+  sizes: initialSizes,
+}
+
 export default function Master() {
   const { clusterUsers, roomSession, lockRoom } = useRoom()
-  const { mapReduceState } = useMapReduce()
+  const { mapReduceState, dispatchMapReduce } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const { fileTrees } = useFiles()
   const [allUsersReady, setAllUsersReady] = useState(false)
-  const [finalResults, setFinalResults] = useState<FinalResults>({
-    mapTotalCount: {},
-    combinerTotalCount: {},
-    sizes: initialSizes,
-  })
-  const finished = !!Object.keys(finalResults.mapTotalCount).length
+  const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
+
+  const finished = mapReduceState.finishedNodes === clusterUsers.length
 
   const [code, setCode] = useState({
     mapCode: WordCountCode.map,
@@ -51,15 +55,9 @@ export default function Master() {
     reduceCode: WordCountCode.reduce,
   })
 
-  const [codeErrors, setCodeErrors] = useState({
-    mapCode: '',
-    combinerCode: '',
-    reduceCode: '',
-  })
-
   const statistics = useStatistics(finalResults)
 
-  const { isValidPythonCode } = usePythonCodeValidator(code, setCodeErrors)
+  const { isValidPythonCode } = usePythonCodeValidator()
 
   const getTotalCounts = (totalCounts: KeyValuesCount, result: UserResults) =>
     Object.values(result).forEach((keyList) => {
@@ -69,10 +67,13 @@ export default function Master() {
     })
 
   const handleIniciarProcesamiento = async () => {
-    const isValid = await isValidPythonCode()
+    const isValid = await isValidPythonCode(code)
     if (!isValid) return
     lockRoom()
-    broadcastMessage({ type: 'SET_CODES', payload: code })
+    setFinalResults(initialFinalResults)
+    const action: Action = { type: 'SET_CODES', payload: code }
+    broadcastMessage(action)
+    dispatchMapReduce(action)
   }
 
   useEffect(() => {
@@ -196,7 +197,7 @@ export default function Master() {
           <BasicAccordion
             title={placeholdersFunctions.map.title}
             codeState={[code.mapCode, (newCode: string) => setCode({ ...code, mapCode: newCode })]}
-            error={codeErrors.mapCode}
+            error={mapReduceState.output.stderr.mapCode}
           />
           <BasicAccordion
             title={placeholdersFunctions.combiner.title}
@@ -204,7 +205,7 @@ export default function Master() {
               code.combinerCode,
               (newCode: string) => setCode({ ...code, combinerCode: newCode }),
             ]}
-            error={codeErrors.combinerCode}
+            error={mapReduceState.output.stderr.combinerCode}
           />
           <BasicAccordion
             title={placeholdersFunctions.reduce.title}
@@ -212,7 +213,7 @@ export default function Master() {
               code.reduceCode,
               (newCode: string) => setCode({ ...code, reduceCode: newCode }),
             ]}
-            error={codeErrors.reduceCode}
+            error={mapReduceState.output.stderr.reduceCode}
           />
         </div>
         <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full min-w-fit lg:max-w-[300px]'>
@@ -232,12 +233,18 @@ export default function Master() {
         disabled={!allUsersReady || finished}>
         Iniciar procesamiento
       </Button>
-      <Results
-        className='flex flex-col w-full mt-5'
-        title='Resultados'
-        data={mapReduceState.reduceResult}
-      />
-      {finished && <Statistics statistics={statistics} />}
+
+      <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
+      {finished && (
+        <>
+          <Results
+            className='flex flex-col w-full mt-5'
+            title='Resultados'
+            data={mapReduceState.reduceResult}
+          />
+          <Statistics statistics={statistics} />
+        </>
+      )}
     </main>
   )
 }

@@ -18,7 +18,7 @@ export default function BasicAccordion({
 }: {
   title: string
   codeState: any
-  error?: string
+  error: string
   showLoadFileButton?: boolean
   codeEditorProps?: any
 }) {
@@ -61,9 +61,9 @@ export default function BasicAccordion({
             }}>
             {title}
           </Typography>
+          <span className='text-red-500 mr-2'>{error}</span>
           {showLoadFileButton && (
             <>
-              <span className='text-red-500'>{error}</span>
               <input
                 type='file'
                 id={title}

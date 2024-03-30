@@ -41,6 +41,11 @@ export type Code = {
   reduceCode: string
 }
 
+export type Output = {
+  stderr: Code
+  stdout: string
+}
+
 export type ReducerState = {
   code: Code
   combinerResults: UserResults
@@ -54,6 +59,10 @@ export type ReducerState = {
     [userToSendKeys: UserID]: string[]
   }
   mapNodesCount: int
+  output: Output
+  errors: string
+  resetState: int
+  finishedNodes: int
 }
 
 export type KeyValuesCount = {

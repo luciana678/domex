@@ -12,7 +12,7 @@ import { handleActionSignal } from '@/utils/handleActions'
 import useFiles from './useFiles'
 
 const useInitializePeers = () => {
-  const { peers, setPeers, setClusterUsers } = useContext(RoomContext)
+  const { peers, setPeers, setClusterUsers, clusterUsers } = useContext(RoomContext)
   const { addPeer, deletePeer } = usePeers()
   const { dispatchMapReduce } = useMapReduce()
   const { handleReceivingFiles } = useFiles()
@@ -45,6 +45,7 @@ const useInitializePeers = () => {
         const decodedData: Action = JSON.parse(data.toString('utf8'))
         // TODO: handle the data here (e.g. dispatch an action)
         decodedData['userID'] = userID
+        decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
 
         handleActionSignal({ action: decodedData, setClusterUsers })
         dispatchMapReduce(decodedData)

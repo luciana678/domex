@@ -1,7 +1,7 @@
 'use client'
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
-import { KeyValuesCount, ReducerState, Sizes, UserID } from '@/types'
+import { Code, KeyValuesCount, Output, ReducerState, Sizes, UserID } from '@/types'
 import { PropsWithChildren, createContext, useReducer } from 'react'
 
 export type MapReduceContextType = {
@@ -17,12 +17,13 @@ export const actionTypes = {
   RESULTADO_FINAL: 'RESULTADO_FINAL',
   READY_TO_EXECUTE: 'READY_TO_EXECUTE',
   UPDATE_FILES: 'UPDATE_FILES',
+  SET_OUTPUT: 'SET_OUTPUT',
 } as const
 
 export type Action = {
-  userID: UserID
-  payload: unknown
-  payloadSize: number
+  userID?: UserID
+  userName?: string
+  payloadSize?: number
 } & (
   | { type: 'SET_CODES'; payload: ReducerState['code'] }
   | {
@@ -55,6 +56,10 @@ export type Action = {
       type: 'UPDATE_FILES'
       payload: { fileNames: string[] }
     }
+  | {
+      type: 'SET_OUTPUT'
+      payload: Output
+    }
 )
 
 export const initialSizes: Sizes = {
@@ -72,6 +77,15 @@ export const initialSizes: Sizes = {
   reduceOutput: 0,
 }
 
+export const initialOutput: Output = {
+  stderr: {
+    mapCode: '',
+    combinerCode: '',
+    reduceCode: '',
+  },
+  stdout: '',
+}
+
 const initialState: ReducerState = {
   code: {
     mapCode: placeholdersFunctions.map.code,
@@ -87,6 +101,10 @@ const initialState: ReducerState = {
   reduceResult: {},
   sizes: initialSizes,
   mapNodesCount: 0,
+  output: initialOutput,
+  errors: '',
+  resetState: -1,
+  finishedNodes: 0,
 }
 
 const MapReduceContext = createContext<MapReduceContextType>({
@@ -95,19 +113,24 @@ const MapReduceContext = createContext<MapReduceContextType>({
 })
 
 const reducer = (state: ReducerState, action: Action) => {
+  const userID = action.userID as UserID
   switch (action.type) {
     case actionTypes.SET_CODES:
-      return { ...state, code: action.payload }
+      return {
+        ...initialState,
+        code: action.payload,
+        resetState: state.resetState + 1,
+      }
     case actionTypes.MAP_COMBINER_EJECUTADO:
       return {
         ...state,
         combinerResults: {
           ...state.combinerResults,
-          [action.userID]: action.payload.combinerResults,
+          [userID]: action.payload.combinerResults,
         },
         mapResults: {
           ...state.mapResults,
-          [action.userID]: action.payload.mapResults,
+          [userID]: action.payload.mapResults,
         },
       }
     case actionTypes.EJECUTAR_REDUCE:
@@ -127,7 +150,7 @@ const reducer = (state: ReducerState, action: Action) => {
         },
         clavesRecibidas: {
           ...state.clavesRecibidas,
-          [action.userID]: action.payload,
+          [userID]: action.payload,
         },
       }
     case actionTypes.RESULTADO_FINAL:
@@ -145,9 +168,42 @@ const reducer = (state: ReducerState, action: Action) => {
         reduceResult: newReduceResult,
         sizes: currentSizes,
         mapNodesCount: newSizes.inputFiles ? state.mapNodesCount + 1 : state.mapNodesCount,
+        finishedNodes: state.finishedNodes + 1,
       }
     case actionTypes.READY_TO_EXECUTE:
       return state
+    case actionTypes.SET_OUTPUT:
+      let errors = Object.values(action.payload.stderr).join('\n').trim()
+
+      const newState = errors ? initialState : state
+
+      let stdout = action.payload.stdout
+      let stderr = action.payload.stderr
+
+      if (action.userName) {
+        stdout = `Node ${action.userName}: ${stdout}\n`
+
+        if (errors) {
+          const newError = `Node ${action.userName}: ${errors}\n`
+          errors = state.errors + newError
+          const detectedError = Object.keys(action.payload.stderr).find(
+            (code) => !!action.payload.stderr[code as keyof Code],
+          ) as keyof Code
+          stderr = {
+            ...state.output.stderr,
+            [detectedError]: state.output.stderr[detectedError] + newError,
+          }
+        }
+      }
+
+      return {
+        ...newState,
+        output: {
+          stdout,
+          stderr,
+        },
+        errors,
+      }
     default:
       return state
   }
