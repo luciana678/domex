@@ -28,6 +28,14 @@ class Context:
     for key, values in reduce_keys.items():
       fred(key, values)
 
+def safe_execute(name, func):
+  try:
+    return func()
+  except Exception as e:
+    with open('/stderr.json', 'w') as errors_file:
+      json.dump({name: f"[{name}] -> {str(e)}"}, errors_file)
+    sys.exit(0)
+
 context = Context()
 
 sizes = {}
@@ -41,7 +49,7 @@ if os.path.exists('/reduce_keys.json'):
     reduce_keys = json.load(reduce_keys_file)
   sizes['reduceInput'] = os.path.getsize("/reduce_keys.json")
 
-  context.reduce(reduce_keys)
+  safe_execute('reduceCode', lambda: context.reduce(reduce_keys))
 
   with open('/reduce_results.txt', 'w') as result_file:
     json.dump(context.reduce_results, result_file)
@@ -53,7 +61,7 @@ else:
     exec(map_code.read())
     
   with open('/input.txt') as input:
-    results = list(map(fmap, input.readlines()))
+    results = safe_execute('mapCode', lambda: list(map(fmap, input.readlines())))
   sizes['mapInput'] = os.path.getsize("/input.txt")
 
   with open('/map_results.txt', 'w') as result_file:
@@ -67,7 +75,7 @@ else:
     exec(code)
 
   if not empty_combine:
-    context.combine()
+    safe_execute('combineCode', lambda: context.combine())
 
   with open('/combiner_results.txt', 'w') as result_file:
     results = context.map_results if empty_combine else context.combine_results
@@ -76,4 +84,7 @@ else:
 
 with open('/sizes.json', 'w') as sizes_file:
   json.dump(sizes, sizes_file)
+
+if os.path.exists('/stderr.json'):
+  os.remove("/stderr.json")
 `

@@ -31,11 +31,11 @@ export const validatePythonCode = `
 try:
   with open('/code.py') as code:
     exec(code.read())
-except:
-  is_valid = False
+except Exception as e:
+  message = str(e)
 else:
-  is_valid = True
+  message = ''
 finally:
   with open('/is_valid', 'w') as f:
-    f.write(str(is_valid))
+    f.write(message)
 `
