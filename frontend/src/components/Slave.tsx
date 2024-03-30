@@ -47,6 +47,7 @@ export default function Slave() {
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
   const [executing, setExecuting] = useState(false)
   const [mapExecuted, setMapExecuted] = useState(false)
+  const [stdoutHistory, setStdoutHistory] = useState('')
 
   const { runPython, stdout, stderr, writeFile, readFile, isReady, readErrors } =
     usePythonCodeValidator()
@@ -69,6 +70,12 @@ export default function Slave() {
   }, [mapReduceState.resetState])
 
   useEffect(() => {
+    const lines = stdout.split(/\n/)
+    const lastLine = lines[lines.length - 1]
+    if (!lastLine) return
+
+    setStdoutHistory((prev) => prev + lastLine + '\n')
+
     if (mapExecuted) return
 
     setMapExecuted(stdout.includes('MAP EJECUTADO SATISFACTORIAMENTE'))
@@ -395,7 +402,7 @@ export default function Slave() {
         Listo para ejecutar
       </Button>
 
-      <Output stderr={mapReduceState.errors} stdout={stdout} />
+      <Output stderr={mapReduceState.errors} stdout={stdoutHistory} />
 
       {finished && (
         <>
