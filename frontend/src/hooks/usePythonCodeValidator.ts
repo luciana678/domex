@@ -7,17 +7,57 @@ import useMapReduce from '@/hooks/useMapReduce'
 import { Action, initialOutput } from '@/context/MapReduceContext'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
+import { useEffect, useState } from 'react'
+import useFiles from '@/hooks/useFiles'
 
 export const usePythonCodeValidator = () => {
   const { runPython, stdout, stderr, isReady, readFile, writeFile } = usePython({
     packages: { micropip: ['pyodide-http'] },
   })
 
-  const { dispatchMapReduce } = useMapReduce()
+  const { dispatchMapReduce, mapReduceState } = useMapReduce()
 
   const { sendDirectMessage } = usePeers()
 
   const { roomOwner } = useRoom()
+
+  const [stdoutHistory, setStdoutHistory] = useState('')
+
+  const { nodeHasFiles } = useFiles()
+
+  const resetStdoutHistory = () => setStdoutHistory('')
+
+  useEffect(() => {
+    const lines = stdout.split(/\n/)
+    const lastLine = lines[lines.length - 1]
+    if (!lastLine) return
+
+    if (
+      (lastLine === 'MAP EJECUTADO SATISFACTORIAMENTE' ||
+        lastLine === 'COMBINE EJECUTADO SATISFACTORIAMENTE') &&
+      !nodeHasFiles
+    ) {
+      dispatchMapReduce({ type: 'MAP_EXECUTED' })
+      return
+    }
+
+    if (
+      lastLine === 'REDUCE EJECUTADO SATISFACTORIAMENTE' &&
+      !Object.keys(mapReduceState.reduceKeys).length
+    )
+      return
+
+    setStdoutHistory((prev) => prev + lastLine + '\n')
+
+    const action: Action = {
+      type: 'SET_STDOUT',
+      payload: lastLine,
+    }
+
+    dispatchMapReduce(action)
+
+    sendDirectMessage(roomOwner?.userID as UserID, action)
+  }, [stdout])
 
   const runPythonCodeValidator = async (code: string) => {
     await writeFile('/code.py', code)
@@ -33,17 +73,14 @@ export const usePythonCodeValidator = () => {
     } catch (e) {
       stderr = initialOutput.stderr
     }
-    dispatchOutput({ ...initialOutput.stderr, ...stderr })
+    dispatchStderr({ ...initialOutput.stderr, ...stderr })
     return hasErrors(stderr)
   }
 
-  const dispatchOutput = (stderr: Code) => {
+  const dispatchStderr = (stderr: Code) => {
     const action: Action = {
-      type: 'SET_OUTPUT',
-      payload: {
-        stderr,
-        stdout: stdout,
-      },
+      type: 'SET_STDERR',
+      payload: stderr,
     }
 
     dispatchMapReduce(action)
@@ -68,10 +105,20 @@ export const usePythonCodeValidator = () => {
         : await runPythonCodeValidator(code.reduceCode),
     }
 
-    dispatchOutput(stderr)
+    dispatchStderr(stderr)
 
     return !hasErrors(stderr)
   }
 
-  return { isValidPythonCode, readErrors, runPython, stdout, stderr, isReady, readFile, writeFile }
+  return {
+    isValidPythonCode,
+    readErrors,
+    runPython,
+    stdoutHistory,
+    stderr,
+    isReady,
+    readFile,
+    writeFile,
+    resetStdoutHistory,
+  }
 }

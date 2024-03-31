@@ -41,7 +41,11 @@ const useFiles = () => {
       }),
   ]
 
+  const nodeHasFiles = !!ownFileTree.items?.length
+
   const fileTrees = ownFileTree.items?.length ? [ownFileTree, ...nodesFileTree] : nodesFileTree
+
+  const fileOwnersCount = fileTrees.length
 
   useEffect(() => {
     // Broadcast own files to all peers
@@ -86,7 +90,15 @@ const useFiles = () => {
     }
   }
 
-  return { selectedFiles, fileTrees, deleteFile, addFiles, handleReceivingFiles }
+  return {
+    selectedFiles,
+    fileTrees,
+    deleteFile,
+    addFiles,
+    handleReceivingFiles,
+    fileOwnersCount,
+    nodeHasFiles,
+  }
 }
 
 export default useFiles

@@ -9,6 +9,7 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import Typography from '@mui/material/Typography'
 import CodeEditor from './CodeEditor'
 import { useEffect, useState } from 'react'
+import Progress from '@/components/Progress'
 
 export default function BasicAccordion({
   title,
@@ -17,6 +18,9 @@ export default function BasicAccordion({
   loading = false,
   finished = false,
   showLoadFileButton = true,
+  fileButtonDisabled = false,
+  total,
+  current,
   codeEditorProps,
 }: {
   title: string
@@ -25,6 +29,9 @@ export default function BasicAccordion({
   loading?: boolean
   finished?: boolean
   showLoadFileButton?: boolean
+  fileButtonDisabled?: boolean
+  total?: number
+  current?: number
   codeEditorProps?: any
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -71,6 +78,7 @@ export default function BasicAccordion({
           {finished && <DoneIcon color='success' fontSize='large' />}
           {showLoadFileButton && (
             <>
+              <Progress total={total as number} current={current as number} />
               <input
                 type='file'
                 id={title}
@@ -88,6 +96,7 @@ export default function BasicAccordion({
                   }}
                   variant='outlined'
                   component='span'
+                  disabled={fileButtonDisabled}
                   onClick={(event) => {
                     event.preventDefault()
                     event.stopPropagation()

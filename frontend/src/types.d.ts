@@ -59,6 +59,9 @@ export type ReducerState = {
     [userToSendKeys: UserID]: string[]
   }
   mapNodesCount: int
+  finishedMapNodes: int
+  finishedCombinerNodes: int
+  finishedReducerNodes: int
   output: Output
   errors: string
   resetState: int

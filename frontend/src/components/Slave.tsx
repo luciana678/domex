@@ -46,40 +46,31 @@ export default function Slave() {
   const [finished, setFinished] = useState(false)
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
   const [executing, setExecuting] = useState(false)
-  const [mapExecuted, setMapExecuted] = useState(false)
-  const [stdoutHistory, setStdoutHistory] = useState('')
 
-  const { runPython, stdout, stderr, writeFile, readFile, isReady, readErrors } =
+  const mapExecuted = !!mapReduceState.finishedMapNodes
+
+  const { runPython, stdoutHistory, writeFile, readFile, isReady, readErrors, resetStdoutHistory } =
     usePythonCodeValidator()
 
   const statistics = useStatistics(finalResults)
 
   useEffect(() => {
-    if (mapReduceState.resetState) {
-      setMapCombinerResults(initialMapCombinerResults)
-      setReduceResults({})
-      setFinalResults({
-        mapTotalCount: {},
-        combinerTotalCount: {},
-        sizes: initialSizes,
-      })
-      setKeysSent(false)
-      setFinished(false)
-      setMapCombinerExecuted(false)
-    }
+    if (mapReduceState.resetState < 0) return
+
+    setMapCombinerResults(initialMapCombinerResults)
+    setReduceResults({})
+    setFinalResults({
+      mapTotalCount: {},
+      combinerTotalCount: {},
+      sizes: initialSizes,
+    })
+    setKeysSent(false)
+    setFinished(false)
+    setMapCombinerExecuted(false)
+    setStarted(false)
+    setExecuting(false)
+    resetStdoutHistory()
   }, [mapReduceState.resetState])
-
-  useEffect(() => {
-    const lines = stdout.split(/\n/)
-    const lastLine = lines[lines.length - 1]
-    if (!lastLine) return
-
-    setStdoutHistory((prev) => prev + lastLine + '\n')
-
-    if (mapExecuted) return
-
-    setMapExecuted(stdout.includes('MAP EJECUTADO SATISFACTORIAMENTE'))
-  }, [stdout])
 
   const updateSizes = (newSizes: Partial<Sizes>) =>
     setFinalResults((prevResults) => ({
@@ -184,7 +175,6 @@ export default function Slave() {
     sendDirectMessage,
     writeFile,
     mapCombinerResults,
-    stderr,
     readErrors,
   ])
 
@@ -301,6 +291,7 @@ export default function Slave() {
       sendDirectMessage(roomOwner?.userID as UserID, {
         type: 'RESULTADO_FINAL',
         payload: {
+          incrementReducerNodes: Object.keys(mapReduceState.reduceKeys).length > 0,
           reduceResult,
           sizes: {
             ...finalResults.sizes,
@@ -361,7 +352,7 @@ export default function Slave() {
                 readOnly: true,
               }}
               error={mapReduceState.output.stderr.mapCode}
-              loading={started && !mapExecuted}
+              loading={started && !mapExecuted && !mapReduceState.errors}
               finished={mapExecuted}
             />
             <BasicAccordion
@@ -372,7 +363,7 @@ export default function Slave() {
                 readOnly: true,
               }}
               error={mapReduceState.output.stderr.combinerCode}
-              loading={mapExecuted && !mapCombinerExecuted}
+              loading={mapExecuted && !mapCombinerExecuted && !mapReduceState.errors}
               finished={mapCombinerExecuted}
             />
             <BasicAccordion
@@ -383,7 +374,7 @@ export default function Slave() {
                 readOnly: true,
               }}
               error={mapReduceState.output.stderr.reduceCode}
-              loading={mapCombinerExecuted && !finished}
+              loading={mapCombinerExecuted && !finished && !mapReduceState.errors}
               finished={finished}
             />
           </div>

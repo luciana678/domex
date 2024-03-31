@@ -17,7 +17,9 @@ export const actionTypes = {
   RESULTADO_FINAL: 'RESULTADO_FINAL',
   READY_TO_EXECUTE: 'READY_TO_EXECUTE',
   UPDATE_FILES: 'UPDATE_FILES',
-  SET_OUTPUT: 'SET_OUTPUT',
+  SET_STDERR: 'SET_STDERR',
+  SET_STDOUT: 'SET_STDOUT',
+  MAP_EXECUTED: 'MAP_EXECUTED',
 } as const
 
 export type Action = {
@@ -49,7 +51,11 @@ export type Action = {
     }
   | {
       type: 'RESULTADO_FINAL'
-      payload: { sizes: Sizes; reduceResult: ReducerState['reduceResult'] }
+      payload: {
+        sizes: Sizes
+        incrementReducerNodes: boolean
+        reduceResult: ReducerState['reduceResult']
+      }
     }
   | { type: 'READY_TO_EXECUTE' }
   | {
@@ -57,9 +63,14 @@ export type Action = {
       payload: { fileNames: string[] }
     }
   | {
-      type: 'SET_OUTPUT'
-      payload: Output
+      type: 'SET_STDERR'
+      payload: Code
     }
+  | {
+      type: 'SET_STDOUT'
+      payload: string
+    }
+  | { type: 'MAP_EXECUTED' }
 )
 
 export const initialSizes: Sizes = {
@@ -101,6 +112,9 @@ const initialState: ReducerState = {
   reduceResult: {},
   sizes: initialSizes,
   mapNodesCount: 0,
+  finishedMapNodes: 0,
+  finishedCombinerNodes: 0,
+  finishedReducerNodes: 0,
   output: initialOutput,
   errors: '',
   resetState: -1,
@@ -169,40 +183,65 @@ const reducer = (state: ReducerState, action: Action) => {
         sizes: currentSizes,
         mapNodesCount: newSizes.inputFiles ? state.mapNodesCount + 1 : state.mapNodesCount,
         finishedNodes: state.finishedNodes + 1,
+        finishedReducerNodes: action.payload.incrementReducerNodes
+          ? state.finishedReducerNodes + 1
+          : state.finishedReducerNodes,
       }
     case actionTypes.READY_TO_EXECUTE:
       return state
-    case actionTypes.SET_OUTPUT:
-      let errors = Object.values(action.payload.stderr).join('\n').trim()
+    case actionTypes.SET_STDOUT:
+      let newStdout = action.payload
+      if (action.userName && newStdout) {
+        newStdout = `Node ${action.userName}: ${newStdout}\n`
+      }
+      const stdout = state.output.stdout + newStdout
+
+      return {
+        ...state,
+        finishedMapNodes: stdout.match(/MAP EJECUTADO SATISFACTORIAMENTE/g)?.length || 0,
+        finishedCombinerNodes: stdout.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g)?.length || 0,
+        output: {
+          ...state.output,
+          stdout,
+        },
+      }
+    case actionTypes.SET_STDERR:
+      let errors = Object.values(action.payload).join('\n').trim()
 
       const newState = errors ? initialState : state
 
-      let stdout = action.payload.stdout
-      let stderr = action.payload.stderr
+      let stderr = action.payload
 
       if (action.userName) {
-        stdout = `Node ${action.userName}: ${stdout}\n`
-
         if (errors) {
           const newError = `Node ${action.userName}: ${errors}\n`
           errors = state.errors + newError
-          const detectedError = Object.keys(action.payload.stderr).find(
-            (code) => !!action.payload.stderr[code as keyof Code],
+          const detectedError = Object.keys(action.payload).find(
+            (code) => !!action.payload[code as keyof Code],
           ) as keyof Code
           stderr = {
             ...state.output.stderr,
             [detectedError]: state.output.stderr[detectedError] + newError,
           }
+        } else {
+          stderr = state.output.stderr
+          errors = state.errors
         }
       }
 
       return {
         ...newState,
+        code: state.code,
         output: {
-          stdout,
+          ...state.output,
           stderr,
         },
         errors,
+      }
+    case actionTypes.MAP_EXECUTED:
+      return {
+        ...state,
+        finishedMapNodes: state.finishedMapNodes + 1,
       }
     default:
       return state

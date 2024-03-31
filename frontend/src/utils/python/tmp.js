@@ -76,7 +76,7 @@ else:
     exec(code)
 
   if not empty_combine:
-    safe_execute('combineCode', lambda: context.combine())
+    safe_execute('combinerCode', lambda: context.combine())
 
   with open('/combiner_results.txt', 'w') as result_file:
     results = context.map_results if empty_combine else context.combine_results

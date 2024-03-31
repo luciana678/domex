@@ -37,18 +37,21 @@ const initialFinalResults: FinalResults = {
   mapTotalCount: {},
   combinerTotalCount: {},
   sizes: initialSizes,
+  mapNodesCount: 0,
+  reducerNodesCount: 0,
 }
 
 export default function Master() {
   const { clusterUsers, roomSession, lockRoom } = useRoom()
   const { mapReduceState, dispatchMapReduce } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
-  const { fileTrees } = useFiles()
+  const { fileTrees, fileOwnersCount } = useFiles()
   const [allUsersReady, setAllUsersReady] = useState(false)
   const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
-  const [loading, setLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
 
-  const finished = mapReduceState.finishedNodes === clusterUsers.length
+  const finished = clusterUsers.length > 0 && mapReduceState.finishedNodes === clusterUsers.length
+  const loading = isLoading && !finished && !mapReduceState.errors
 
   const [code, setCode] = useState({
     mapCode: WordCountCode.map,
@@ -75,7 +78,7 @@ export default function Master() {
     const action: Action = { type: 'SET_CODES', payload: code }
     broadcastMessage(action)
     dispatchMapReduce(action)
-    setLoading(true)
+    setIsLoading(true)
   }
 
   useEffect(() => {
@@ -200,6 +203,9 @@ export default function Master() {
             title={placeholdersFunctions.map.title}
             codeState={[code.mapCode, (newCode: string) => setCode({ ...code, mapCode: newCode })]}
             error={mapReduceState.output.stderr.mapCode}
+            fileButtonDisabled={loading}
+            total={fileOwnersCount}
+            current={mapReduceState.finishedMapNodes}
           />
           <BasicAccordion
             title={placeholdersFunctions.combiner.title}
@@ -208,6 +214,9 @@ export default function Master() {
               (newCode: string) => setCode({ ...code, combinerCode: newCode }),
             ]}
             error={mapReduceState.output.stderr.combinerCode}
+            fileButtonDisabled={loading}
+            total={fileOwnersCount}
+            current={mapReduceState.finishedCombinerNodes}
           />
           <BasicAccordion
             title={placeholdersFunctions.reduce.title}
@@ -216,6 +225,9 @@ export default function Master() {
               (newCode: string) => setCode({ ...code, reduceCode: newCode }),
             ]}
             error={mapReduceState.output.stderr.reduceCode}
+            fileButtonDisabled={loading}
+            total={finalResults.reducerNodesCount}
+            current={mapReduceState.finishedReducerNodes}
           />
         </div>
         <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full min-w-fit lg:max-w-[300px]'>
@@ -228,13 +240,14 @@ export default function Master() {
           </div>
         </div>
       </div>
+
       <LoadingButton
         variant='outlined'
         color='success'
         onClick={handleIniciarProcesamiento}
-        loading={loading && !finished}
+        loading={loading}
         loadingPosition='center'
-        disabled={!allUsersReady || finished}>
+        disabled={!allUsersReady || loading}>
         Iniciar procesamiento
       </LoadingButton>
 
