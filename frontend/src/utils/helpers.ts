@@ -15,6 +15,33 @@ export async function concatenateFiles(files: File[]) {
   }
 }
 
+export const mergeStrings = (str1: string, str2: string) => {
+  str1 = str1
+  str2 = str2.trim()
+
+  let newString = ''
+
+  for (let i = 0; i < str1.length; i++) {
+    if (str2.startsWith(str1.substring(i))) {
+      newString = str2.substring(str1.length - i)
+      break
+    }
+  }
+
+  let mergedString
+  if (newString) {
+    mergedString = str1 + newString
+  } else {
+    mergedString = str1 + str1 ? '\n' : '' + str2
+    newString = str2
+  }
+
+  return {
+    mergedString,
+    newString,
+  }
+}
+
 export const isValidFunctionHeader = (
   code: string,
   functionName: string,
@@ -38,4 +65,16 @@ else:
 finally:
   with open('/is_valid', 'w') as f:
     f.write(message)
+`
+
+export const resetPythonFiles = `
+import os
+
+for filename in os.listdir("/"):
+  try:
+    filepath = os.path.join("/", filename)
+    if os.path.isfile(filepath):
+        os.unlink(filepath)
+  except Exception:
+    pass
 `

@@ -7,7 +7,7 @@ import { useCallback, useContext, useEffect } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
 import useMapReduce from './useMapReduce'
-import { Action, actionTypes } from '@/context/MapReduceContext'
+import { Action } from '@/context/MapReduceContext'
 import { handleActionSignal } from '@/utils/handleActions'
 import useFiles from './useFiles'
 
@@ -21,6 +21,7 @@ const useInitializePeers = () => {
     const onWebRTCUserJoined = (payload: { signal: SignalData; callerID: UserID }) => {
       const peer = addPeer(payload.signal, payload.callerID)
       setPeers((peers) => ({ ...peers, [payload.callerID]: peer }))
+      dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
     }
 
     const onWebRTCReceivingReturnedSignal = (payload: { signal: SignalData; userID: UserID }) => {

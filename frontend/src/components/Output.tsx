@@ -5,7 +5,7 @@ export default function Output({ stdout, stderr }: { stdout: string; stderr: str
   return (
     <div className='mt-4 flex flex-col w-[600px] gap-5'>
       <div>
-        <FormLabel>Salida estandar</FormLabel>
+        <FormLabel>Salida estándar</FormLabel>
         <Textarea defaultValue={stdout} variant='soft' maxRows={5} />
       </div>
       <div>

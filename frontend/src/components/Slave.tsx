@@ -10,7 +10,7 @@ import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
 import useStatistics from '@/hooks/useStatisticts'
 import { FinalResults, KeyValue, KeyValues, MapCombinerResults, Sizes, UserID } from '@/types'
-import { concatenateFiles } from '@/utils/helpers'
+import { concatenateFiles, resetPythonFiles } from '@/utils/helpers'
 import { PY_MAIN_CODE } from '@/utils/python/tmp'
 import { Button } from '@mui/material'
 import { useCallback, useEffect, useState } from 'react'
@@ -26,6 +26,12 @@ const initialMapCombinerResults: MapCombinerResults = {
   combinerResults: {},
 }
 
+const initialFinalResults: FinalResults = {
+  mapTotalCount: {},
+  combinerTotalCount: {},
+  sizes: initialSizes,
+}
+
 export default function Slave() {
   const { roomOwner, roomSession } = useRoom()
   const { sendDirectMessage, broadcastMessage } = usePeers()
@@ -34,11 +40,7 @@ export default function Slave() {
   const [mapCombinerResults, setMapCombinerResults] =
     useState<MapCombinerResults>(initialMapCombinerResults)
   const [reduceResults, setReduceResults] = useState<KeyValue>({})
-  const [finalResults, setFinalResults] = useState<FinalResults>({
-    mapTotalCount: {},
-    combinerTotalCount: {},
-    sizes: initialSizes,
-  })
+  const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
 
   const [isReadyToExecute, setIsReadyToExecute] = useState(false)
   const [keysSent, setKeysSent] = useState(false)
@@ -49,28 +51,49 @@ export default function Slave() {
 
   const mapExecuted = !!mapReduceState.finishedMapNodes
 
-  const { runPython, stdoutHistory, writeFile, readFile, isReady, readErrors, resetStdoutHistory } =
+  const { runPython, writeFile, readFile, isReady, readErrors, resetStdoutHistory } =
     usePythonCodeValidator()
 
   const statistics = useStatistics(finalResults)
 
-  useEffect(() => {
-    if (mapReduceState.resetState < 0) return
-
+  const resetState = async () => {
     setMapCombinerResults(initialMapCombinerResults)
     setReduceResults({})
-    setFinalResults({
-      mapTotalCount: {},
-      combinerTotalCount: {},
-      sizes: initialSizes,
-    })
+    setFinalResults(initialFinalResults)
     setKeysSent(false)
     setFinished(false)
     setMapCombinerExecuted(false)
     setStarted(false)
-    setExecuting(false)
     resetStdoutHistory()
+
+    await runPython(resetPythonFiles)
+  }
+
+  useEffect(() => {
+    if (mapReduceState.resetState < 0) return
+
+    resetState()
   }, [mapReduceState.resetState])
+
+  useEffect(() => {
+    if (mapReduceState.errors || mapReduceState.resetReadyToExecute) {
+      resetState()
+      setIsReadyToExecute(false)
+    }
+
+    if (finished) {
+      setIsReadyToExecute(false)
+    }
+  }, [mapReduceState.errors, mapReduceState.resetReadyToExecute, finished])
+
+  useEffect(
+    () =>
+      broadcastMessage({
+        type: 'SET_READY_TO_EXECUTE',
+        payload: isReadyToExecute,
+      }),
+    [isReadyToExecute],
+  )
 
   const updateSizes = (newSizes: Partial<Sizes>) =>
     setFinalResults((prevResults) => ({
@@ -111,9 +134,9 @@ export default function Slave() {
 
     const runCode = async () => {
       const readMapCombinerResults = async (): Promise<MapCombinerResults> => {
-        const mapResults: KeyValues = JSON.parse((await readFile('/map_results.txt')) || '')
+        const mapResults: KeyValues = JSON.parse((await readFile('/map_results.json')) || '')
         const combinerResults: KeyValues = JSON.parse(
-          (await readFile('/combiner_results.txt')) || '',
+          (await readFile('/combiner_results.json')) || '',
         )
         return { mapResults, combinerResults }
       }
@@ -131,7 +154,6 @@ export default function Slave() {
         setStarted(false)
         return
       }
-
       const mapCombinerResults = await readMapCombinerResults()
       setMapCombinerExecuted(true)
       setMapCombinerResults(mapCombinerResults)
@@ -282,7 +304,7 @@ export default function Slave() {
         return
       }
 
-      const data = (await readFile('/reduce_results.txt')) || ''
+      const data = (await readFile('/reduce_results.json')) || ''
       const reduceResult: KeyValue = JSON.parse(data)
       setReduceResults(reduceResult)
 
@@ -330,13 +352,6 @@ export default function Slave() {
     readErrors,
   ])
 
-  const readyToExecute = () => {
-    setIsReadyToExecute(true)
-    broadcastMessage({
-      type: 'READY_TO_EXECUTE',
-    })
-  }
-
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Unido al cluster #${roomSession?.roomID}`} />
@@ -352,8 +367,8 @@ export default function Slave() {
                 readOnly: true,
               }}
               error={mapReduceState.output.stderr.mapCode}
-              loading={started && !mapExecuted && !mapReduceState.errors}
-              finished={mapExecuted}
+              loading={started && !mapExecuted && !mapCombinerExecuted && !mapReduceState.errors}
+              finished={mapExecuted || mapCombinerExecuted}
             />
             <BasicAccordion
               title={placeholdersFunctions.combiner.title}
@@ -388,12 +403,12 @@ export default function Slave() {
       <Button
         variant='outlined'
         color='success'
-        onClick={readyToExecute}
-        disabled={isReadyToExecute}>
+        onClick={() => setIsReadyToExecute(true)}
+        disabled={!isReady || isReadyToExecute}>
         Listo para ejecutar
       </Button>
 
-      <Output stderr={mapReduceState.errors} stdout={stdoutHistory} />
+      <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
 
       {finished && (
         <>

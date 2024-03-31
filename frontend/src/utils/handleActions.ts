@@ -8,11 +8,11 @@ export function handleActionSignal({
   action: Action
   setClusterUsers: React.Dispatch<React.SetStateAction<User[]>>
 }) {
-  if (action.type === actionTypes.READY_TO_EXECUTE) {
+  if (action.type === actionTypes.SET_READY_TO_EXECUTE) {
     return setClusterUsers((clusterUsers) =>
       clusterUsers.map((user) => {
         if (user.userID === action.userID) {
-          return { ...user, readyToExecuteMap: true }
+          return { ...user, readyToExecuteMap: action.payload }
         }
         return user
       }),

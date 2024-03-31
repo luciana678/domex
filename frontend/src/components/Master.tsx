@@ -42,15 +42,15 @@ const initialFinalResults: FinalResults = {
 }
 
 export default function Master() {
-  const { clusterUsers, roomSession, lockRoom } = useRoom()
+  const { clusterUsers, roomSession, toggleRoomLock } = useRoom()
   const { mapReduceState, dispatchMapReduce } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const { fileTrees, fileOwnersCount } = useFiles()
   const [allUsersReady, setAllUsersReady] = useState(false)
   const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
   const [isLoading, setIsLoading] = useState(false)
+  const [finished, setFinished] = useState(false)
 
-  const finished = clusterUsers.length > 0 && mapReduceState.finishedNodes === clusterUsers.length
   const loading = isLoading && !finished && !mapReduceState.errors
 
   const [code, setCode] = useState({
@@ -63,6 +63,11 @@ export default function Master() {
 
   const { isValidPythonCode } = usePythonCodeValidator()
 
+  const resetState = () => {
+    setFinished(false)
+    setFinalResults(initialFinalResults)
+  }
+
   const getTotalCounts = (totalCounts: KeyValuesCount, result: UserResults) =>
     Object.values(result).forEach((keyList) => {
       Object.entries(keyList).forEach(([key, count]) => {
@@ -70,11 +75,29 @@ export default function Master() {
       })
     })
 
+  useEffect(() => {
+    if (mapReduceState.resetState < 0) return
+    resetState()
+  }, [mapReduceState.resetState])
+
+  useEffect(
+    () =>
+      setFinished(clusterUsers.length > 0 && mapReduceState.finishedNodes === clusterUsers.length),
+    [mapReduceState.finishedNodes],
+  )
+
+  useEffect(() => {
+    if (!finished) return
+
+    setIsLoading(false)
+    toggleRoomLock()
+  }, [finished])
+
   const handleIniciarProcesamiento = async () => {
     const isValid = await isValidPythonCode(code)
     if (!isValid) return
-    lockRoom()
-    setFinalResults(initialFinalResults)
+    toggleRoomLock()
+    resetState()
     const action: Action = { type: 'SET_CODES', payload: code }
     broadcastMessage(action)
     dispatchMapReduce(action)

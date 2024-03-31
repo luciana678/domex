@@ -15,11 +15,13 @@ export const actionTypes = {
   EJECUTAR_REDUCE: 'EJECUTAR_REDUCE',
   RECIBIR_CLAVES: 'RECIBIR_CLAVES',
   RESULTADO_FINAL: 'RESULTADO_FINAL',
-  READY_TO_EXECUTE: 'READY_TO_EXECUTE',
+  SET_READY_TO_EXECUTE: 'SET_READY_TO_EXECUTE',
   UPDATE_FILES: 'UPDATE_FILES',
   SET_STDERR: 'SET_STDERR',
   SET_STDOUT: 'SET_STDOUT',
   MAP_EXECUTED: 'MAP_EXECUTED',
+  RESET_STATE: 'RESET_STATE',
+  RESET_READY_TO_EXECUTE: 'RESET_READY_TO_EXECUTE',
 } as const
 
 export type Action = {
@@ -57,7 +59,7 @@ export type Action = {
         reduceResult: ReducerState['reduceResult']
       }
     }
-  | { type: 'READY_TO_EXECUTE' }
+  | { type: 'SET_READY_TO_EXECUTE'; payload: boolean }
   | {
       type: 'UPDATE_FILES'
       payload: { fileNames: string[] }
@@ -71,6 +73,8 @@ export type Action = {
       payload: string
     }
   | { type: 'MAP_EXECUTED' }
+  | { type: 'RESET_STATE' }
+  | { type: 'RESET_READY_TO_EXECUTE' }
 )
 
 export const initialSizes: Sizes = {
@@ -118,6 +122,7 @@ const initialState: ReducerState = {
   output: initialOutput,
   errors: '',
   resetState: -1,
+  resetReadyToExecute: 0,
   finishedNodes: 0,
 }
 
@@ -129,6 +134,17 @@ const MapReduceContext = createContext<MapReduceContextType>({
 const reducer = (state: ReducerState, action: Action) => {
   const userID = action.userID as UserID
   switch (action.type) {
+    case actionTypes.RESET_STATE:
+      return {
+        ...initialState,
+        resetState: state.resetState + 1,
+      }
+    case actionTypes.RESET_READY_TO_EXECUTE:
+      return {
+        ...initialState,
+        resetState: state.resetState + 1,
+        resetReadyToExecute: state.resetReadyToExecute + 1,
+      }
     case actionTypes.SET_CODES:
       return {
         ...initialState,
@@ -187,19 +203,25 @@ const reducer = (state: ReducerState, action: Action) => {
           ? state.finishedReducerNodes + 1
           : state.finishedReducerNodes,
       }
-    case actionTypes.READY_TO_EXECUTE:
+    case actionTypes.SET_READY_TO_EXECUTE:
       return state
     case actionTypes.SET_STDOUT:
-      let newStdout = action.payload
-      if (action.userName && newStdout) {
-        newStdout = `Node ${action.userName}: ${newStdout}\n`
+      let stdout = action.payload.trim()
+      if (action.userName && stdout) {
+        stdout = `Node ${action.userName}: ${stdout}\n`
+      } else {
+        stdout = `${stdout}\n`
       }
-      const stdout = state.output.stdout + newStdout
+
+      stdout = state.output.stdout + stdout
 
       return {
         ...state,
-        finishedMapNodes: stdout.match(/MAP EJECUTADO SATISFACTORIAMENTE/g)?.length || 0,
-        finishedCombinerNodes: stdout.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g)?.length || 0,
+        finishedMapNodes:
+          stdout.match(/MAP EJECUTADO SATISFACTORIAMENTE/g)?.length || state.finishedMapNodes,
+        finishedCombinerNodes:
+          stdout.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g)?.length ||
+          state.finishedCombinerNodes,
         output: {
           ...state.output,
           stdout,

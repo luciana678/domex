@@ -57,9 +57,9 @@ export const registerRoom = async (
     await socket.leave(socket.userID)
   })
 
-  socket.on('room:lock-room', async () => {
+  socket.on('room:toggle-lock', async () => {
     LoggerService.socket(`The room ${socket.roomID} has been locked`)
-    roomsSessionStore.lockRoom(socket.roomID)
+    roomsSessionStore.toggleRoomLock(socket.roomID)
   })
 
   socket.on('disconnect', () => {

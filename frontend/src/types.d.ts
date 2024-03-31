@@ -65,6 +65,7 @@ export type ReducerState = {
   output: Output
   errors: string
   resetState: int
+  resetReadyToExecute: int
   finishedNodes: int
 }
 
