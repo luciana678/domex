@@ -61,7 +61,7 @@ export default function Master() {
 
   const statistics = useStatistics(finalResults)
 
-  const { isValidPythonCode } = usePythonCodeValidator()
+  const { isValidPythonCode, isReady } = usePythonCodeValidator()
 
   const resetState = () => {
     setFinished(false)
@@ -80,6 +80,12 @@ export default function Master() {
     resetState()
   }, [mapReduceState.resetState])
 
+  useEffect(() => {
+    if (mapReduceState.resetReadyToExecute <= 0) return
+    setIsLoading(false)
+    toggleRoomLock(false)
+  }, [mapReduceState.resetReadyToExecute])
+
   useEffect(
     () =>
       setFinished(clusterUsers.length > 0 && mapReduceState.finishedNodes === clusterUsers.length),
@@ -90,13 +96,13 @@ export default function Master() {
     if (!finished) return
 
     setIsLoading(false)
-    toggleRoomLock()
+    toggleRoomLock(false)
   }, [finished])
 
   const handleIniciarProcesamiento = async () => {
     const isValid = await isValidPythonCode(code)
     if (!isValid) return
-    toggleRoomLock()
+    toggleRoomLock(true)
     resetState()
     const action: Action = { type: 'SET_CODES', payload: code }
     broadcastMessage(action)
@@ -270,7 +276,7 @@ export default function Master() {
         onClick={handleIniciarProcesamiento}
         loading={loading}
         loadingPosition='center'
-        disabled={!allUsersReady || loading}>
+        disabled={!allUsersReady || loading || !isReady}>
         Iniciar procesamiento
       </LoadingButton>
 

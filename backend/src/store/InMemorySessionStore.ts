@@ -44,10 +44,10 @@ export class InMemoryRoomSessionStore implements RoomSessionStore {
     return this.rooms.has(roomID)
   }
 
-  toggleRoomLock = (roomID: RoomID): void => {
+  toggleRoomLock = (roomID: RoomID, lock: boolean): void => {
     const room = this.rooms.get(roomID)
     if (!room) return
-    room.locked = !room.locked
+    room.locked = lock
   }
 
   isLocked = (roomID: RoomID): boolean => !!this.rooms.get(roomID)?.locked

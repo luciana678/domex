@@ -17,7 +17,7 @@ const useRoom = () => {
     socket.connect()
   }, [])
 
-  const toggleRoomLock = useCallback(() => socket.emit('room:toggle-lock'), [])
+  const toggleRoomLock = useCallback((lock: boolean) => socket.emit('room:toggle-lock', lock), [])
 
   useEffect(() => {
     return () => window.addEventListener('beforeunload', (_) => leaveRoom())

@@ -15,7 +15,7 @@ const useInitializeRoom = () => {
     useContext(RoomContext)
   const router = useRouter()
   const pathname = usePathname()
-  const { deletePeer, createPeer } = usePeers()
+  const { deletePeer, createPeer, broadcastMessage } = usePeers()
   const { leaveRoom } = useRoom()
 
   useEffect(() => {
@@ -87,6 +87,11 @@ const useInitializeRoom = () => {
       }
 
       // A user has left, remove it from the list
+      const user = clusterUsers.find((user) => user.userID === userID)
+      if (user?.readyToExecuteMap) {
+        broadcastMessage({ type: 'RESET_READY_TO_EXECUTE' })
+        alert('Un nodo se desconectó del cluster')
+      }
       setClusterUsers((prevUsers) => prevUsers.filter((user) => user.userID !== userID))
       deletePeer(userID)
     }

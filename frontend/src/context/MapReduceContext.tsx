@@ -20,7 +20,6 @@ export const actionTypes = {
   SET_STDERR: 'SET_STDERR',
   SET_STDOUT: 'SET_STDOUT',
   MAP_EXECUTED: 'MAP_EXECUTED',
-  RESET_STATE: 'RESET_STATE',
   RESET_READY_TO_EXECUTE: 'RESET_READY_TO_EXECUTE',
 } as const
 
@@ -73,7 +72,6 @@ export type Action = {
       payload: string
     }
   | { type: 'MAP_EXECUTED' }
-  | { type: 'RESET_STATE' }
   | { type: 'RESET_READY_TO_EXECUTE' }
 )
 
@@ -134,11 +132,6 @@ const MapReduceContext = createContext<MapReduceContextType>({
 const reducer = (state: ReducerState, action: Action) => {
   const userID = action.userID as UserID
   switch (action.type) {
-    case actionTypes.RESET_STATE:
-      return {
-        ...initialState,
-        resetState: state.resetState + 1,
-      }
     case actionTypes.RESET_READY_TO_EXECUTE:
       return {
         ...initialState,

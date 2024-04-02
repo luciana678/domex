@@ -11,9 +11,11 @@ import { useEffect, useState } from 'react'
 import useFiles from '@/hooks/useFiles'
 
 export const usePythonCodeValidator = () => {
-  const { runPython, stdout, stderr, isReady, readFile, writeFile } = usePython({
-    packages: { micropip: ['pyodide-http'] },
-  })
+  const { runPython, stdout, stderr, isReady, readFile, writeFile, interruptExecution } = usePython(
+    {
+      packages: { micropip: ['pyodide-http'] },
+    },
+  )
 
   const { dispatchMapReduce, mapReduceState } = useMapReduce()
 
@@ -137,5 +139,6 @@ export const usePythonCodeValidator = () => {
     readFile: safeReadFile,
     writeFile,
     resetStdoutHistory,
+    interruptExecution,
   }
 }

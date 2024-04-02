@@ -51,12 +51,20 @@ export default function Slave() {
 
   const mapExecuted = !!mapReduceState.finishedMapNodes
 
-  const { runPython, writeFile, readFile, isReady, readErrors, resetStdoutHistory } =
-    usePythonCodeValidator()
+  const {
+    runPython,
+    writeFile,
+    readFile,
+    isReady,
+    readErrors,
+    resetStdoutHistory,
+    interruptExecution,
+  } = usePythonCodeValidator()
 
   const statistics = useStatistics(finalResults)
 
   const resetState = async () => {
+    started && interruptExecution()
     setMapCombinerResults(initialMapCombinerResults)
     setReduceResults({})
     setFinalResults(initialFinalResults)
@@ -65,8 +73,7 @@ export default function Slave() {
     setMapCombinerExecuted(false)
     setStarted(false)
     resetStdoutHistory()
-
-    await runPython(resetPythonFiles)
+    setExecuting(false)
   }
 
   useEffect(() => {
@@ -133,6 +140,8 @@ export default function Slave() {
     setStarted(true)
 
     const runCode = async () => {
+      await runPython(resetPythonFiles)
+
       const readMapCombinerResults = async (): Promise<MapCombinerResults> => {
         const mapResults: KeyValues = JSON.parse((await readFile('/map_results.json')) || '')
         const combinerResults: KeyValues = JSON.parse(
@@ -154,6 +163,7 @@ export default function Slave() {
         setStarted(false)
         return
       }
+
       const mapCombinerResults = await readMapCombinerResults()
       setMapCombinerExecuted(true)
       setMapCombinerResults(mapCombinerResults)

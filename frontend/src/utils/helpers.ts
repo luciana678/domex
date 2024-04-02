@@ -19,18 +19,21 @@ export const mergeStrings = (str1: string, str2: string) => {
   str1 = str1
   str2 = str2.trim()
 
+  let mergePoint = 0
   let newString = ''
 
   for (let i = 0; i < str1.length; i++) {
     if (str2.startsWith(str1.substring(i))) {
-      newString = str2.substring(str1.length - i)
+      mergePoint = str1.length - i
+      newString = str2.substring(str1.length - i) // Parte nueva de str2
       break
     }
   }
 
   let mergedString
-  if (newString) {
-    mergedString = str1 + newString
+  // Si hay una coincidencia, fusiona los strings en el punto de coincidencia.
+  if (mergePoint > 0) {
+    mergedString = str1 + newString // str2.substring(mergePoint) es igual a newPart
   } else {
     mergedString = str1 + str1 ? '\n' : '' + str2
     newString = str2
