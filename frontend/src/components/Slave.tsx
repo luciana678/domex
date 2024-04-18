@@ -246,14 +246,14 @@ export default function Slave() {
         },
       })
 
+      updateSizes({ ...receivedDataSizes, ...reduceSizes })
+
       return reduceSizes
     }
 
-    const reduceSizes = readResult()
+    readResult()
 
     setFinished(true)
-
-    updateSizes({ ...receivedDataSizes, ...reduceSizes })
   }, [
     keysSent,
     finished,
