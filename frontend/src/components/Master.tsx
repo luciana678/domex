@@ -209,11 +209,7 @@ export default function Master() {
         disabled={!allUsersReady || finished}>
         Iniciar procesamiento
       </Button>
-      <Results
-        className='flex flex-col w-full mt-5'
-        title='Resultados'
-        data={mapReduceState.reduceResult}
-      />
+      <Results title='Resultados' data={mapReduceState.reduceResult} />
       {finished && <Statistics statistics={statistics} />}
     </main>
   )

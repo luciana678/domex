@@ -332,21 +332,9 @@ export default function Slave() {
 
       {finished && (
         <>
-          <Results
-            className='flex flex-col w-full mt-5'
-            title='Etapa map'
-            data={mapCombinerResults.mapResults}
-          />
-          <Results
-            className='flex flex-col w-full mt-5'
-            title='Etapa combiner'
-            data={mapCombinerResults.combinerResults}
-          />
-          <Results
-            className='flex flex-col w-full mt-5'
-            title='Etapa reduce'
-            data={reduceResults}
-          />
+          <Results title='Etapa map' data={mapCombinerResults.mapResults} />
+          <Results title='Etapa combiner' data={mapCombinerResults.combinerResults} />
+          <Results title='Etapa reduce' data={reduceResults} />
           <Statistics statistics={statistics} />
         </>
       )}
