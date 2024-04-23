@@ -26,7 +26,7 @@ const initialMapCombinerResults: MapCombinerResults = {
 }
 
 export default function Slave() {
-  const { roomOwner, roomSession } = useRoom()
+  const { roomOwner, roomSession, setIsReadyToExecute, isReadyToExecute } = useRoom()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const { mapReduceState } = useMapReduce()
   const { selectedFiles } = useFiles()
@@ -39,7 +39,6 @@ export default function Slave() {
     sizes: initialSizes,
   })
 
-  const [isReadyToExecute, setIsReadyToExecute] = useState(false)
   const [keysSent, setKeysSent] = useState(false)
   const [finished, setFinished] = useState(false)
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
