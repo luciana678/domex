@@ -90,7 +90,7 @@ const useInitializePeers = () => {
 
       peer.on('close', handlePeerClose)
     },
-    [deletePeer, dispatchMapReduce, setClusterUsers],
+    [deletePeer, dispatchMapReduce, handleReceivingFiles, setClusterUsers],
   )
 
   useEffect(() => {

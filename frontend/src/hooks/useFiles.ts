@@ -1,7 +1,7 @@
 import FilesContext from '@/context/FilesContext'
 import { Action, actionTypes } from '@/context/MapReduceContext'
 import { Tree, UserID } from '@/types'
-import { useContext, useEffect } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import usePeers from './usePeers'
 import useRoom from './useRoom'
 
@@ -78,13 +78,16 @@ const useFiles = () => {
     })
   }
 
-  const handleReceivingFiles = (action: Action) => {
-    if (action.type === actionTypes.UPDATE_FILES) {
-      setNodesFiles((prevFiles) => {
-        return { ...prevFiles, [action.userID]: action.payload.fileNames }
-      })
-    }
-  }
+  const handleReceivingFiles = useCallback(
+    (action: Action) => {
+      if (action.type === actionTypes.UPDATE_FILES) {
+        setNodesFiles((prevFiles) => {
+          return { ...prevFiles, [action.userID]: action.payload.fileNames }
+        })
+      }
+    },
+    [setNodesFiles],
+  )
 
   return { selectedFiles, fileTrees, deleteFile, addFiles, handleReceivingFiles }
 }
