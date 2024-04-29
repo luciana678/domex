@@ -28,9 +28,9 @@ const useRoom = () => {
     router.push('/')
   }, [destroyPeers, router])
 
-  useEffect(() => {
-    return () => window.addEventListener('beforeunload', (_) => leaveRoom())
-  }, [])
+  // useEffect(() => {
+  //   return () => window.addEventListener('beforeunload', (_) => leaveRoom())
+  // }, [leaveRoom])
 
   return {
     clusterUsers,
