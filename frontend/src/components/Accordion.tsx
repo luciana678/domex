@@ -34,6 +34,8 @@ export default function BasicAccordion({
     }
   }
 
+  // TODO: print error alert with the title and the error message
+
   useEffect(() => {
     const readFile = async () => {
       if (selectedFile) {
