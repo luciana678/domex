@@ -45,7 +45,7 @@ const useInitializePeers = () => {
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
         const decodedData: Action = JSON.parse(data.toString('utf8'))
-        // TODO: handle the data here (e.g. dispatch an action)
+        // handle the data here (e.g. dispatch an action)
         decodedData['userID'] = userID
 
         handleActionSignal({ action: decodedData, setClusterUsers })
