@@ -38,7 +38,7 @@ const useInitializePeers = () => {
       socket.off('webrtc:user-joined', onWebRTCUserJoined)
       socket.off('webrtc:receiving-returned-signal', onWebRTCReceivingReturnedSignal)
     }
-  }, [addPeer, peers, setPeers])
+  }, [addPeer, dispatchMapReduce, peers, setPeers])
 
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
@@ -92,7 +92,7 @@ const useInitializePeers = () => {
 
       peer.on('close', handlePeerClose)
     },
-    [deletePeer, dispatchMapReduce, setClusterUsers],
+    [clusterUsers, deletePeer, dispatchMapReduce, handleReceivingFiles, setClusterUsers],
   )
 
   useEffect(() => {

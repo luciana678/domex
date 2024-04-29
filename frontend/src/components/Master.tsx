@@ -84,12 +84,12 @@ export default function Master() {
     if (mapReduceState.resetReadyToExecute <= 0) return
     setIsLoading(false)
     toggleRoomLock(false)
-  }, [mapReduceState.resetReadyToExecute])
+  }, [mapReduceState.resetReadyToExecute, toggleRoomLock])
 
   useEffect(
     () =>
       setFinished(clusterUsers.length > 0 && mapReduceState.finishedNodes === clusterUsers.length),
-    [mapReduceState.finishedNodes],
+    [clusterUsers.length, mapReduceState.finishedNodes],
   )
 
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function Master() {
 
     setIsLoading(false)
     toggleRoomLock(false)
-  }, [finished])
+  }, [finished, toggleRoomLock])
 
   const handleIniciarProcesamiento = async () => {
     const isValid = await isValidPythonCode(code)

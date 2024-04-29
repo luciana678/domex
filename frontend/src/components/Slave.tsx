@@ -63,7 +63,7 @@ export default function Slave() {
 
   const statistics = useStatistics(finalResults)
 
-  const resetState = async () => {
+  const resetState = useCallback(async () => {
     started && interruptExecution()
     setMapCombinerResults(initialMapCombinerResults)
     setReduceResults({})
@@ -74,13 +74,13 @@ export default function Slave() {
     setStarted(false)
     resetStdoutHistory()
     setExecuting(false)
-  }
+  }, [interruptExecution, resetStdoutHistory, started])
 
   useEffect(() => {
     if (mapReduceState.resetState < 0) return
 
     resetState()
-  }, [mapReduceState.resetState])
+  }, [mapReduceState.resetState, resetState])
 
   useEffect(() => {
     if (mapReduceState.errors || mapReduceState.resetReadyToExecute) {
@@ -91,7 +91,7 @@ export default function Slave() {
     if (finished) {
       setIsReadyToExecute(false)
     }
-  }, [mapReduceState.errors, mapReduceState.resetReadyToExecute, finished])
+  }, [mapReduceState.errors, mapReduceState.resetReadyToExecute, finished, resetState])
 
   useEffect(
     () =>
@@ -99,7 +99,7 @@ export default function Slave() {
         type: 'SET_READY_TO_EXECUTE',
         payload: isReadyToExecute,
       }),
-    [isReadyToExecute],
+    [broadcastMessage, isReadyToExecute],
   )
 
   const updateSizes = (newSizes: Partial<Sizes>) =>

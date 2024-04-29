@@ -19,10 +19,6 @@ const useRoom = () => {
 
   const toggleRoomLock = useCallback((lock: boolean) => socket.emit('room:toggle-lock', lock), [])
 
-  useEffect(() => {
-    return () => window.addEventListener('beforeunload', (_) => leaveRoom())
-  }, [])
-
   const leaveRoom = useCallback(() => {
     socket.emit('room:leave-room')
     sessionStorage.clear()
@@ -30,6 +26,10 @@ const useRoom = () => {
     destroyPeers()
     router.push('/')
   }, [destroyPeers, router])
+
+  // useEffect(() => {
+  //   return () => window.addEventListener('beforeunload', (_) => leaveRoom())
+  // }, [leaveRoom])
 
   return { clusterUsers, roomSession, connectRoom, leaveRoom, toggleRoomLock, roomOwner }
 }

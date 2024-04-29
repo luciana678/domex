@@ -195,6 +195,7 @@ const useInitializeRoom = () => {
     setClusterUsers,
     setPeers,
     setRoomSession,
+    broadcastMessage,
   ])
 }
 

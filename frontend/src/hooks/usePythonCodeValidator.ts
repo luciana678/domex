@@ -45,7 +45,8 @@ export const usePythonCodeValidator = () => {
     const { mergedString, newString } = mergeStrings(stdoutHistory.stdout, stdout)
     if (!mergedString || !newString) return
     setStdoutHistory({ stdout: mergedString, newStdout: newString })
-  }, [stdout])
+    // ! Posible bug: infinite loop
+  }, [stdout, stdoutHistory.stdout])
 
   useEffect(() => {
     let newString = stdoutHistory.newStdout
@@ -76,7 +77,15 @@ export const usePythonCodeValidator = () => {
         type: 'SET_STDOUT',
         payload: newString,
       })
-  }, [stdoutHistory.newStdout])
+  }, [
+    dispatchMapReduce,
+    mapReduceState.reduceKeys,
+    nodeHasFiles,
+    roomOwner?.userID,
+    sendDirectMessage,
+    stdoutHistory.newStdout,
+    stdoutHistory.stdout,
+  ])
 
   const runPythonCodeValidator = async (code: string) => {
     await writeFile('/code.py', code)
