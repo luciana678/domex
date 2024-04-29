@@ -5,7 +5,7 @@ import { validatePythonCode, isValidFunctionHeader } from '@/utils/helpers'
 import { usePython } from 'react-py'
 
 export const usePythonCodeValidator = (code: Code, setCodeErrors: React.Dispatch<Code>) => {
-  const { runPython, stderr, stdout, isReady, readFile, writeFile } = usePython({
+  const { runPython, readFile, writeFile } = usePython({
     packages: { micropip: ['pyodide-http'] },
   })
 
