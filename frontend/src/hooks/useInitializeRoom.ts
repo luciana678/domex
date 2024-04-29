@@ -156,6 +156,12 @@ const useInitializeRoom = () => {
 
         window.alert('The room does not exist')
       }
+
+      if (err.message === 'Room is locked') {
+        console.error('Room is locked')
+        sessionStorage.removeItem('session')
+        window.alert('The room is locked')
+      }
     }
 
     socket.on('room:session', onSession)

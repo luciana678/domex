@@ -43,7 +43,9 @@ export default function Slave() {
   const [finished, setFinished] = useState(false)
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
 
-  const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython()
+  const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython({
+    packages: { micropip: ['pyodide-http'] },
+  })
 
   const statistics = useStatistics(finalResults)
 

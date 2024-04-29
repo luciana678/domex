@@ -20,7 +20,7 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
     // Filter the text files and the ones that his size is less than MAX_SIZE
     const txtFiles = Array.from(files)
       .filter((file) => file.type === 'text/plain')
-      .filter((file) => file.size < MAX_SIZE)
+      .filter((file) => file.size <= MAX_SIZE)
 
     addFiles(txtFiles)
   }

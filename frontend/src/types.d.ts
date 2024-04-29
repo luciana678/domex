@@ -35,12 +35,14 @@ export type RoomID = `${string & { length: 10 }}`
 export type SessionID = UUID
 export type UserID = UUID
 
+export type Code = {
+  mapCode: string
+  combinerCode: string
+  reduceCode: string
+}
+
 export type ReducerState = {
-  code: {
-    mapCode: string
-    combinerCode: string
-    reduceCode: string
-  }
+  code: Code
   combinerResults: UserResults
   mapResults: UserResults
   reduceKeys: KeyValuesCount

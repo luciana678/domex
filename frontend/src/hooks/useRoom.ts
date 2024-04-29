@@ -4,7 +4,7 @@ import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { RoomID } from '@/types'
 import { useRouter } from 'next/navigation'
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import usePeers from './usePeers'
 
 const useRoom = () => {
@@ -18,6 +18,8 @@ const useRoom = () => {
     socket.connect()
   }, [])
 
+  const lockRoom = useCallback(() => socket.emit('room:lock-room'), [])
+
   const leaveRoom = useCallback(() => {
     socket.emit('room:leave-room')
     sessionStorage.clear()
@@ -25,6 +27,10 @@ const useRoom = () => {
     destroyPeers()
     router.push('/')
   }, [destroyPeers, router])
+
+  useEffect(() => {
+    return () => window.addEventListener('beforeunload', (_) => leaveRoom())
+  }, [])
 
   return {
     clusterUsers,
@@ -34,6 +40,7 @@ const useRoom = () => {
     roomOwner,
     isReadyToExecute,
     setIsReadyToExecute,
+    lockRoom,
   }
 }
 
