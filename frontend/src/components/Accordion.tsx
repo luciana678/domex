@@ -8,6 +8,7 @@ import AccordionSummary from '@mui/material/AccordionSummary'
 import Typography from '@mui/material/Typography'
 import CodeEditor from './CodeEditor'
 import { useEffect, useState } from 'react'
+import { toast } from 'sonner'
 
 export default function BasicAccordion({
   title,
@@ -34,7 +35,13 @@ export default function BasicAccordion({
     }
   }
 
-  // TODO: print error alert with the title and the error message
+  if (error) {
+    toast.error(`Error en ${title}`, {
+      description: error,
+      position: 'bottom-center',
+      id: title,
+    })
+  }
 
   useEffect(() => {
     const readFile = async () => {
