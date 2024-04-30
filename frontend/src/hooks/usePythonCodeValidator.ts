@@ -1,13 +1,14 @@
 'use client'
 
+import { CONFIG } from '@/constants/config'
 import { Code } from '@/types'
 import { isValidFunctionHeader, validatePythonCode } from '@/utils/helpers'
 import { usePython } from 'react-py'
 
 export const usePythonCodeValidator = (code: Code, setCodeErrors: React.Dispatch<Code>) => {
-  const { runPython, readFile, writeFile, isReady, isLoading, isRunning } = usePython({
-    packages: { micropip: ['pyodide-http'] },
-  })
+  const { runPython, readFile, writeFile, isReady, isLoading, isRunning } = usePython(
+    CONFIG.REACTPY.USE_PYTHON_PROPS,
+  )
 
   const runPythonCodeValidator = async (code: string) => {
     await writeFile('/code.py', code)

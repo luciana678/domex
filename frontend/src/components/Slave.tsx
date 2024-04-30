@@ -19,6 +19,7 @@ import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
 import Results from './Results'
+import { CONFIG } from '@/constants/config'
 
 const initialMapCombinerResults: MapCombinerResults = {
   mapResults: {},
@@ -43,9 +44,9 @@ export default function Slave() {
   const [finished, setFinished] = useState(false)
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
 
-  const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython({
-    packages: { micropip: ['pyodide-http'] },
-  })
+  const { runPython, stdout, stderr, writeFile, readFile, isReady } = usePython(
+    CONFIG.REACTPY.USE_PYTHON_PROPS,
+  )
 
   const statistics = useStatistics(finalResults)
 
