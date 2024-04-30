@@ -17,6 +17,7 @@ import useStatistics from '@/hooks/useStatisticts'
 import FolderTree from './ui/FolderTree'
 import useFiles from '@/hooks/useFiles'
 import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
+import { toast } from 'sonner'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -59,7 +60,7 @@ export default function Master() {
 
   const statistics = useStatistics(finalResults)
 
-  const { isValidPythonCode } = usePythonCodeValidator(code, setCodeErrors)
+  const { isValidPythonCode, isValidatorReady } = usePythonCodeValidator(code, setCodeErrors)
 
   const getTotalCounts = (totalCounts: KeyValuesCount, result: UserResults) =>
     Object.values(result).forEach((keyList) => {
@@ -69,8 +70,23 @@ export default function Master() {
     })
 
   const handleIniciarProcesamiento = async () => {
-    const isValid = await isValidPythonCode()
+    if (!isValidatorReady) return
+    if (!allUsersReady) return
+
+    const isValidPythonCodePromise = isValidPythonCode()
+
+    toast.promise(isValidPythonCodePromise, {
+      loading: 'Validando código...',
+      success: (ata) => {
+        return `Código validado`
+      },
+      error: 'Error al validar el código',
+    })
+
+    const isValid = await isValidPythonCodePromise
+
     if (!isValid) return
+
     lockRoom()
     broadcastMessage({ type: 'SET_CODES', payload: code })
   }
@@ -188,6 +204,14 @@ export default function Master() {
     }))
   }, [mapReduceState.sizes, mapReduceState.mapNodesCount])
 
+  const processingButtonText = finished
+    ? 'Procesamiento finalizado'
+    : !isValidatorReady
+      ? 'Inicializando validador...'
+      : !allUsersReady
+        ? 'Esperando a los nodos'
+        : 'Iniciar procesamiento'
+
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Administrar cluster #${roomSession?.roomID}`} />
@@ -229,8 +253,8 @@ export default function Master() {
         variant='outlined'
         color='success'
         onClick={handleIniciarProcesamiento}
-        disabled={!allUsersReady || finished}>
-        Iniciar procesamiento
+        disabled={!allUsersReady || finished || !isValidatorReady}>
+        {processingButtonText}
       </Button>
       <Results title='Resultados' data={mapReduceState.reduceResult} />
       {finished && <Statistics statistics={statistics} />}
