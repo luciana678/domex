@@ -7,7 +7,7 @@ import useMapReduce from '@/hooks/useMapReduce'
 import { Action, initialOutput } from '@/context/MapReduceContext'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import useFiles from '@/hooks/useFiles'
 
 export const usePythonCodeValidator = () => {
@@ -28,6 +28,8 @@ export const usePythonCodeValidator = () => {
     newStdout: '',
   })
 
+  const noticeMaster = useRef(0)
+
   const { nodeHasFiles } = useFiles()
 
   const resetStdoutHistory = () => setStdoutHistory({ stdout: '', newStdout: '' })
@@ -42,13 +44,20 @@ export const usePythonCodeValidator = () => {
   }
 
   useEffect(() => {
-    const { mergedString, newString } = mergeStrings(stdoutHistory.stdout, stdout)
-    if (!mergedString || !newString) return
-    setStdoutHistory({ stdout: mergedString, newStdout: newString })
-    // ! Posible bug: infinite loop
-  }, [stdout, stdoutHistory.stdout])
+    setStdoutHistory((prevStdoutHistory) => {
+      const { mergedString, newString } = mergeStrings(prevStdoutHistory.stdout, stdout)
+
+      if (!mergedString || !newString) return prevStdoutHistory
+
+      noticeMaster.current += 1
+
+      return { stdout: mergedString, newStdout: newString }
+    })
+  }, [stdout])
 
   useEffect(() => {
+    if (!noticeMaster.current) return
+
     let newString = stdoutHistory.newStdout
 
     if (!newString) return
@@ -77,6 +86,8 @@ export const usePythonCodeValidator = () => {
         type: 'SET_STDOUT',
         payload: newString,
       })
+
+    noticeMaster.current -= 1
   }, [
     dispatchMapReduce,
     mapReduceState.reduceKeys,

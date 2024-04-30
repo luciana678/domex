@@ -13,7 +13,7 @@ import { FinalResults, KeyValue, KeyValues, MapCombinerResults, Sizes, UserID } 
 import { concatenateFiles, resetPythonFiles } from '@/utils/helpers'
 import { PY_MAIN_CODE } from '@/utils/python/tmp'
 import { Button } from '@mui/material'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
@@ -49,6 +49,11 @@ export default function Slave() {
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
   const [executing, setExecuting] = useState(false)
 
+  const timesReseted = useRef({
+    global: 0,
+    withErrors: 0,
+  })
+
   const mapExecuted = !!mapReduceState.finishedMapNodes
 
   const {
@@ -77,21 +82,24 @@ export default function Slave() {
   }, [interruptExecution, resetStdoutHistory, started])
 
   useEffect(() => {
-    if (mapReduceState.resetState < 0) return
+    if (mapReduceState.resetState < 0 || timesReseted.current.global === mapReduceState.resetState)
+      return
+
+    timesReseted.current.global += 1
 
     resetState()
   }, [mapReduceState.resetState, resetState])
 
   useEffect(() => {
+    if (timesReseted.current.withErrors === mapReduceState.resetReadyToExecute || !isReadyToExecute)
+      return
+
     if (mapReduceState.errors || mapReduceState.resetReadyToExecute) {
       resetState()
       setIsReadyToExecute(false)
+      timesReseted.current.withErrors += mapReduceState.errors ? 0 : 1
     }
-
-    if (finished) {
-      setIsReadyToExecute(false)
-    }
-  }, [mapReduceState.errors, mapReduceState.resetReadyToExecute, finished, resetState])
+  }, [isReadyToExecute, mapReduceState.errors, mapReduceState.resetReadyToExecute, resetState])
 
   useEffect(
     () =>
@@ -335,6 +343,7 @@ export default function Slave() {
 
       updateSizes({ ...receivedDataSizes, ...reduceSizes })
       setFinished(true)
+      setIsReadyToExecute(false)
       setExecuting(false)
     }
 
