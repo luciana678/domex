@@ -54,13 +54,16 @@ const useFiles = () => {
   }, [broadcastMessage, selectedFiles])
 
   useEffect(() => {
-    // Remove files from nodes that are no longer in the cluster
+    // Remove files from nodes that are no longer in the cluster, or are disconnected
     setNodesFiles((prevFiles) => {
       const newFiles = { ...prevFiles }
       const nodeUserIDs = Object.keys(prevFiles) as UserID[]
 
       nodeUserIDs.forEach((userID) => {
-        if (!clusterUsers.some((user) => user.userID === userID)) {
+        const userInCluster = clusterUsers.find((user) => user.userID === userID)
+        const userConnected = userInCluster?.socketConnected
+
+        if (!userInCluster || !userConnected) {
           delete newFiles[userID]
         }
       })

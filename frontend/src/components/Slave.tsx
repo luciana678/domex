@@ -33,7 +33,7 @@ const initialFinalResults: FinalResults = {
 }
 
 export default function Slave() {
-  const { roomOwner, roomSession } = useRoom()
+  const { roomOwner, roomSession, setIsReadyToExecute, isReadyToExecute } = useRoom()
   const { sendDirectMessage, broadcastMessage } = usePeers()
   const { mapReduceState } = useMapReduce()
   const { selectedFiles } = useFiles()
@@ -42,7 +42,6 @@ export default function Slave() {
   const [reduceResults, setReduceResults] = useState<KeyValue>({})
   const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
 
-  const [isReadyToExecute, setIsReadyToExecute] = useState(false)
   const [keysSent, setKeysSent] = useState(false)
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
@@ -99,7 +98,13 @@ export default function Slave() {
       setIsReadyToExecute(false)
       timesReseted.current.withErrors += mapReduceState.errors ? 0 : 1
     }
-  }, [isReadyToExecute, mapReduceState.errors, mapReduceState.resetReadyToExecute, resetState])
+  }, [
+    isReadyToExecute,
+    mapReduceState.errors,
+    mapReduceState.resetReadyToExecute,
+    resetState,
+    setIsReadyToExecute,
+  ])
 
   useEffect(
     () =>
@@ -369,6 +374,7 @@ export default function Slave() {
     finalResults.sizes,
     mapCombinerResults.combinerResults,
     readErrors,
+    setIsReadyToExecute,
   ])
 
   return (
@@ -431,21 +437,9 @@ export default function Slave() {
 
       {finished && (
         <>
-          <Results
-            className='flex flex-col w-full mt-5'
-            title='Etapa map'
-            data={mapCombinerResults.mapResults}
-          />
-          <Results
-            className='flex flex-col w-full mt-5'
-            title='Etapa combiner'
-            data={mapCombinerResults.combinerResults}
-          />
-          <Results
-            className='flex flex-col w-full mt-5'
-            title='Etapa reduce'
-            data={reduceResults}
-          />
+          <Results title='Etapa map' data={mapCombinerResults.mapResults} />
+          <Results title='Etapa combiner' data={mapCombinerResults.combinerResults} />
+          <Results title='Etapa reduce' data={reduceResults} />
           <Statistics statistics={statistics} />
         </>
       )}

@@ -10,10 +10,12 @@ import useMapReduce from './useMapReduce'
 import { Action } from '@/context/MapReduceContext'
 import { handleActionSignal } from '@/utils/handleActions'
 import useFiles from './useFiles'
+import useRoom from './useRoom'
 
 const useInitializePeers = () => {
   const { peers, setPeers, setClusterUsers, clusterUsers } = useContext(RoomContext)
-  const { addPeer, deletePeer } = usePeers()
+  const { addPeer, deletePeer, sendDirectMessage } = usePeers()
+  const { isReadyToExecute } = useRoom()
   const { dispatchMapReduce } = useMapReduce()
   const { handleReceivingFiles } = useFiles()
 
@@ -44,7 +46,7 @@ const useInitializePeers = () => {
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
         const decodedData: Action = JSON.parse(data.toString('utf8'))
-        // TODO: handle the data here (e.g. dispatch an action)
+        // handle the data here (e.g. dispatch an action)
         decodedData['userID'] = userID
         decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
 
@@ -82,6 +84,13 @@ const useInitializePeers = () => {
             return user
           }),
         )
+
+        // send the status of the current user to the new user
+        if (isReadyToExecute) {
+          sendDirectMessage(userID as UserID, {
+            type: 'READY_TO_EXECUTE',
+          })
+        }
       }
 
       peer.on('connect', handlePeerConnect)
@@ -92,7 +101,15 @@ const useInitializePeers = () => {
 
       peer.on('close', handlePeerClose)
     },
-    [clusterUsers, deletePeer, dispatchMapReduce, handleReceivingFiles, setClusterUsers],
+    [
+      clusterUsers,
+      deletePeer,
+      dispatchMapReduce,
+      handleReceivingFiles,
+      isReadyToExecute,
+      sendDirectMessage,
+      setClusterUsers,
+    ],
   )
 
   useEffect(() => {

@@ -25,7 +25,7 @@ export default function BasicAccordion({
 }: {
   title: string
   codeState: any
-  error: string
+  error?: string
   loading?: boolean
   finished?: boolean
   showLoadFileButton?: boolean
@@ -45,6 +45,8 @@ export default function BasicAccordion({
       setSelectedFile(files[0])
     }
   }
+
+  // TODO: print error alert with the title and the error message
 
   useEffect(() => {
     const readFile = async () => {

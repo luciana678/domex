@@ -11,6 +11,8 @@ export type RoomContextType = {
   peers: Peers
   setPeers: React.Dispatch<React.SetStateAction<Peers>>
   roomOwner: User | null
+  isReadyToExecute: boolean
+  setIsReadyToExecute: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const RoomContext = createContext<RoomContextType>({
@@ -21,12 +23,15 @@ const RoomContext = createContext<RoomContextType>({
   peers: {},
   setPeers: () => {},
   roomOwner: null,
+  isReadyToExecute: false,
+  setIsReadyToExecute: () => {},
 })
 
 export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
   const [clusterUsers, setClusterUsers] = useState<User[]>([])
   const [roomSession, setRoomSession] = useState<RoomSession | null>(null)
   const [peers, setPeers] = useState<Peers>({})
+  const [isReadyToExecute, setIsReadyToExecute] = useState(false)
 
   const roomOwner = useMemo(
     () => clusterUsers.find((user) => user.isRoomOwner) || null,
@@ -43,6 +48,8 @@ export const RoomProvider: React.FC<PropsWithChildren> = ({ children }) => {
         peers,
         setPeers,
         roomOwner,
+        isReadyToExecute,
+        setIsReadyToExecute,
       }}>
       {children}
     </RoomContext.Provider>

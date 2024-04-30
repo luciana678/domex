@@ -1,5 +1,6 @@
 'use client'
 
+import { KeyValue, KeyValues } from '@/types'
 import { Typography } from '@mui/material'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
@@ -9,8 +10,8 @@ export default function Results({
   data,
 }: {
   title: string
-  className: string
-  data: {}
+  className?: string
+  data: KeyValue | KeyValues
 }) {
   const columns: GridColDef[] = [
     {
@@ -36,11 +37,13 @@ export default function Results({
   })
 
   return (
-    <div className={`bg-white p-4 shadow-lg border border-gray-300 rounded-md ${className}`}>
+    <div
+      className={`bg-white p-4 shadow-lg border border-gray-300 rounded-md w-full mt-5 ${className}`}>
       <Typography variant='h4' component='div' className='text-center mb-3'>
         {title}
       </Typography>
       <DataGrid
+        className={`w-full ${rows.length > 0 ? 'h-auto' : 'h-36'}`}
         columns={columns}
         rows={rows}
         disableColumnMenu
