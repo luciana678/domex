@@ -49,8 +49,8 @@ export default function Slave() {
   const [executing, setExecuting] = useState(false)
 
   const timesReseted = useRef({
-    global: 0,
-    withErrors: 0,
+    global: -1,
+    withErrors: -1,
   })
 
   const mapExecuted = !!mapReduceState.finishedMapNodes
@@ -63,48 +63,47 @@ export default function Slave() {
     readErrors,
     resetStdoutHistory,
     interruptExecution,
+    isRunning,
   } = usePythonCodeValidator()
 
   const statistics = useStatistics(finalResults)
 
-  const resetState = useCallback(async () => {
-    started && interruptExecution()
-    setMapCombinerResults(initialMapCombinerResults)
-    setReduceResults({})
-    setFinalResults(initialFinalResults)
-    setKeysSent(false)
-    setFinished(false)
-    setMapCombinerExecuted(false)
-    setStarted(false)
-    resetStdoutHistory()
-    setExecuting(false)
-  }, [interruptExecution, resetStdoutHistory, started])
+  const resetState = useCallback(
+    async (resetReadyToExecute: boolean) => {
+      isRunning && interruptExecution()
+      setMapCombinerResults(initialMapCombinerResults)
+      setReduceResults({})
+      setFinalResults(initialFinalResults)
+      setKeysSent(false)
+      setFinished(false)
+      setMapCombinerExecuted(false)
+      setStarted(false)
+      resetStdoutHistory()
+      setExecuting(false)
+      resetReadyToExecute && setIsReadyToExecute(false)
+    },
+    [interruptExecution, resetStdoutHistory, setIsReadyToExecute, isRunning],
+  )
 
   useEffect(() => {
+    console.log(mapReduceState.resetState, timesReseted.current.global)
     if (mapReduceState.resetState < 0 || timesReseted.current.global === mapReduceState.resetState)
       return
 
     timesReseted.current.global += 1
-
-    resetState()
+    resetState(false)
   }, [mapReduceState.resetState, resetState])
 
   useEffect(() => {
-    if (timesReseted.current.withErrors === mapReduceState.resetReadyToExecute || !isReadyToExecute)
+    if (
+      mapReduceState.resetReadyToExecute < 0 ||
+      timesReseted.current.withErrors === mapReduceState.resetReadyToExecute
+    )
       return
 
-    if (mapReduceState.errors || mapReduceState.resetReadyToExecute) {
-      resetState()
-      setIsReadyToExecute(false)
-      timesReseted.current.withErrors += mapReduceState.errors ? 0 : 1
-    }
-  }, [
-    isReadyToExecute,
-    mapReduceState.errors,
-    mapReduceState.resetReadyToExecute,
-    resetState,
-    setIsReadyToExecute,
-  ])
+    timesReseted.current.withErrors += 1
+    resetState(true)
+  }, [mapReduceState.resetReadyToExecute, resetState])
 
   useEffect(
     () =>

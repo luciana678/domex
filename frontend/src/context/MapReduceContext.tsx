@@ -120,7 +120,7 @@ const initialState: ReducerState = {
   output: initialOutput,
   errors: '',
   resetState: -1,
-  resetReadyToExecute: 0,
+  resetReadyToExecute: -1,
   finishedNodes: 0,
 }
 
@@ -135,13 +135,14 @@ const reducer = (state: ReducerState, action: Action) => {
     case actionTypes.RESET_READY_TO_EXECUTE:
       return {
         ...initialState,
-        resetState: state.resetState + 1,
+        resetState: state.resetState,
         resetReadyToExecute: state.resetReadyToExecute + 1,
       }
     case actionTypes.SET_CODES:
       return {
         ...initialState,
         code: action.payload,
+        resetReadyToExecute: state.resetReadyToExecute,
         resetState: state.resetState + 1,
       }
     case actionTypes.MAP_COMBINER_EJECUTADO:
@@ -246,6 +247,8 @@ const reducer = (state: ReducerState, action: Action) => {
 
       return {
         ...newState,
+        resetState: state.resetState,
+        resetReadyToExecute: state.resetReadyToExecute + (errors ? 1 : 0),
         code: state.code,
         output: {
           ...state.output,

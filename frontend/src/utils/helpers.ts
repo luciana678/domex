@@ -47,7 +47,7 @@ export const mergeStrings = (str1: string, str2: string) => {
   if (mergePoint > 0) {
     mergedString = str1 + newString // str2.substring(mergePoint) es igual a newPart
   } else {
-    mergedString = str1 + str1 ? '\n' : '' + str2
+    mergedString = str1 + (str1 ? '\n' : '') + str2
     newString = str2
   }
 

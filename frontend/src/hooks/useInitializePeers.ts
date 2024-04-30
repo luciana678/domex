@@ -10,12 +10,10 @@ import useMapReduce from './useMapReduce'
 import { Action } from '@/context/MapReduceContext'
 import { handleActionSignal } from '@/utils/handleActions'
 import useFiles from './useFiles'
-import useRoom from './useRoom'
 
 const useInitializePeers = () => {
   const { peers, setPeers, setClusterUsers, clusterUsers } = useContext(RoomContext)
-  const { addPeer, deletePeer, sendDirectMessage } = usePeers()
-  const { isReadyToExecute } = useRoom()
+  const { addPeer, deletePeer } = usePeers()
   const { dispatchMapReduce } = useMapReduce()
   const { handleReceivingFiles } = useFiles()
 
@@ -84,13 +82,6 @@ const useInitializePeers = () => {
             return user
           }),
         )
-
-        // send the status of the current user to the new user
-        if (isReadyToExecute) {
-          sendDirectMessage(userID as UserID, {
-            type: 'READY_TO_EXECUTE',
-          })
-        }
       }
 
       peer.on('connect', handlePeerConnect)
@@ -101,15 +92,8 @@ const useInitializePeers = () => {
 
       peer.on('close', handlePeerClose)
     },
-    [
-      clusterUsers,
-      deletePeer,
-      dispatchMapReduce,
-      handleReceivingFiles,
-      isReadyToExecute,
-      sendDirectMessage,
-      setClusterUsers,
-    ],
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [deletePeer, dispatchMapReduce, handleReceivingFiles, setClusterUsers],
   )
 
   useEffect(() => {

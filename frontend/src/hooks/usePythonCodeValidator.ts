@@ -7,15 +7,14 @@ import useMapReduce from '@/hooks/useMapReduce'
 import { Action, initialOutput } from '@/context/MapReduceContext'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import useFiles from '@/hooks/useFiles'
 
 export const usePythonCodeValidator = () => {
-  const { runPython, stdout, stderr, isReady, readFile, writeFile, interruptExecution } = usePython(
-    {
+  const { runPython, stdout, stderr, isReady, readFile, writeFile, interruptExecution, isRunning } =
+    usePython({
       packages: { micropip: ['pyodide-http'] },
-    },
-  )
+    })
 
   const { dispatchMapReduce, mapReduceState } = useMapReduce()
 
@@ -32,7 +31,7 @@ export const usePythonCodeValidator = () => {
 
   const { nodeHasFiles } = useFiles()
 
-  const resetStdoutHistory = () => setStdoutHistory({ stdout: '', newStdout: '' })
+  const resetStdoutHistory = useCallback(() => setStdoutHistory({ stdout: '', newStdout: '' }), [])
 
   const safeReadFile = async (path: string) => {
     try {
@@ -49,18 +48,16 @@ export const usePythonCodeValidator = () => {
 
       if (!mergedString || !newString) return prevStdoutHistory
 
-      noticeMaster.current += 1
+      noticeMaster.current += prevStdoutHistory.newStdout !== newString ? 1 : 0
 
       return { stdout: mergedString, newStdout: newString }
     })
   }, [stdout])
 
   useEffect(() => {
-    if (!noticeMaster.current) return
-
     let newString = stdoutHistory.newStdout
 
-    if (!newString) return
+    if (!newString || !noticeMaster.current) return
 
     const mapExecuted = newString.match(/MAP EJECUTADO SATISFACTORIAMENTE/g) || []
     const combineExecuted = newString.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g) || []
@@ -68,10 +65,14 @@ export const usePythonCodeValidator = () => {
 
     if ((mapExecuted.length || combineExecuted.length) && !nodeHasFiles) {
       dispatchMapReduce({ type: 'MAP_EXECUTED' })
+      noticeMaster.current -= 1
       return
     }
 
-    if (reduceExecuted.length && !Object.keys(mapReduceState.reduceKeys).length) return
+    if (reduceExecuted.length && !Object.keys(mapReduceState.reduceKeys).length) {
+      noticeMaster.current -= 1
+      return
+    }
 
     const executed = [...mapExecuted, ...combineExecuted, ...reduceExecuted]
 
@@ -94,6 +95,7 @@ export const usePythonCodeValidator = () => {
     nodeHasFiles,
     roomOwner?.userID,
     sendDirectMessage,
+    stdoutHistory,
     stdoutHistory.newStdout,
     stdoutHistory.stdout,
   ])
@@ -156,6 +158,7 @@ export const usePythonCodeValidator = () => {
     stdoutHistory,
     stderr,
     isReady,
+    isRunning,
     readFile: safeReadFile,
     writeFile,
     resetStdoutHistory,
