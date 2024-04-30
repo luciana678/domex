@@ -1,11 +1,11 @@
 'use client'
 
 import { Code } from '@/types'
-import { validatePythonCode, isValidFunctionHeader } from '@/utils/helpers'
+import { isValidFunctionHeader, validatePythonCode } from '@/utils/helpers'
 import { usePython } from 'react-py'
 
 export const usePythonCodeValidator = (code: Code, setCodeErrors: React.Dispatch<Code>) => {
-  const { runPython, readFile, writeFile } = usePython({
+  const { runPython, readFile, writeFile, isReady, isLoading, isRunning } = usePython({
     packages: { micropip: ['pyodide-http'] },
   })
 
@@ -35,5 +35,10 @@ export const usePythonCodeValidator = (code: Code, setCodeErrors: React.Dispatch
     return !Object.values(result).some((error) => !!error)
   }
 
-  return { isValidPythonCode }
+  return {
+    isValidPythonCode,
+    isValidatorReady: isReady,
+    isValidatorLoading: isLoading,
+    isValidatorRunning: isRunning,
+  }
 }
