@@ -76,6 +76,7 @@ export default function Master() {
     const isValidPythonCodePromise = isValidPythonCode()
 
     toast.promise(isValidPythonCodePromise, {
+      position: 'bottom-center',
       loading: 'Validando código...',
       success: (ata) => {
         return `Código validado`
