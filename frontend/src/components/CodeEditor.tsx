@@ -23,6 +23,7 @@ export default function CodeEditor({
       options={{
         readOnly,
       }}
+      className={`${readOnly ? 'pointer-events-none' : ''}`}
       {...editorProps}
     />
   )

@@ -8,7 +8,6 @@ import { getConnectionStatus, getExecutionStatus } from '@/utils/users'
 
 export default function NodeList() {
   const { clusterUsers } = useRoom()
-  const { sendDirectMessage, peers } = usePeers()
 
   return (
     <Card className='bg-white shadow-lg border border-gray-300 rounded-md w-full max-w-[500px]'>
@@ -20,14 +19,8 @@ export default function NodeList() {
               sx={{
                 mb: 1,
               }}>
-              {node.userName} {getConnectionStatus(node)} {getExecutionStatus(node)}
+              {'🧑‍💻'} {node.userName} {getConnectionStatus(node)} {getExecutionStatus(node)}
             </Typography>
-            <button
-              onClick={() => {
-                sendDirectMessage(node.userID, { data: 'Hello' })
-              }}>
-              Send message
-            </button>
           </div>
         ))}
       </CardContent>

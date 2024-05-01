@@ -8,6 +8,7 @@ import { useContext, useEffect } from 'react'
 import useInitializePeers from './useInitializePeers'
 import usePeers from './usePeers'
 import useRoom from './useRoom'
+import { toast } from 'sonner'
 
 const useInitializeRoom = () => {
   useInitializePeers()
@@ -79,7 +80,7 @@ const useInitializeRoom = () => {
       leaveRoom()
     }
 
-    const onUserLeave = ({ userID }: { userID: UserID; userName: string }) => {
+    const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
       const isOwner = roomOwner?.userID === userID
 
       if (isOwner) {
@@ -94,9 +95,11 @@ const useInitializeRoom = () => {
       }
       setClusterUsers((prevUsers) => prevUsers.filter((user) => user.userID !== userID))
       deletePeer(userID)
+
+      toast.info(`${userName} ha abandonado la sala`)
     }
 
-    const onUserDisconnected = ({ userID }: { userID: UserID; userName: string }) => {
+    const onUserDisconnected = ({ userID, userName }: { userID: UserID; userName: string }) => {
       if (socket.userID === userID) return
 
       // A user/owner has disconnected, update the connected status
@@ -108,6 +111,8 @@ const useInitializeRoom = () => {
           return user
         }),
       )
+
+      toast.error(`${userName} se ha desconectado de la sala`)
       // deletePeer(userID)
     }
 
@@ -132,7 +137,9 @@ const useInitializeRoom = () => {
             return user
           }),
         )
+        toast.success(`${userName} se ha reconectado a la sala`)
       } else {
+        toast.success(`${userName} se ha unido a la sala`)
         setClusterUsers((prevUsers) => [
           ...prevUsers,
           { userID, userName, socketConnected, isRoomOwner, readyToExecuteMap: false },

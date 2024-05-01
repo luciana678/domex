@@ -53,8 +53,8 @@ export default function Home() {
   // TODO: Separate in components
 
   return (
-    <main className='flex min-h-screen justify-center items-center p-24'>
-      <section className='flex flex-col items-center -translate-y-24'>
+    <main className='flex min-h-full justify-center items-center px-24 lg:p-0  '>
+      <section className='flex flex-col items-center'>
         <div className='pb-5 max-w-xs'>
           <TextField
             label='Usuario'

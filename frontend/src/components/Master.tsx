@@ -18,6 +18,7 @@ import FolderTree from './ui/FolderTree'
 import useFiles from '@/hooks/useFiles'
 import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
 import Output from '@/components/Output'
+import { toast } from 'sonner'
 
 const WordCountCode = {
   map: `def fmap(value):
@@ -100,8 +101,19 @@ export default function Master() {
   }, [finished, toggleRoomLock])
 
   const handleIniciarProcesamiento = async () => {
-    const isValid = await isValidPythonCode(code)
-    if (!isValid) return
+    const isValidPythonCodePromise = await isValidPythonCode(code)
+
+    toast.promise(isValidPythonCodePromise, {
+      position: 'bottom-center',
+      loading: 'Validando la sintáxis del código...',
+      success: () => {
+        return 'Sintáxis del código validada correctamente... iniciando el procesamiento '
+      },
+      error: 'La sintáxis del código no es válida',
+    })
+
+    if (!(await isValidPythonCodePromise)) return
+
     toggleRoomLock(true)
     resetState()
     const action: Action = { type: 'SET_CODES', payload: code }
@@ -222,6 +234,14 @@ export default function Master() {
       mapNodesCount: mapReduceState.mapNodesCount,
     }))
   }, [mapReduceState.sizes, mapReduceState.mapNodesCount])
+
+  const processingButtonText = finished
+    ? 'Procesamiento finalizado'
+    : !isReady
+      ? 'Inicializando validador...'
+      : !allUsersReady
+        ? 'Esperando a los nodos'
+        : 'Iniciar procesamiento'
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
