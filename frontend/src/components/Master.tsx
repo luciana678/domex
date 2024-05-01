@@ -101,7 +101,7 @@ export default function Master() {
   }, [finished, toggleRoomLock])
 
   const handleIniciarProcesamiento = async () => {
-    const isValidPythonCodePromise = await isValidPythonCode(code)
+    const isValidPythonCodePromise = isValidPythonCode(code)
 
     toast.promise(isValidPythonCodePromise, {
       position: 'bottom-center',
@@ -234,14 +234,6 @@ export default function Master() {
       mapNodesCount: mapReduceState.mapNodesCount,
     }))
   }, [mapReduceState.sizes, mapReduceState.mapNodesCount])
-
-  const processingButtonText = finished
-    ? 'Procesamiento finalizado'
-    : !isReady
-      ? 'Inicializando validador...'
-      : !allUsersReady
-        ? 'Esperando a los nodos'
-        : 'Iniciar procesamiento'
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>

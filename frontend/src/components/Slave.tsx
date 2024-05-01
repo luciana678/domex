@@ -86,7 +86,6 @@ export default function Slave() {
   )
 
   useEffect(() => {
-    console.log(mapReduceState.resetState, timesReseted.current.global)
     if (mapReduceState.resetState < 0 || timesReseted.current.global === mapReduceState.resetState)
       return
 
