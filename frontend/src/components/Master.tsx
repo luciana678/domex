@@ -101,6 +101,9 @@ export default function Master() {
   }, [finished, toggleRoomLock])
 
   const handleIniciarProcesamiento = async () => {
+    if (!isReady) return
+    if (!allUsersReady) return
+
     const isValidPythonCodePromise = isValidPythonCode(code)
 
     toast.promise(isValidPythonCodePromise, {
@@ -235,6 +238,14 @@ export default function Master() {
     }))
   }, [mapReduceState.sizes, mapReduceState.mapNodesCount])
 
+  const processingButtonText = finished
+    ? 'Procesamiento finalizado'
+    : !isReady
+      ? 'Inicializando validador...'
+      : !allUsersReady
+        ? 'Esperando a los nodos'
+        : 'Iniciar procesamiento'
+
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
       <Navbar title={`Administrar cluster #${roomSession?.roomID}`} />
@@ -289,7 +300,7 @@ export default function Master() {
         loading={loading}
         loadingPosition='center'
         disabled={!allUsersReady || loading || !isReady}>
-        Iniciar procesamiento
+        {processingButtonText}
       </LoadingButton>
 
       <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
