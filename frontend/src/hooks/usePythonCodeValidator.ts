@@ -9,12 +9,11 @@ import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import useFiles from '@/hooks/useFiles'
+import { CONFIG } from '@/constants/config'
 
 export const usePythonCodeValidator = () => {
   const { runPython, stdout, stderr, isReady, readFile, writeFile, interruptExecution, isRunning } =
-    usePython({
-      packages: { micropip: ['pyodide-http'] },
-    })
+    usePython(CONFIG.REACTPY.USE_PYTHON_PROPS)
 
   const { dispatchMapReduce, mapReduceState } = useMapReduce()
 
