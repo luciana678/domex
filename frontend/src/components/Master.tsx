@@ -238,7 +238,7 @@ export default function Master() {
     }))
   }, [mapReduceState.sizes, mapReduceState.mapNodesCount])
 
-  const processingButtonText = finished
+  const processingButtonText = isLoading
     ? 'Procesamiento finalizado'
     : !isReady
       ? 'Inicializando validador...'
