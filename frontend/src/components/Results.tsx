@@ -61,6 +61,14 @@ export default function Results({
       <DataGrid
         className={`w-full ${rows.length > 0 ? 'h-auto' : 'h-36'}`}
         columns={columns}
+        pageSizeOptions={[5, 10, 20, 50, 100]}
+        initialState={{
+          pagination: {
+            paginationModel: {
+              pageSize: 5,
+            },
+          },
+        }}
         rows={rows}
         disableColumnMenu
         showColumnVerticalBorder
