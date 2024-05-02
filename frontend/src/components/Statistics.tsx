@@ -26,7 +26,7 @@ export function Statistics({ statistics }: { statistics: StatisticsType[] }) {
       <Typography variant='h4' component='div' className='pt-4'>
         Estadísticas
       </Typography>
-      <div className='m-5 w-full grid grid-cols-[repeat(auto-fill,minmax(350px,1fr))] gap-5'>
+      <div className='m-5 w-full grid grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-5'>
         {statistics.map((info, index) => (
           <StatisticsCard key={index} title={info.title} statistics={info.statistics} />
         ))}
