@@ -7,7 +7,7 @@ import useMapReduce from '@/hooks/useMapReduce'
 import { Action, initialOutput } from '@/context/MapReduceContext'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import useFiles from '@/hooks/useFiles'
 import { CONFIG } from '@/constants/config'
 
@@ -24,13 +24,15 @@ export const usePythonCodeValidator = () => {
   const [stdoutHistory, setStdoutHistory] = useState({
     stdout: '',
     newStdout: '',
+    prevNewStdout: '',
   })
-
-  const noticeMaster = useRef(0)
 
   const { nodeHasFiles } = useFiles()
 
-  const resetStdoutHistory = useCallback(() => setStdoutHistory({ stdout: '', newStdout: '' }), [])
+  const resetStdoutHistory = useCallback(
+    () => setStdoutHistory({ stdout: '', newStdout: '', prevNewStdout: '' }),
+    [],
+  )
 
   const safeReadFile = async (path: string) => {
     try {
@@ -42,21 +44,25 @@ export const usePythonCodeValidator = () => {
   }
 
   useEffect(() => {
+    if (!stdout) return
+
     setStdoutHistory((prevStdoutHistory) => {
       const { mergedString, newString } = mergeStrings(prevStdoutHistory.stdout, stdout)
 
-      if (!mergedString || !newString) return prevStdoutHistory
+      if (!newString || prevStdoutHistory.newStdout === newString) return prevStdoutHistory
 
-      noticeMaster.current += prevStdoutHistory.newStdout !== newString ? 1 : 0
-
-      return { stdout: mergedString, newStdout: newString }
+      return {
+        stdout: mergedString,
+        newStdout: newString,
+        prevNewStdout: prevStdoutHistory.prevNewStdout,
+      }
     })
   }, [stdout])
 
   useEffect(() => {
     let newString = stdoutHistory.newStdout
 
-    if (!newString || !noticeMaster.current) return
+    if (!newString || stdoutHistory.prevNewStdout === newString) return
 
     const mapExecuted = newString.match(/MAP EJECUTADO SATISFACTORIAMENTE/g) || []
     const combineExecuted = newString.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g) || []
@@ -64,12 +70,10 @@ export const usePythonCodeValidator = () => {
 
     if ((mapExecuted.length || combineExecuted.length) && !nodeHasFiles) {
       dispatchMapReduce({ type: 'MAP_EXECUTED' })
-      noticeMaster.current -= 1
       return
     }
 
     if (reduceExecuted.length && !Object.keys(mapReduceState.reduceKeys).length) {
-      noticeMaster.current -= 1
       return
     }
 
@@ -87,7 +91,10 @@ export const usePythonCodeValidator = () => {
         payload: newString,
       })
 
-    noticeMaster.current -= 1
+    setStdoutHistory((prevStdoutHistory) => ({
+      ...prevStdoutHistory,
+      prevNewStdout: newString,
+    }))
   }, [
     dispatchMapReduce,
     mapReduceState.reduceKeys,

@@ -52,8 +52,8 @@ export const mergeStrings = (str1: string, str2: string) => {
   }
 
   return {
-    mergedString,
-    newString,
+    mergedString: mergedString.trim(),
+    newString: newString.trim(),
   }
 }
 

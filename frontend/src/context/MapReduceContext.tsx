@@ -201,7 +201,10 @@ const reducer = (state: ReducerState, action: Action) => {
       return state
     case actionTypes.SET_STDOUT:
       let stdout = action.payload.trim()
-      if (action.userName && stdout) {
+
+      if (!stdout) return state
+
+      if (action.userName) {
         stdout = `Node ${action.userName}: ${stdout}\n`
       } else {
         stdout = `${stdout}\n`

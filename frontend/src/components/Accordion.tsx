@@ -111,7 +111,7 @@ export default function BasicAccordion({
                     event.stopPropagation()
                     document.getElementById(title)?.click()
                   }}>
-                  Cargar archivo
+                  Seleccionar
                 </Button>
               </label>
             </>
