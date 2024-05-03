@@ -208,6 +208,7 @@ const reducer = (state: ReducerState, action: Action) => {
         incomingStdout
           .split('\n') // Split the stdout into lines
           .map((line) => line.trim()) // Remove leading/trailing whitespace from each line
+          .filter((line) => line) // Remove empty lines (lines that are just whitespace
           .map((line) => (action.userName ? `Node ${action.userName}: ${line}` : line)) // Add the username to each line
           .join('\n') + '\n' // Join the lines back together and add a newline at the end
 
