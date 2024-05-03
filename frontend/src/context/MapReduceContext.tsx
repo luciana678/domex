@@ -200,28 +200,30 @@ const reducer = (state: ReducerState, action: Action) => {
     case actionTypes.SET_READY_TO_EXECUTE:
       return state
     case actionTypes.SET_STDOUT:
-      let stdout = action.payload.trim()
+      const incomingStdout = action.payload.trim()
 
-      if (!stdout) return state
+      if (!incomingStdout) return state
 
-      if (action.userName) {
-        stdout = `Node ${action.userName}: ${stdout}\n`
-      } else {
-        stdout = `${stdout}\n`
-      }
+      const stdout =
+        incomingStdout
+          .split('\n') // Split the stdout into lines
+          .map((line) => line.trim()) // Remove leading/trailing whitespace from each line
+          .map((line) => (action.userName ? `Node ${action.userName}: ${line}` : line)) // Add the username to each line
+          .join('\n') + '\n' // Join the lines back together and add a newline at the end
 
-      stdout = state.output.stdout + stdout
+      const newStdoutState = state.output.stdout + stdout
 
       return {
         ...state,
         finishedMapNodes:
-          stdout.match(/MAP EJECUTADO SATISFACTORIAMENTE/g)?.length || state.finishedMapNodes,
+          newStdoutState.match(/MAP EJECUTADO SATISFACTORIAMENTE/g)?.length ||
+          state.finishedMapNodes,
         finishedCombinerNodes:
-          stdout.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g)?.length ||
+          newStdoutState.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g)?.length ||
           state.finishedCombinerNodes,
         output: {
           ...state.output,
-          stdout,
+          stdout: newStdoutState,
         },
       }
     case actionTypes.SET_STDERR:
