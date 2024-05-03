@@ -7,19 +7,20 @@ import { initialSizes } from '@/context/MapReduceContext'
 import useFiles from '@/hooks/useFiles'
 import useMapReduce from '@/hooks/useMapReduce'
 import usePeers from '@/hooks/usePeers'
+import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
 import useRoom from '@/hooks/useRoom'
 import useStatistics from '@/hooks/useStatisticts'
 import { FinalResults, KeyValue, KeyValues, MapCombinerResults, Sizes, UserID } from '@/types'
 import { concatenateFiles, resetPythonFiles } from '@/utils/helpers'
 import { PY_MAIN_CODE } from '@/utils/python/tmp'
-import { Button } from '@mui/material'
+import { Clear as ClearIcon } from '@mui/icons-material'
+import { Button, ButtonGroup, Tooltip } from '@mui/material'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
 import NodeList from './NodeList'
-import Results from './Results'
 import Output from './Output'
-import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
+import Results from './Results'
 
 const initialMapCombinerResults: MapCombinerResults = {
   mapResults: {},
@@ -423,13 +424,47 @@ export default function Slave() {
         </div>
       </div>
 
-      <Button
-        variant='outlined'
-        color='success'
-        onClick={() => setIsReadyToExecute(true)}
-        disabled={!isReady || isReadyToExecute}>
-        Listo para ejecutar
-      </Button>
+      <div className='flex gap-5 '>
+        <ButtonGroup>
+          <Button
+            variant={isReadyToExecute ? 'contained' : 'outlined'}
+            color='success'
+            onClick={() => setIsReadyToExecute(true)}
+            disabled={!isReady || isReadyToExecute}>
+            {isReadyToExecute
+              ? 'Listo'
+              : !isReady
+                ? 'Iniciando módulo Python...'
+                : 'Listo para ejecutar'}
+          </Button>
+
+          {isReadyToExecute && (
+            <Tooltip
+              title='Cancelar'
+              placement='top'
+              slotProps={{
+                popper: {
+                  modifiers: [
+                    {
+                      name: 'offset',
+                      options: {
+                        offset: [0, -11],
+                      },
+                    },
+                  ],
+                },
+              }}>
+              <Button
+                variant='contained'
+                color='error'
+                size={'small'}
+                onClick={() => resetState(true)}>
+                <ClearIcon fontSize='small' aria-label='Cancelar' />
+              </Button>
+            </Tooltip>
+          )}
+        </ButtonGroup>
+      </div>
 
       <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
 
