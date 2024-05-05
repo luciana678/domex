@@ -238,13 +238,11 @@ export default function Master() {
     }))
   }, [mapReduceState.sizes, mapReduceState.mapNodesCount])
 
-  const processingButtonText = isLoading
-    ? 'Procesamiento finalizado'
-    : !isReady
-      ? 'Inicializando validador...'
-      : !allUsersReady
-        ? 'Esperando a los nodos'
-        : 'Iniciar procesamiento'
+  const processingButtonText = !isReady
+    ? 'Iniciando Python...'
+    : !allUsersReady
+      ? 'Esperando a los nodos'
+      : 'Iniciar procesamiento'
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>

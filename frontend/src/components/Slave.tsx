@@ -13,8 +13,7 @@ import useStatistics from '@/hooks/useStatisticts'
 import { FinalResults, KeyValue, KeyValues, MapCombinerResults, Sizes, UserID } from '@/types'
 import { concatenateFiles, resetPythonFiles } from '@/utils/helpers'
 import { PY_MAIN_CODE } from '@/utils/python/tmp'
-import { Clear as ClearIcon } from '@mui/icons-material'
-import { Button, ButtonGroup, Tooltip } from '@mui/material'
+import { Button } from '@mui/material'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import BasicAccordion from './Accordion'
 import Navbar from './Navbar'
@@ -105,14 +104,13 @@ export default function Slave() {
     resetState(true)
   }, [mapReduceState.resetReadyToExecute, resetState])
 
-  useEffect(
-    () =>
-      broadcastMessage({
-        type: 'SET_READY_TO_EXECUTE',
-        payload: isReadyToExecute,
-      }),
-    [broadcastMessage, isReadyToExecute],
-  )
+  useEffect(() => {
+    setStarted(false)
+    broadcastMessage({
+      type: 'SET_READY_TO_EXECUTE',
+      payload: isReadyToExecute,
+    })
+  }, [broadcastMessage, isReadyToExecute])
 
   const updateSizes = (newSizes: Partial<Sizes>) =>
     setFinalResults((prevResults) => ({
@@ -424,47 +422,13 @@ export default function Slave() {
         </div>
       </div>
 
-      <div className='flex gap-5 '>
-        <ButtonGroup>
-          <Button
-            variant={isReadyToExecute ? 'contained' : 'outlined'}
-            color='success'
-            onClick={() => setIsReadyToExecute(true)}
-            disabled={!isReady || isReadyToExecute}>
-            {isReadyToExecute
-              ? 'Listo'
-              : !isReady
-                ? 'Iniciando módulo Python...'
-                : 'Listo para ejecutar'}
-          </Button>
-
-          {isReadyToExecute && (
-            <Tooltip
-              title='Cancelar'
-              placement='top'
-              slotProps={{
-                popper: {
-                  modifiers: [
-                    {
-                      name: 'offset',
-                      options: {
-                        offset: [0, -11],
-                      },
-                    },
-                  ],
-                },
-              }}>
-              <Button
-                variant='contained'
-                color='error'
-                size={'small'}
-                onClick={() => resetState(true)}>
-                <ClearIcon fontSize='small' aria-label='Cancelar' />
-              </Button>
-            </Tooltip>
-          )}
-        </ButtonGroup>
-      </div>
+      <Button
+        variant={'outlined'}
+        color={!isReadyToExecute ? 'success' : 'error'}
+        onClick={() => setIsReadyToExecute(!isReadyToExecute)}
+        disabled={!isReady || started}>
+        {isReadyToExecute ? 'Cancelar' : !isReady ? 'Iniciando Python...' : 'Listo para ejecutar'}
+      </Button>
 
       <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
 
