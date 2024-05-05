@@ -32,6 +32,13 @@ const initialFinalResults: FinalResults = {
   sizes: initialSizes,
 }
 
+const editorProps = {
+  showLoadFileButton: false,
+  codeEditorProps: {
+    readOnly: true,
+  },
+}
+
 export default function Slave() {
   const { roomOwner, roomSession, setIsReadyToExecute, isReadyToExecute } = useRoom()
   const { sendDirectMessage, broadcastMessage } = usePeers()
@@ -382,34 +389,25 @@ export default function Slave() {
         <div className='flex flex-col lg:flex-row justify-center w-full gap-10 mb-5'>
           <div className='w-full'>
             <BasicAccordion
+              {...editorProps}
               title={placeholdersFunctions.map.title}
-              codeState={[mapReduceState.code.mapCode, null]}
-              showLoadFileButton={false}
-              codeEditorProps={{
-                readOnly: true,
-              }}
+              codeState={[mapReduceState.code.mapCode]}
               error={mapReduceState.output.stderr.mapCode}
               loading={started && !mapExecuted && !mapCombinerExecuted && !mapReduceState.errors}
               finished={mapExecuted || mapCombinerExecuted}
             />
             <BasicAccordion
+              {...editorProps}
               title={placeholdersFunctions.combiner.title}
-              codeState={[mapReduceState.code.combinerCode, null]}
-              showLoadFileButton={false}
-              codeEditorProps={{
-                readOnly: true,
-              }}
+              codeState={[mapReduceState.code.combinerCode]}
               error={mapReduceState.output.stderr.combinerCode}
               loading={mapExecuted && !mapCombinerExecuted && !mapReduceState.errors}
               finished={mapCombinerExecuted}
             />
             <BasicAccordion
+              {...editorProps}
               title={placeholdersFunctions.reduce.title}
-              codeState={[mapReduceState.code.reduceCode, null]}
-              showLoadFileButton={false}
-              codeEditorProps={{
-                readOnly: true,
-              }}
+              codeState={[mapReduceState.code.reduceCode]}
               error={mapReduceState.output.stderr.reduceCode}
               loading={mapCombinerExecuted && !finished && !mapReduceState.errors}
               finished={finished}

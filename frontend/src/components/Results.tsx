@@ -59,7 +59,7 @@ export default function Results({
         {title}
       </Typography>
       <DataGrid
-        className={`w-full ${rows.length > 0 ? 'h-auto' : 'h-36'}`}
+        className={`w-full ${rows.length > 0 ? 'h-auto' : 'h-40'}`}
         columns={columns}
         pageSizeOptions={[5, 10, 20, 50, 100]}
         initialState={{
@@ -82,6 +82,7 @@ export default function Results({
                 <Tooltip title='Exportar datos a CSV'>
                   <Button
                     onClick={() => apiRef.current.exportDataAsCsv({ fileName: title })}
+                    disabled={!rows.length}
                     startIcon={<ExportIcon />}
                     sx={{ paddingLeft: 3 }}
                   />

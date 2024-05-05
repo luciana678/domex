@@ -1,6 +1,7 @@
 'use client'
 
 import { Editor, type EditorProps } from '@monaco-editor/react'
+import { Box, CircularProgress, Typography } from '@mui/material'
 
 type Props = EditorProps & {
   readOnly?: boolean
@@ -18,12 +19,22 @@ export default function CodeEditor({
     <Editor
       height={height}
       defaultLanguage={defaultLanguage}
+      language={defaultLanguage}
       defaultValue={defaultValue}
       theme={theme}
+      loading={
+        <Box display='flex' flexDirection='column' alignItems='center' gap={3}>
+          <Typography>Inicializando editor de código...</Typography>
+          <CircularProgress size={25} />
+        </Box>
+      }
       options={{
         readOnly,
+        readOnlyMessage: {
+          value: 'Solo el nodo master puede editar el código',
+        },
+        language: defaultLanguage,
       }}
-      className={`${readOnly ? 'pointer-events-none' : ''}`}
       {...editorProps}
     />
   )

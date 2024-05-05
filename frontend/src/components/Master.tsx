@@ -304,11 +304,7 @@ export default function Master() {
       <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
       {finished && (
         <>
-          <Results
-            className='flex flex-col w-full mt-5'
-            title='Resultados'
-            data={mapReduceState.reduceResult}
-          />
+          <Results className='mt-5' title='Resultados' data={mapReduceState.reduceResult} />
           <Statistics statistics={statistics} />
         </>
       )}
