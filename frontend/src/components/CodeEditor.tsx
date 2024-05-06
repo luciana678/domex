@@ -29,6 +29,7 @@ export default function CodeEditor({
         </Box>
       }
       options={{
+        scrollBeyondLastLine: false,
         readOnly,
         readOnlyMessage: {
           value: 'Solo el nodo master puede editar el código',
