@@ -15,7 +15,7 @@ export const sumValues = (dict: KeyValuesCount) =>
  * @returns The average of the numbers in the array.
  */
 export const average = (values: number[]) =>
-  values.reduce((total, value) => total + value, 0) / values.length
+  values.length ? values.reduce((total, value) => total + value, 0) / values.length : 0
 
 /**
  * Concatenates the contents of multiple files into a single string.
