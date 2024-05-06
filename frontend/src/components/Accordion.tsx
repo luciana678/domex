@@ -47,13 +47,15 @@ export default function BasicAccordion({
     }
   }
 
-  if (error) {
-    toast.error(`Error en ${title}`, {
-      description: error,
-      position: 'bottom-center',
-      id: title,
-    })
-  }
+  useEffect(() => {
+    if (error) {
+      toast.error(`Error en ${title}`, {
+        description: error,
+        position: 'bottom-center',
+        id: title,
+      })
+    }
+  }, [error, title])
 
   useEffect(() => {
     const readFile = async () => {
