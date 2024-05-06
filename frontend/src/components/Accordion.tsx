@@ -7,7 +7,7 @@ import Accordion from '@mui/material/Accordion'
 import AccordionDetails from '@mui/material/AccordionDetails'
 import AccordionSummary from '@mui/material/AccordionSummary'
 import Typography from '@mui/material/Typography'
-import CodeEditor from './CodeEditor'
+import CodeEditor, { CodeEditorProps } from './CodeEditor'
 import { useEffect, useState } from 'react'
 import Progress from '@/components/Progress'
 import { toast } from 'sonner'
@@ -33,7 +33,7 @@ export default function BasicAccordion({
   fileButtonDisabled?: boolean
   total?: number
   current?: number
-  codeEditorProps?: any
+  codeEditorProps?: CodeEditorProps
 }) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
   const [code, setCode] = codeState

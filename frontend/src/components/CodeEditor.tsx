@@ -3,7 +3,7 @@
 import { Editor, type EditorProps } from '@monaco-editor/react'
 import { Box, CircularProgress, Typography } from '@mui/material'
 
-type Props = EditorProps & {
+export type CodeEditorProps = EditorProps & {
   readOnly?: boolean
 }
 
@@ -14,7 +14,7 @@ export default function CodeEditor({
   theme = 'vs-dark',
   readOnly = false,
   ...editorProps
-}: Props) {
+}: CodeEditorProps) {
   return (
     <Editor
       height={height}
