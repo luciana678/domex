@@ -46,7 +46,13 @@ export const registerRoom = async (
         socket.roomID
       }, ${socket.userID}`,
     )
-    roomsSessionStore.removeSession(socket.roomID, socket.sessionID)
+
+    if (socket.isRoomOwner) {
+      // if the owner leaves the room, delete the room
+      roomsSessionStore.removeRoom(socket.roomID)
+    } else {
+      roomsSessionStore.removeSession(socket.roomID, socket.sessionID)
+    }
 
     socket.broadcast.to(socket.roomID).emit(`room:user-leave`, {
       userID: socket.userID,
