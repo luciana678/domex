@@ -18,6 +18,34 @@ export const average = (values: number[]) =>
   values.length ? values.reduce((total, value) => total + value, 0) / values.length : 0
 
 /**
+ * Formats the given time value in nanoseconds into a human-readable format.
+ * If the value is less than one second, it is displayed in milliseconds.
+ * If the value is less than one minute, it is displayed in seconds.
+ * Otherwise, it is displayed in minutes and seconds.
+ *
+ * @param valueNs - The time value in nanoseconds.
+ * @returns The formatted time string.
+ */
+export function formatTime(valueNs: number) {
+  // If is zero, return 0s
+  if (valueNs === 0) return '0ms'
+
+  // Convert nanoseconds to seconds
+  const valueS = valueNs / 1e9
+
+  // If less than one second, display in milliseconds
+  if (valueS < 1) return `${valueS * 1e3}ms`
+
+  // If less than one minute, display in seconds
+  if (valueS < 60) return `${valueS.toFixed(2)}s`
+
+  // Else display in minutes
+  let minutes = Math.floor(valueS / 60)
+  let remainingSeconds = (valueS % 60).toFixed(2)
+  return `${minutes}n ${remainingSeconds}s`
+}
+
+/**
  * Concatenates the contents of multiple files into a single string.
  * @param files - An array of File objects representing the files to be concatenated.
  * @returns A Promise that resolves to the concatenated content of the files.

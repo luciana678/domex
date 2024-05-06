@@ -1,5 +1,5 @@
 import { FinalResults } from '@/types'
-import { sumValues } from '@/utils/helpers'
+import { formatTime, sumValues } from '@/utils/helpers'
 import useMapReduce from '@/hooks/useMapReduce'
 
 export default function useStatistics({
@@ -28,11 +28,11 @@ export default function useStatistics({
         { label: 'Tamaño total de la salida generada', value: `${sizes.mapOutput} bytes` },
         ...(mapNodesCount
           ? [
-              { label: 'Tiempo promedio de ejecución', value: `${times.avgMapTime}s` },
-              { label: 'Tiempo máximo de ejecución', value: `${times.maxMapTime}s` },
-              { label: 'Tiempo mínimo de ejecución', value: `${times.minMapTime}s` },
+              { label: 'Tiempo promedio de ejecución', value: formatTime(times.avgMapTime) },
+              { label: 'Tiempo máximo de ejecución', value: formatTime(times.maxMapTime) },
+              { label: 'Tiempo mínimo de ejecución', value: formatTime(times.minMapTime) },
             ]
-          : [{ label: 'Tiempo de ejecución', value: `${sizes.mapCodeTime}s` }]),
+          : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.mapCodeTime) }]),
       ],
     },
     {
@@ -49,11 +49,20 @@ export default function useStatistics({
         { label: 'Tamaño total de la salida generada', value: `${sizes.combinerOutput} bytes` },
         ...(mapNodesCount
           ? [
-              { label: 'Tiempo promedio de ejecución', value: `${times.avgCombinerTime}s` },
-              { label: 'Tiempo máximo de ejecución', value: `${times.maxCombinerTime}s` },
-              { label: 'Tiempo mínimo de ejecución', value: `${times.minCombinerTime}s` },
+              {
+                label: 'Tiempo promedio de ejecución',
+                value: formatTime(times.avgCombinerTime),
+              },
+              {
+                label: 'Tiempo máximo de ejecución',
+                value: formatTime(times.maxCombinerTime),
+              },
+              {
+                label: 'Tiempo mínimo de ejecución',
+                value: formatTime(times.minCombinerTime),
+              },
             ]
-          : [{ label: 'Tiempo de ejecución', value: `${sizes.combinerCodeTime}s` }]),
+          : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.combinerCodeTime) }]),
       ],
     },
     {
@@ -75,11 +84,14 @@ export default function useStatistics({
         { label: 'Tamaño total de la salida generada', value: `${sizes.reduceOutput} bytes` },
         ...(reducerNodesCount
           ? [
-              { label: 'Tiempo promedio de ejecución', value: `${times.avgReduceTime}s` },
-              { label: 'Tiempo máximo de ejecución', value: `${times.maxReduceTime}s` },
-              { label: 'Tiempo mínimo de ejecución', value: `${times.minReduceTime}s` },
+              {
+                label: 'Tiempo promedio de ejecución',
+                value: formatTime(times.avgReduceTime),
+              },
+              { label: 'Tiempo máximo de ejecución', value: formatTime(times.maxReduceTime) },
+              { label: 'Tiempo mínimo de ejecución', value: formatTime(times.minReduceTime) },
             ]
-          : [{ label: 'Tiempo de ejecución', value: `${sizes.reduceCodeTime}s` }]),
+          : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.reduceCodeTime) }]),
       ],
     },
   ]

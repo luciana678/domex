@@ -27,11 +27,12 @@ class Context:
       fred(key, values)
 
 def safe_execute(name, func):
-  start_time = time.perf_counter()
+  start_time = time.perf_counter_ns()
 
   try:
     result = func()
-    sizes[f'{name}Time'] = round(time.perf_counter() - start_time, 2)
+    finish_time = time.perf_counter_ns()
+    sizes[f'{name}Time'] = finish_time - start_time
     return result
   except Exception as e:
     with open('/stderr.json', 'w') as errors_file:
