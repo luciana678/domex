@@ -10,6 +10,14 @@ export const sumValues = (dict: KeyValuesCount) =>
   Object.values(dict).reduce((total, value) => total + value, 0)
 
 /**
+ * Calculates the average of an array of numbers.
+ * @param values - An array of numbers to calculate the average of.
+ * @returns The average of the numbers in the array.
+ */
+export const average = (values: number[]) =>
+  values.reduce((total, value) => total + value, 0) / values.length
+
+/**
  * Concatenates the contents of multiple files into a single string.
  * @param files - An array of File objects representing the files to be concatenated.
  * @returns A Promise that resolves to the concatenated content of the files.

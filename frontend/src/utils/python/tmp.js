@@ -1,8 +1,6 @@
 export const PY_MAIN_CODE = `
 
-import os
-import json
-import sys
+import os, json, sys, time
 
 class Context:
 
@@ -29,8 +27,12 @@ class Context:
       fred(key, values)
 
 def safe_execute(name, func):
+  start_time = time.perf_counter()
+
   try:
-    return func()
+    result = func()
+    sizes[f'{name}Time'] = round(time.perf_counter() - start_time, 2)
+    return result
   except Exception as e:
     with open('/stderr.json', 'w') as errors_file:
       json.dump({name: f"[{name}] -> {str(e)}"}, errors_file)

@@ -1,7 +1,9 @@
 'use client'
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
+import useRoom from '@/hooks/useRoom'
 import { Code, KeyValuesCount, Output, ReducerState, Sizes, UserID } from '@/types'
+import { average } from '@/utils/helpers'
 import { PropsWithChildren, createContext, useReducer } from 'react'
 
 export type MapReduceContextType = {
@@ -88,6 +90,24 @@ export const initialSizes: Sizes = {
   totalBytesReceived: 0,
   reduceInput: 0,
   reduceOutput: 0,
+  mapCodeTime: 0,
+  reduceCodeTime: 0,
+  combinerCodeTime: 0,
+}
+
+const initialTimeStatistics: ReducerState['timeStatistics'] = {
+  mapTimes: [],
+  combinerTimes: [],
+  reduceTimes: [],
+  avgMapTime: 0,
+  maxMapTime: 0,
+  minMapTime: 0,
+  avgCombinerTime: 0,
+  maxCombinerTime: 0,
+  minCombinerTime: 0,
+  avgReduceTime: 0,
+  maxReduceTime: 0,
+  minReduceTime: 0,
 }
 
 export const initialOutput: Output = {
@@ -113,6 +133,7 @@ const initialState: ReducerState = {
   receiveKeysFrom: null,
   reduceResult: {},
   sizes: initialSizes,
+  timeStatistics: initialTimeStatistics,
   mapNodesCount: 0,
   finishedMapNodes: 0,
   finishedCombinerNodes: 0,
@@ -121,6 +142,7 @@ const initialState: ReducerState = {
   errors: '',
   resetState: -1,
   resetReadyToExecute: -1,
+  totalNodes: 0,
   finishedNodes: 0,
 }
 
@@ -178,25 +200,77 @@ const reducer = (state: ReducerState, action: Action) => {
         },
       }
     case actionTypes.RESULTADO_FINAL:
-      const currentSizes = { ...state.sizes }
-      const newSizes = { ...action.payload.sizes }
+      const {
+        sizes,
+        timeStatistics,
+        totalNodes,
+        finishedNodes,
+        finishedReducerNodes,
+        mapNodesCount,
+        reduceResult,
+      } = state
+
+      const {
+        sizes: newSizes,
+        incrementReducerNodes,
+        reduceResult: newReduceResult,
+      } = action.payload
+
+      const currentSizes = { ...sizes }
       for (const key in newSizes) {
         currentSizes[key as keyof Sizes] += newSizes[key as keyof Sizes]
       }
-      const newReduceResult = {
-        ...state.reduceResult,
-        ...action.payload.reduceResult,
+
+      let newMapTimes = [...timeStatistics.mapTimes]
+      let newCombinerTimes = [...timeStatistics.combinerTimes]
+      let newReduceTimes = [...timeStatistics.reduceTimes]
+
+      if (newSizes.inputFiles) {
+        newMapTimes = [...newMapTimes, newSizes.mapCodeTime]
+        newCombinerTimes = [...newCombinerTimes, newSizes.combinerCodeTime]
       }
+
+      if (incrementReducerNodes) {
+        newReduceTimes = [...newReduceTimes, newSizes.reduceCodeTime]
+      }
+
+      let newTimeStatistics = {
+        ...timeStatistics,
+        mapTimes: newMapTimes,
+        combinerTimes: newCombinerTimes,
+        reduceTimes: newReduceTimes,
+      }
+
+      if (finishedNodes + 1 === totalNodes) {
+        newTimeStatistics = {
+          ...newTimeStatistics,
+
+          avgMapTime: average(newMapTimes),
+          maxMapTime: Math.max(...newMapTimes),
+          minMapTime: Math.min(...newMapTimes),
+
+          avgCombinerTime: average(newCombinerTimes),
+          maxCombinerTime: Math.max(...newCombinerTimes),
+          minCombinerTime: Math.min(...newCombinerTimes),
+
+          avgReduceTime: average(newReduceTimes),
+          maxReduceTime: Math.max(...newReduceTimes),
+          minReduceTime: Math.min(...newReduceTimes),
+        }
+      }
+
       return {
         ...state,
-        reduceResult: newReduceResult,
         sizes: currentSizes,
-        mapNodesCount: newSizes.inputFiles ? state.mapNodesCount + 1 : state.mapNodesCount,
-        finishedNodes: state.finishedNodes + 1,
-        finishedReducerNodes: action.payload.incrementReducerNodes
-          ? state.finishedReducerNodes + 1
-          : state.finishedReducerNodes,
+        timeStatistics: newTimeStatistics,
+        reduceResult: { ...reduceResult, ...newReduceResult },
+        mapNodesCount: newSizes.inputFiles ? mapNodesCount + 1 : mapNodesCount,
+        finishedNodes: finishedNodes + 1,
+        finishedReducerNodes: incrementReducerNodes
+          ? finishedReducerNodes + 1
+          : finishedReducerNodes,
       }
+
     case actionTypes.SET_READY_TO_EXECUTE:
       return state
     case actionTypes.SET_STDOUT:
@@ -273,6 +347,8 @@ const reducer = (state: ReducerState, action: Action) => {
 }
 
 export const MapReduceProvider: React.FC<PropsWithChildren> = ({ children }) => {
+  const { clusterUsers } = useRoom()
+  initialState.totalNodes = clusterUsers.length
   const [mapReduceState, dispatchMapReduce] = useReducer(reducer, initialState)
 
   return (

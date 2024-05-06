@@ -53,6 +53,20 @@ export type ReducerState = {
   reduceKeys: KeyValuesCount
   reduceResult: KeyValue
   sizes: Sizes
+  timeStatistics: {
+    mapTimes: number[]
+    combinerTimes: number[]
+    reduceTimes: number[]
+    avgMapTime: number
+    maxMapTime: number
+    minMapTime: number
+    avgCombinerTime: number
+    maxCombinerTime: number
+    minCombinerTime: number
+    avgReduceTime: number
+    maxReduceTime: number
+    minReduceTime: number
+  }
   clavesRecibidas: { [user: UserID]: { [innerKey: string]: unknown[] } }
   receiveKeysFrom: UserID[] | null
   sendKeys: null | {
@@ -66,6 +80,7 @@ export type ReducerState = {
   errors: string
   resetState: int
   resetReadyToExecute: int
+  totalNodes: int
   finishedNodes: int
 }
 
@@ -103,6 +118,9 @@ export type Sizes = {
   totalBytesReceived: int
   reduceInput: int
   reduceOutput: int
+  mapCodeTime: int
+  combinerCodeTime: int
+  reduceCodeTime: int
 }
 
 export type FinalResults = {
