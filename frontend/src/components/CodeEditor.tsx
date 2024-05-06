@@ -37,6 +37,7 @@ export default function CodeEditor({
         language: defaultLanguage,
       }}
       {...editorProps}
+      className='rounded-b-xl overflow-hidden'
     />
   )
 }
