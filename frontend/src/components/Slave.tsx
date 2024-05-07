@@ -20,6 +20,7 @@ import Navbar from './Navbar'
 import NodeList from './NodeList'
 import Output from './Output'
 import Results from './Results'
+import { useExecutionStatus } from '@/hooks/useExecutionStatus'
 
 const initialMapCombinerResults: MapCombinerResults = {
   mapResults: {},
@@ -41,9 +42,13 @@ const editorProps = {
 
 export default function Slave() {
   const { roomOwner, roomSession, setIsReadyToExecute, isReadyToExecute } = useRoom()
+
   const { sendDirectMessage, broadcastMessage } = usePeers()
+
   const { mapReduceState } = useMapReduce()
+
   const { selectedFiles } = useFiles()
+
   const [mapCombinerResults, setMapCombinerResults] =
     useState<MapCombinerResults>(initialMapCombinerResults)
   const [reduceResults, setReduceResults] = useState<KeyValue>({})
@@ -54,6 +59,8 @@ export default function Slave() {
   const [finished, setFinished] = useState(false)
   const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
   const [executing, setExecuting] = useState(false)
+
+  const { isReducerNode } = useExecutionStatus({ started, isReadyToExecute })
 
   const timesReseted = useRef({
     global: -1,
@@ -340,7 +347,7 @@ export default function Slave() {
       sendDirectMessage(roomOwner?.userID as UserID, {
         type: 'RESULTADO_FINAL',
         payload: {
-          incrementReducerNodes: Object.keys(mapReduceState.reduceKeys).length > 0,
+          incrementReducerNodes: isReducerNode,
           reduceResult,
           sizes: {
             ...finalResults.sizes,
@@ -379,6 +386,7 @@ export default function Slave() {
     mapCombinerResults.combinerResults,
     readErrors,
     setIsReadyToExecute,
+    isReducerNode,
   ])
 
   return (

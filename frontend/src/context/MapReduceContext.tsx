@@ -23,6 +23,7 @@ export const actionTypes = {
   SET_STDOUT: 'SET_STDOUT',
   MAP_EXECUTED: 'MAP_EXECUTED',
   RESET_READY_TO_EXECUTE: 'RESET_READY_TO_EXECUTE',
+  SET_EXECUTION_STATUS: 'SET_EXECUTION_STATUS',
 } as const
 
 export type Action = {
@@ -75,6 +76,10 @@ export type Action = {
     }
   | { type: 'MAP_EXECUTED' }
   | { type: 'RESET_READY_TO_EXECUTE' }
+  | {
+      type: 'SET_EXECUTION_STATUS'
+      payload: string
+    }
 )
 
 export const initialSizes: Sizes = {
@@ -270,9 +275,6 @@ const reducer = (state: ReducerState, action: Action) => {
           ? finishedReducerNodes + 1
           : finishedReducerNodes,
       }
-
-    case actionTypes.SET_READY_TO_EXECUTE:
-      return state
     case actionTypes.SET_STDOUT:
       const incomingStdout = action.payload.trim()
 

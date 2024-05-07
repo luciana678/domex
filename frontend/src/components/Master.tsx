@@ -46,7 +46,7 @@ export default function Master() {
   const { clusterUsers, roomSession, toggleRoomLock } = useRoom()
   const { mapReduceState, dispatchMapReduce } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
-  const { fileTrees, fileOwnersCount } = useFiles()
+  const { fileTrees } = useFiles()
   const [allUsersReady, setAllUsersReady] = useState(false)
   const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
   const [isLoading, setIsLoading] = useState(false)
@@ -254,7 +254,7 @@ export default function Master() {
             codeState={[code.mapCode, (newCode: string) => setCode({ ...code, mapCode: newCode })]}
             error={mapReduceState.output.stderr.mapCode}
             fileButtonDisabled={loading}
-            total={fileOwnersCount}
+            total={mapReduceState.mapNodesCount}
             current={mapReduceState.finishedMapNodes}
           />
           <BasicAccordion
@@ -265,8 +265,12 @@ export default function Master() {
             ]}
             error={mapReduceState.output.stderr.combinerCode}
             fileButtonDisabled={loading}
-            total={fileOwnersCount}
-            current={mapReduceState.finishedCombinerNodes}
+            total={mapReduceState.mapNodesCount}
+            current={
+              mapReduceState.code.combinerCode
+                ? mapReduceState.finishedCombinerNodes
+                : mapReduceState.finishedMapNodes
+            }
           />
           <BasicAccordion
             title={placeholdersFunctions.reduce.title}

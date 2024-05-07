@@ -25,6 +25,7 @@ export type BaseUser = {
 
 export type User = BaseUser & {
   readyToExecuteMap: boolean
+  executionStatus: string
 }
 
 export type Peers = {

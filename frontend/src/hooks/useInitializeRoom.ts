@@ -63,7 +63,11 @@ const useInitializeRoom = () => {
     }
 
     const onUsers = (baseUsers: BaseUser[]) => {
-      const updatedUsers: User[] = baseUsers.map((user) => ({ ...user, readyToExecuteMap: false }))
+      const updatedUsers: User[] = baseUsers.map((user) => ({
+        ...user,
+        readyToExecuteMap: false,
+        executionStatus: '',
+      }))
       setClusterUsers(updatedUsers)
 
       const peers = baseUsers.reduce<Peers>((peers, user) => {
@@ -142,7 +146,14 @@ const useInitializeRoom = () => {
         toast.success(`${userName} se ha unido a la sala`)
         setClusterUsers((prevUsers) => [
           ...prevUsers,
-          { userID, userName, socketConnected, isRoomOwner, readyToExecuteMap: false },
+          {
+            userID,
+            userName,
+            socketConnected,
+            isRoomOwner,
+            readyToExecuteMap: false,
+            executionStatus: '',
+          },
         ])
       }
     }

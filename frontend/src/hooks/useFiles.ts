@@ -45,8 +45,6 @@ const useFiles = () => {
 
   const fileTrees = ownFileTree.items?.length ? [ownFileTree, ...nodesFileTree] : nodesFileTree
 
-  const fileOwnersCount = fileTrees.length
-
   useEffect(() => {
     // Broadcast own files to all peers
     const fileNames = selectedFiles.map((file) => file.name)
@@ -102,7 +100,6 @@ const useFiles = () => {
     deleteFile,
     addFiles,
     handleReceivingFiles,
-    fileOwnersCount,
     nodeHasFiles,
   }
 }

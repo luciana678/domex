@@ -85,7 +85,9 @@ else:
     results = context.map_results if empty_combine else context.combine_results
     json.dump(results, result_file) 
   sizes['combinerOutput'] = os.path.getsize('/combiner_results.json')
-  print("COMBINE EJECUTADO SATISFACTORIAMENTE")
+
+  if not empty_combine:
+    print("COMBINE EJECUTADO SATISFACTORIAMENTE")
 
 with open('/sizes.json', 'w') as sizes_file:
   json.dump(sizes, sizes_file)

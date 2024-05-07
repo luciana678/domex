@@ -8,14 +8,27 @@ export function handleActionSignal({
   action: Action
   setClusterUsers: React.Dispatch<React.SetStateAction<User[]>>
 }) {
-  if (action.type === actionTypes.SET_READY_TO_EXECUTE) {
-    return setClusterUsers((clusterUsers) =>
-      clusterUsers.map((user) => {
-        if (user.userID === action.userID) {
-          return { ...user, readyToExecuteMap: action.payload }
-        }
-        return user
-      }),
-    )
+  switch (action.type) {
+    case actionTypes.SET_READY_TO_EXECUTE:
+      setClusterUsers((clusterUsers) =>
+        clusterUsers.map((user) => {
+          if (user.userID === action.userID) {
+            return { ...user, readyToExecuteMap: action.payload }
+          }
+          return user
+        }),
+      )
+      break
+
+    case actionTypes.SET_EXECUTION_STATUS:
+      setClusterUsers((clusterUsers) =>
+        clusterUsers.map((user) => {
+          if (user.userID === action.userID) {
+            return { ...user, executionStatus: action.payload }
+          }
+          return user
+        }),
+      )
+      break
   }
 }
