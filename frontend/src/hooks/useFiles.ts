@@ -13,6 +13,7 @@ const useFiles = () => {
   const ownFileTree: Tree = {
     name: '/ (local)',
     isFolder: true,
+    isLocal: true,
     items: selectedFiles.map((file) => {
       return {
         isLocal: true,

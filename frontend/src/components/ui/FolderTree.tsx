@@ -1,8 +1,10 @@
-import { Tree } from '@/types'
-import DeleteIcon from '@mui/icons-material/Delete'
+import DeleteIconMUI from '@mui/icons-material/Delete'
 import DescriptionIcon from '@mui/icons-material/DescriptionOutlined'
 import FolderIcon from '@mui/icons-material/Folder'
 import { IconButton } from '@mui/material'
+import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
+
+import { Tree } from '@/types'
 import { useState } from 'react'
 
 type FileFolderRowProps = {
@@ -16,10 +18,12 @@ type FileFolderRowProps = {
 const FileFolderRow = ({
   type,
   name,
-  enableDeleteFile = true,
+  enableDeleteFile = false,
   handleClick,
   handleDeleteFile,
 }: FileFolderRowProps) => {
+  const DeleteIcon = type === 'folder' ? DeleteSweepIcon : DeleteIconMUI
+
   return (
     <div className='flex justify-between'>
       <button
@@ -31,16 +35,15 @@ const FileFolderRow = ({
         <h5 className={`ml-2 text-xs truncate ${type === 'file' ? 'font-normal' : ''}`}>{name}</h5>
       </button>
 
-      {type === 'file' ? (
+      {enableDeleteFile && (
         <IconButton
           aria-label='delete'
-          size='small'
+          size={type === 'folder' ? 'medium' : 'small'}
           color='error'
-          disabled={!enableDeleteFile}
           onClick={() => handleDeleteFile && handleDeleteFile(name)}>
           <DeleteIcon fontSize='inherit' />
         </IconButton>
-      ) : null}
+      )}
     </div>
   )
 }
@@ -61,7 +64,19 @@ const FolderTree = ({ tree, handleDeleteFile, enableDeleteFile }: FolderTreeProp
     <>
       {tree.isFolder ? (
         <div>
-          <FileFolderRow type={'folder'} name={tree.name} handleClick={handleClick} />
+          <FileFolderRow
+            type={'folder'}
+            name={tree.name}
+            handleClick={handleClick}
+            enableDeleteFile={enableDeleteFile && tree.isLocal}
+            handleDeleteFile={() => {
+              if (tree.items) {
+                tree.items.forEach((item) => {
+                  handleDeleteFile && handleDeleteFile(item.name)
+                })
+              }
+            }}
+          />
 
           <div style={{ display: expand ? 'block' : 'none' }} className='pl-3'>
             {tree.items?.map((item) => {
@@ -70,7 +85,7 @@ const FolderTree = ({ tree, handleDeleteFile, enableDeleteFile }: FolderTreeProp
                   key={item.name}
                   tree={item}
                   handleDeleteFile={handleDeleteFile}
-                  enableDeleteFile={enableDeleteFile}
+                  enableDeleteFile={enableDeleteFile && !!tree.isLocal}
                 />
               )
             })}
@@ -82,7 +97,7 @@ const FolderTree = ({ tree, handleDeleteFile, enableDeleteFile }: FolderTreeProp
             type={'file'}
             name={tree.name}
             handleDeleteFile={handleDeleteFile}
-            enableDeleteFile={enableDeleteFile && !!tree.isLocal}
+            enableDeleteFile={enableDeleteFile && tree.isLocal}
           />
         </div>
       )}
