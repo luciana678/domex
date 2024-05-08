@@ -1,40 +1,33 @@
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
-import useRoom from '@/hooks/useRoom'
-import { getConnectionStatus, getExecutionStatus } from '@/utils/users'
 import { Box } from '@mui/material'
+import GroupsIcon from '@mui/icons-material/Groups'
+
+import useRoom from '@/hooks/useRoom'
+import { UserDisplay } from '@/components/Users'
 
 export default function NodeList() {
   const { clusterUsers } = useRoom()
 
   return (
-    <Card className='bg-white shadow-lg border border-gray-300 rounded-md w-full max-w-[500px]'>
+    <Card
+      className='bg-white shadow-lg border border-gray-300 rounded-md w-full max-w-[500px]'
+      variant='outlined'>
       <CardContent>
         <h2 className='text-lg font-semibold text-center mb-3'>Nodos</h2>
-        <Box maxHeight={300} overflow='auto'>
-          {clusterUsers.map((node, index) => (
-            <Box
-              key={index}
-              display='flex'
-              flexDirection='row'
-              alignItems='center'
-              mb={1}
-              maxHeight={100}
-              overflow='auto'>
-              <Typography variant='overline' fontSize={18} mr={2}>
-                {getConnectionStatus(node)}
+
+        <Box className='max-h-[300px] overflow-auto'>
+          {!clusterUsers.length ? (
+            <Box className='flex flex-col items-center'>
+              <GroupsIcon fontSize='large' color='action' />
+              <Typography className='mt-1 italic text-gray-500'>
+                Aún no se unió ningún nodo...
               </Typography>
-              <Box>
-                <Typography fontSize={16} fontWeight={600}>
-                  {node.userName}
-                </Typography>
-                <Typography fontSize={16} fontStyle='italic'>
-                  {getExecutionStatus(node)}
-                </Typography>
-              </Box>
             </Box>
-          ))}
+          ) : (
+            clusterUsers.map((node, index) => <UserDisplay key={index} {...node} />)
+          )}
         </Box>
       </CardContent>
     </Card>
