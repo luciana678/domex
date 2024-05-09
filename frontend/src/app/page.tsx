@@ -3,6 +3,8 @@
 import useInitializeRoom from '@/hooks/useInitializeRoom'
 import useRoom from '@/hooks/useRoom'
 import { RoomID } from '@/types'
+import { LockOutlined as LockOutlinedIcon } from '@mui/icons-material'
+import { Avatar } from '@mui/joy'
 import { Button, TextField, Typography } from '@mui/material'
 import { useRef, useState } from 'react'
 
@@ -55,6 +57,13 @@ export default function Home() {
   return (
     <main className='flex min-h-full justify-center items-center px-24 lg:p-0  '>
       <section className='flex flex-col items-center'>
+        <Avatar sx={{ m: 0, bgcolor: '#3676d2' }} variant='solid'>
+          <LockOutlinedIcon />
+        </Avatar>
+        <Typography component='h1' variant='h6' className='mb-6'>
+          Ingresar
+        </Typography>
+
         <div className='pb-5 max-w-xs'>
           <TextField
             label='Usuario*'
