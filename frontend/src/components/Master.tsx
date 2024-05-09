@@ -46,11 +46,11 @@ export default function Master() {
   const { clusterUsers, roomSession, toggleRoomLock } = useRoom()
   const { mapReduceState, dispatchMapReduce } = useMapReduce()
   const { sendDirectMessage, broadcastMessage } = usePeers()
-  const { fileTrees } = useFiles()
   const [allUsersReady, setAllUsersReady] = useState(false)
   const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
   const [isLoading, setIsLoading] = useState(false)
   const [finished, setFinished] = useState(false)
+  const { fileTrees, mapNodesCount } = useFiles(isLoading)
 
   const loading = isLoading && !finished && !mapReduceState.errors
 
@@ -133,7 +133,7 @@ export default function Master() {
 
   useEffect(() => {
     // If all the combiner results are in, then we can start the reduce phase. Check if isn´t finished yet
-    if (finished) return
+    if (finished || !isLoading) return
     if (!Object.keys(mapReduceState.combinerResults).length) return
     if (Object.keys(mapReduceState.combinerResults).length < clusterUsers.length) return
 
@@ -228,6 +228,7 @@ export default function Master() {
     mapReduceState.combinerResults,
     finished,
     mapReduceState.mapResults,
+    isLoading,
   ])
 
   useEffect(() => {
@@ -254,7 +255,7 @@ export default function Master() {
             codeState={[code.mapCode, (newCode: string) => setCode({ ...code, mapCode: newCode })]}
             error={mapReduceState.output.stderr.mapCode}
             fileButtonDisabled={loading}
-            total={mapReduceState.mapNodesCount}
+            total={mapNodesCount}
             current={mapReduceState.finishedMapNodes}
           />
           <BasicAccordion
@@ -265,7 +266,7 @@ export default function Master() {
             ]}
             error={mapReduceState.output.stderr.combinerCode}
             fileButtonDisabled={loading}
-            total={mapReduceState.mapNodesCount}
+            total={mapNodesCount}
             current={
               mapReduceState.code.combinerCode
                 ? mapReduceState.finishedCombinerNodes
@@ -289,7 +290,7 @@ export default function Master() {
 
           <FolderList
             fileTrees={fileTrees}
-            forceEnableDeleteFile={true}
+            forceEnableDeleteFile={!isLoading}
             handleDeleteFile={(tree: Tree) =>
               sendDirectMessage(tree.ownerId, {
                 type: 'DELETE_FILE',
