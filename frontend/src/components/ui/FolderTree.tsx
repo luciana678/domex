@@ -135,7 +135,7 @@ export const FolderList = ({
           {!fileTrees.length ? (
             <Box className='flex flex-col items-center mt-4 '>
               <FolderCopyOutlinedIcon fontSize='large' color='action' />
-              <Typography className='mt-2 italic text-gray-500'>
+              <Typography className='mt-2 italic text-gray-500 text-center'>
                 Aún no se agregó ningún archivo...
               </Typography>
             </Box>
