@@ -9,6 +9,7 @@ import useInitializePeers from './useInitializePeers'
 import usePeers from './usePeers'
 import useRoom from './useRoom'
 import { toast } from 'sonner'
+import useAlertModal from './useAlertModal'
 
 const useInitializeRoom = () => {
   useInitializePeers()
@@ -18,6 +19,7 @@ const useInitializeRoom = () => {
   const pathname = usePathname()
   const { deletePeer, createPeer, broadcastMessage } = usePeers()
   const { leaveRoom } = useRoom()
+  const { showConfirmAlert } = useAlertModal()
 
   useEffect(() => {
     const session = sessionStorage.getItem('session')
@@ -79,9 +81,14 @@ const useInitializeRoom = () => {
     }
 
     const handleOwnerLeave = async () => {
-      // TODO: change alert to a modal
-      window.alert('The owner has left the room, you will be redirected to the home page.')
-      leaveRoom()
+      showConfirmAlert({
+        title: 'El dueño abandonó la sala',
+        description: 'La sala ha sido cerrada por el dueño, se le redirigirá a la página principal',
+        confirmButtonText: 'De acuerdo',
+        onConfirm() {
+          leaveRoom()
+        },
+      })
     }
 
     const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
@@ -95,7 +102,6 @@ const useInitializeRoom = () => {
       const user = clusterUsers.find((user) => user.userID === userID)
       if (user?.readyToExecuteMap) {
         broadcastMessage({ type: 'RESET_READY_TO_EXECUTE' })
-        alert('Un nodo se desconectó del cluster')
       }
       setClusterUsers((prevUsers) => prevUsers.filter((user) => user.userID !== userID))
       deletePeer(userID)
@@ -177,13 +183,22 @@ const useInitializeRoom = () => {
           router.push('/')
         }
 
-        window.alert('The room does not exist')
+        toast.error('La sala a la que intenta acceder NO EXISTE', {
+          position: 'top-center',
+        })
       }
 
       if (err.message === 'Room is locked') {
         console.error('Room is locked')
         sessionStorage.removeItem('session')
-        window.alert('The room is locked')
+
+        if (pathname !== '/') {
+          router.push('/')
+        }
+
+        toast.error('La sala a la que intenta acceder está BLOQUEADA', {
+          position: 'top-center',
+        })
       }
     }
 
