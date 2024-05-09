@@ -5,13 +5,16 @@ import { socket } from '@/socket'
 import { RoomID } from '@/types'
 import { useRouter } from 'next/navigation'
 import { useCallback, useContext, useEffect } from 'react'
-import usePeers from './usePeers'
+import usePeers from '@/hooks/usePeers'
+import useMapReduce from '@/hooks/useMapReduce'
 
 const useRoom = () => {
   const router = useRouter()
   const { clusterUsers, roomSession, roomOwner, isReadyToExecute, setIsReadyToExecute } =
     useContext(RoomContext)
   const { destroyPeers } = usePeers()
+
+  const { dispatchMapReduce } = useMapReduce()
 
   const connectRoom = useCallback((auth: { userName?: string; roomID?: RoomID }) => {
     socket.auth = auth
@@ -26,7 +29,8 @@ const useRoom = () => {
     socket.disconnect()
     destroyPeers()
     router.push('/')
-  }, [destroyPeers, router])
+    dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
+  }, [destroyPeers, dispatchMapReduce, router])
 
   // useEffect(() => {
   //   return () => window.addEventListener('beforeunload', (_) => leaveRoom())

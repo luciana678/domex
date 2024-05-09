@@ -15,6 +15,7 @@ export const useExecutionStatus = ({
   const { broadcastMessage } = usePeers()
 
   const mapExecuted = !!mapReduceState.finishedMapNodes
+  const combinerExecuted = !!mapReduceState.finishedCombinerNodes
   const finishedNodes = !!mapReduceState.finishedNodes
 
   const isMapperNode = nodeHasFiles
@@ -43,12 +44,19 @@ export const useExecutionStatus = ({
       updateExecutionStatus(
         !mapExecuted
           ? 'Ejecutando map'
-          : mapReduceState.code.combinerCode
+          : mapReduceState.code.combinerCode && !combinerExecuted
             ? 'Ejecutando combiner'
             : 'Esperando claves',
       )
     }
-  }, [updateExecutionStatus, isMapperNode, mapExecuted, mapReduceState.code.combinerCode, started])
+  }, [
+    updateExecutionStatus,
+    isMapperNode,
+    mapExecuted,
+    mapReduceState.code.combinerCode,
+    started,
+    combinerExecuted,
+  ])
 
   useEffect(() => {
     if (started && !isMapperNode) {
