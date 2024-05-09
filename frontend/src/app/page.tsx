@@ -4,7 +4,7 @@ import useInitializeRoom from '@/hooks/useInitializeRoom'
 import useRoom from '@/hooks/useRoom'
 import { RoomID } from '@/types'
 import { Button, TextField } from '@mui/material'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 export default function Home() {
   useInitializeRoom()

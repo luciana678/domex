@@ -5,6 +5,8 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'sonner'
+import AlertModal from '@/components/ui/AlertModal'
+import { AlertModalProvider } from '@/context/AlertModalContext'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -17,14 +19,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang='en'>
       <body className={`${inter.className} h-screen m-0`}>
-        <RoomProvider>
-          <MapReduceProvider>
-            <FilesProvider>
-              {children}
-              <Toaster richColors />
-            </FilesProvider>
-          </MapReduceProvider>
-        </RoomProvider>
+        <AlertModalProvider>
+          <RoomProvider>
+            <MapReduceProvider>
+              <FilesProvider>
+                {children}
+                <Toaster richColors />
+                <AlertModal />
+              </FilesProvider>
+            </MapReduceProvider>
+          </RoomProvider>
+        </AlertModalProvider>
       </body>
     </html>
   )
