@@ -60,7 +60,7 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
               variant='outlined'
               startIcon={<CloudUploadIcon />}
               disabled={!enableEditing}>
-              Seleccionar
+              Cargar archivos
             </Button>
           </Tooltip>
         </label>
