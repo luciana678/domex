@@ -60,7 +60,7 @@ export default function Home() {
         <Avatar sx={{ m: 0, bgcolor: '#3676d2' }} variant='solid'>
           <LockOutlinedIcon />
         </Avatar>
-        <Typography component='h1' variant='h6' className='mb-6'>
+        <Typography component='h1' variant='h6' marginBottom={3}>
           Ingresar
         </Typography>
 
@@ -91,7 +91,7 @@ export default function Home() {
             Crear un cluster
           </Button>
         </div>
-        <Typography variant='body2' className='mt-2 self-start' color='text.secondary'>
+        <Typography variant='body2' className='self-start' color='text.secondary' margin={1}>
           (*) Campos obligatorio
         </Typography>
       </section>
