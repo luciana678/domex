@@ -229,6 +229,7 @@ const useInitializeRoom = () => {
     setPeers,
     setRoomSession,
     broadcastMessage,
+    showConfirmAlert,
   ])
 }
 
