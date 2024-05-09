@@ -4,6 +4,7 @@ import { Tree, UserID } from '@/types'
 import { useCallback, useContext, useEffect } from 'react'
 import usePeers from './usePeers'
 import useRoom from './useRoom'
+import { socket } from '@/socket'
 
 const useFiles = () => {
   const { selectedFiles, setSelectedFiles, nodesFiles, setNodesFiles } = useContext(FilesContext)
@@ -14,11 +15,13 @@ const useFiles = () => {
     name: '/ (local)',
     isFolder: true,
     isLocal: true,
+    ownerId: socket.userID,
     items: selectedFiles.map((file) => {
       return {
         isLocal: true,
         name: file.name,
         isFolder: false,
+        ownerId: socket.userID,
       }
     }),
   }
@@ -30,12 +33,14 @@ const useFiles = () => {
         const username = clusterUsers.find((user) => user.userID === userId)?.userName
 
         return {
-          name: `/ (remote) ${username}`,
+          name: `/ ${username} (remote)`,
           isFolder: true,
+          ownerId: userId as UserID,
           items: fileNames.map((file) => {
             return {
               name: file,
               isFolder: false,
+              ownerId: userId as UserID,
             }
           }),
         }
@@ -71,8 +76,8 @@ const useFiles = () => {
     })
   }, [clusterUsers, setNodesFiles])
 
-  const deleteFile = (name: string) => {
-    setSelectedFiles((prevFiles) => prevFiles.filter((file) => file.name !== name))
+  const deleteFile = (tree: Tree) => {
+    setSelectedFiles((prevFiles) => prevFiles.filter((file) => file.name !== tree.name))
   }
 
   const addFiles = (files: File[]) => {
@@ -91,8 +96,17 @@ const useFiles = () => {
           return { ...prevFiles, [action.userID as UserID]: action.payload.fileNames }
         })
       }
+
+      if (action.type === actionTypes.DELETE_FILE) {
+        const deletedFileNames = action.payload.items?.map((item) => item.name) ?? [
+          action.payload.name,
+        ]
+        setSelectedFiles((prevFiles) =>
+          prevFiles.filter((file) => !deletedFileNames.includes(file.name)),
+        )
+      }
     },
-    [setNodesFiles],
+    [setNodesFiles, setSelectedFiles],
   )
 
   return {

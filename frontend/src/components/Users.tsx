@@ -14,9 +14,9 @@ function getUserIcon(user: User) {
 }
 
 function getExecutionStatus(user: User) {
-  if (user.isRoomOwner) return 'Master'
   if (!user.socketConnected) return 'Socket desconectado...'
   if (user.socketConnected && !user.peerConnected) return 'Peer desconectado...'
+
   return user.executionStatus
 }
 
@@ -31,14 +31,15 @@ function getExecutionStatusColor(user: User) {
 export function UserDisplay(user: User) {
   const Icon = getUserIcon(user)
   const color = getExecutionStatusColor(user)
+  const userName = user.userName + (user.isRoomOwner ? ' (Master)' : '')
   const description = getExecutionStatus(user)
 
   return (
     <Box className='flex flex-row items-center mb-2'>
       <Icon color={color} fontSize='large' className='mr-2' />
       <Box>
-        <Typography className='text-base font-bold'>{user.userName}</Typography>
-        <Typography className='text-base italic'>{description}</Typography>
+        <Typography className='text-base font-bold'>{userName}</Typography>
+        {description && <Typography className='text-sm'>{description}</Typography>}
       </Box>
     </Box>
   )
