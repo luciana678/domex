@@ -3,7 +3,7 @@
 import useInitializeRoom from '@/hooks/useInitializeRoom'
 import useRoom from '@/hooks/useRoom'
 import { RoomID } from '@/types'
-import { Button, TextField } from '@mui/material'
+import { Button, TextField, Typography } from '@mui/material'
 import { useRef, useState } from 'react'
 
 export default function Home() {
@@ -57,7 +57,7 @@ export default function Home() {
       <section className='flex flex-col items-center'>
         <div className='pb-5 max-w-xs'>
           <TextField
-            label='Usuario'
+            label='Usuario*'
             inputRef={userRef}
             helperText={missingUserName ? 'Usuario necesario' : ''}
             error={missingUserName}></TextField>
@@ -82,6 +82,9 @@ export default function Home() {
             Crear un cluster
           </Button>
         </div>
+        <Typography variant='body2' className='mt-2 self-start' color='text.secondary'>
+          (*) Campos obligatorio
+        </Typography>
       </section>
     </main>
   )
