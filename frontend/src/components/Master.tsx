@@ -247,7 +247,7 @@ export default function Master() {
 
   return (
     <main className='flex min-h-screen flex-col items-center p-5'>
-      <Navbar title={`Administrar cluster #${roomSession?.roomID}`} />
+      <Navbar title={`Administrando cluster #${roomSession?.roomID}`} />
       <div className='flex flex-col lg:flex-row justify-center w-full gap-10 mb-5'>
         <div className='w-full'>
           <BasicAccordion
