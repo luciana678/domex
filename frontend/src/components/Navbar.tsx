@@ -1,63 +1,107 @@
 'use client'
 
 import useRoom from '@/hooks/useRoom'
+import { generateInitialsAvatar } from '@/lib/avatars'
+import { LogoutRounded as LogoutRoundedIcon } from '@mui/icons-material'
 import AccountCircle from '@mui/icons-material/AccountCircle'
+import { Avatar, Dropdown, ListDivider, Menu, MenuButton, Typography } from '@mui/joy'
+import { Skeleton } from '@mui/material'
 import AppBar from '@mui/material/AppBar'
 import Box from '@mui/material/Box'
-import IconButton from '@mui/material/IconButton'
-import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
 import Toolbar from '@mui/material/Toolbar'
-import Typography from '@mui/material/Typography'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+
+const AvatarImage = ({
+  alt = 'avatar icon',
+  url = null,
+  isLoading = false,
+}: {
+  isLoading?: boolean
+  url: string | null
+  alt: string
+}) => {
+  if (isLoading) return <Skeleton variant='circular' width={32} height={32} />
+
+  return url ? <Avatar size='sm' src={url} alt={alt} /> : <AccountCircle fontSize='large' />
+}
 
 export default function Navbar({ title }: { title: string }) {
   const { roomSession, leaveRoom } = useRoom()
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
+  const [isLoadingAvatar, setIsLoadingAvatar] = useState(true)
 
-  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-
-  const handleClose = () => {
-    setAnchorEl(null)
-  }
+  useEffect(() => {
+    if (roomSession?.userName) {
+      setIsLoadingAvatar(true)
+      generateInitialsAvatar(roomSession.userName)
+        .then((url) => {
+          setAvatarUrl(url)
+        })
+        .finally(() => setIsLoadingAvatar(false))
+    }
+  }, [roomSession?.userName])
 
   return (
     <Box sx={{ width: '100%', mb: 5 }}>
       <AppBar position='static'>
         <Toolbar>
-          <Typography variant='h6' component='div' sx={{ flexGrow: 1 }}>
+          <Typography component='div' sx={{ flexGrow: 1 }} textColor={'common.white'}>
             {title}
           </Typography>
-          <div>
-            <IconButton
-              size='large'
+
+          <Dropdown>
+            <MenuButton
+              variant='plain'
+              size='sm'
               aria-label='account of current user'
-              aria-controls='menu-appbar'
               aria-haspopup='true'
-              onClick={handleMenu}
-              color='inherit'>
-              <AccountCircle />
-            </IconButton>
+              sx={{
+                bgcolor: 'inherit',
+                '&:hover, &:active, &:focus': {
+                  bgcolor: 'inherit',
+                },
+                '&:hover': {
+                  filter: 'brightness(0.9)',
+                },
+                padding: 0,
+                borderRadius: '50%',
+              }}>
+              <AvatarImage isLoading={isLoadingAvatar} alt='username avatar' url={avatarUrl} />
+            </MenuButton>
             <Menu
-              id='menu-appbar'
-              anchorEl={anchorEl}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}>
-              <MenuItem>{roomSession?.userName}</MenuItem>
-              <MenuItem onClick={leaveRoom}>Salir</MenuItem>
+              placement='bottom-end'
+              size='sm'
+              sx={{
+                zIndex: '99999',
+                p: 1,
+                gap: 1,
+                '--ListItem-radius': 'var(--joy-radius-md)',
+              }}>
+              <MenuItem>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                  }}>
+                  <AvatarImage isLoading={isLoadingAvatar} alt='username avatar' url={avatarUrl} />
+                  <Box sx={{ ml: 1.5 }}>
+                    <Typography level='title-sm' textColor='text.primary'>
+                      {roomSession?.userName}
+                    </Typography>
+                    <Typography level='body-xs' textColor='text.tertiary'>
+                      Nodo <strong>{roomSession?.isRoomOwner ? 'Master' : 'Slave'}</strong>
+                    </Typography>
+                  </Box>
+                </Box>
+              </MenuItem>
+              <ListDivider />
+              <MenuItem onClick={leaveRoom}>
+                <LogoutRoundedIcon />
+                <span className='ml-2'>Salir de la sala</span>
+              </MenuItem>
             </Menu>
-          </div>
+          </Dropdown>
         </Toolbar>
       </AppBar>
     </Box>
