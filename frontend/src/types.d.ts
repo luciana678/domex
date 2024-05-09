@@ -141,5 +141,6 @@ export type Tree = {
   isFolder: boolean
   isLocal?: boolean
   name: string
+  ownerId: UserID
   items?: Tree[]
 }

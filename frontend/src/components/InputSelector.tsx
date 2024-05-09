@@ -1,10 +1,12 @@
 'use client'
 
+import { Tree } from '@/types'
 import { ENVS } from '@/constants/envs'
 import useFiles from '@/hooks/useFiles'
+import { FolderList } from '@/components/ui/FolderTree'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import Button from '@mui/material/Button'
-import FolderTree from './ui/FolderTree'
+import { Tooltip, Zoom } from '@mui/material'
 
 export default function InputSelector({ enableEditing }: { enableEditing: boolean }) {
   const { ACCEPT: ACCEPT_TYPE, MAX_SIZE } = ENVS.GENERAL.FILES
@@ -25,13 +27,17 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
     addFiles(txtFiles)
   }
 
-  const handleDeleteFile = (name: string) => {
-    deleteFile(name)
-  }
+  const handleDeleteFile = (tree: Tree) => deleteFile(tree)
 
   return (
     <div className='w-full'>
       <div className='flex justify-center flex-col'>
+        <FolderList
+          fileTrees={fileTrees}
+          enableDeleteFile={enableEditing}
+          handleDeleteFile={handleDeleteFile}
+        />
+
         <input
           type='file'
           id='fileInput'
@@ -45,28 +51,20 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
             inputElement.value = ''
           }}
         />
-        <label htmlFor='fileInput' className='mx-auto'>
-          <Button
-            component='span'
-            variant='contained'
-            startIcon={<CloudUploadIcon />}
-            disabled={!enableEditing}>
-            Seleccionar archivos
-          </Button>
+        <label htmlFor='fileInput' className='mx-auto mt-5'>
+          <Tooltip
+            TransitionComponent={Zoom}
+            title={`Deben ser ${ACCEPT_TYPE} de máximo ${MAX_SIZE_MB}Mb cada uno`}>
+            <Button
+              component='span'
+              variant='outlined'
+              startIcon={<CloudUploadIcon />}
+              disabled={!enableEditing}>
+              Seleccionar
+            </Button>
+          </Tooltip>
         </label>
-        <span className='text-center text-pretty opacity-80 text-sm'>
-          Deben ser {ACCEPT_TYPE} de máximo {MAX_SIZE_MB}Mb cada uno
-        </span>
-      </div>
-      <div className='pt-3'>
-        {fileTrees.map((fileTree) => (
-          <FolderTree
-            key={fileTree.name}
-            tree={fileTree}
-            handleDeleteFile={handleDeleteFile}
-            enableDeleteFile={enableEditing}
-          />
-        ))}
+        <span className='text-center text-pretty opacity-80 text-sm'></span>
       </div>
     </div>
   )

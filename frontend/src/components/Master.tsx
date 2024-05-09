@@ -6,7 +6,7 @@ import { placeholdersFunctions } from '@/constants/functionCodes'
 import useMapReduce from '@/hooks/useMapReduce'
 import usePeers from '@/hooks/usePeers'
 import useRoom from '@/hooks/useRoom'
-import { FinalResults, KeyValuesCount, ReducerState, UserID, UserResults } from '@/types'
+import { FinalResults, KeyValuesCount, ReducerState, Tree, UserID, UserResults } from '@/types'
 import { LoadingButton } from '@mui/lab'
 import { useEffect, useState } from 'react'
 import BasicAccordion from './Accordion'
@@ -14,7 +14,7 @@ import Navbar from './Navbar'
 import NodeList from './NodeList'
 import { Action, initialSizes } from '@/context/MapReduceContext'
 import useStatistics from '@/hooks/useStatisticts'
-import FolderTree from './ui/FolderTree'
+import { FolderList } from '@/components/ui/FolderTree'
 import useFiles from '@/hooks/useFiles'
 import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
 import Output from '@/components/Output'
@@ -287,11 +287,16 @@ export default function Master() {
         <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full min-w-fit lg:max-w-[300px]'>
           <NodeList />
 
-          <div className='pt-3 w-60'>
-            {fileTrees.map((fileTree) => (
-              <FolderTree key={fileTree.name} tree={fileTree} enableDeleteFile={false} />
-            ))}
-          </div>
+          <FolderList
+            fileTrees={fileTrees}
+            forceEnableDeleteFile={true}
+            handleDeleteFile={(tree: Tree) =>
+              sendDirectMessage(tree.ownerId, {
+                type: 'DELETE_FILE',
+                payload: tree,
+              })
+            }
+          />
         </div>
       </div>
 

@@ -2,7 +2,7 @@
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
 import useRoom from '@/hooks/useRoom'
-import { Code, KeyValuesCount, Output, ReducerState, Sizes, UserID } from '@/types'
+import { Code, KeyValuesCount, Output, ReducerState, Sizes, Tree, UserID } from '@/types'
 import { average } from '@/utils/helpers'
 import { PropsWithChildren, createContext, useReducer } from 'react'
 
@@ -19,6 +19,7 @@ export const actionTypes = {
   RESULTADO_FINAL: 'RESULTADO_FINAL',
   SET_READY_TO_EXECUTE: 'SET_READY_TO_EXECUTE',
   UPDATE_FILES: 'UPDATE_FILES',
+  DELETE_FILE: 'DELETE_FILE',
   SET_STDERR: 'SET_STDERR',
   SET_STDOUT: 'SET_STDOUT',
   MAP_EXECUTED: 'MAP_EXECUTED',
@@ -65,6 +66,10 @@ export type Action = {
   | {
       type: 'UPDATE_FILES'
       payload: { fileNames: string[] }
+    }
+  | {
+      type: 'DELETE_FILE'
+      payload: Tree
     }
   | {
       type: 'SET_STDERR'
