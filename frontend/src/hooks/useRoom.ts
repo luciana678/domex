@@ -10,8 +10,14 @@ import useMapReduce from '@/hooks/useMapReduce'
 
 const useRoom = () => {
   const router = useRouter()
-  const { clusterUsers, roomSession, roomOwner, isReadyToExecute, setIsReadyToExecute } =
-    useContext(RoomContext)
+  const {
+    clusterUsers,
+    roomSession,
+    roomOwner,
+    isReadyToExecute,
+    setIsReadyToExecute,
+    setRoomSession,
+  } = useContext(RoomContext)
   const { destroyPeers } = usePeers()
 
   const { dispatchMapReduce } = useMapReduce()
@@ -27,10 +33,11 @@ const useRoom = () => {
     socket.emit('room:leave-room')
     sessionStorage.clear()
     socket.disconnect()
+    setRoomSession(null)
     destroyPeers()
     router.push('/')
     dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
-  }, [destroyPeers, dispatchMapReduce, router])
+  }, [destroyPeers, dispatchMapReduce, router, setRoomSession])
 
   // useEffect(() => {
   //   return () => window.addEventListener('beforeunload', (_) => leaveRoom())

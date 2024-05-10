@@ -9,7 +9,7 @@ import { socket } from '@/socket'
 const useFiles = (loading: boolean = false) => {
   const { selectedFiles, setSelectedFiles, nodesFiles, setNodesFiles } = useContext(FilesContext)
   const { broadcastMessage } = usePeers()
-  const { clusterUsers } = useRoom()
+  const { clusterUsers, roomSession } = useRoom()
 
   const ownFileTree: Tree = useMemo(
     () => ({
@@ -73,8 +73,8 @@ const useFiles = (loading: boolean = false) => {
   }, [broadcastMessage, selectedFiles])
 
   useEffect(() => {
-    return () => setSelectedFiles([])
-  }, [setSelectedFiles])
+    if (!roomSession) setSelectedFiles([])
+  }, [roomSession, setSelectedFiles])
 
   useEffect(() => {
     // Remove files from nodes that are no longer in the cluster, or are disconnected
