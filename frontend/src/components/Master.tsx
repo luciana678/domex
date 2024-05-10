@@ -1,5 +1,6 @@
 'use client'
 
+import { Button } from '@mui/material'
 import Output from '@/components/Output'
 import Results from '@/components/Results'
 import { Statistics } from '@/components/Statistics'
@@ -298,18 +299,36 @@ export default function Master() {
               })
             }
           />
+
+          <div className='flex flex-col'>
+            <LoadingButton
+              variant='outlined'
+              color='success'
+              onClick={handleIniciarProcesamiento}
+              loading={loading}
+              loadingPosition='center'
+              disabled={!allUsersReady || loading || !isReady}>
+              {processingButtonText}
+            </LoadingButton>
+
+            {loading && (
+              <Button
+                variant='outlined'
+                color='error'
+                className='mt-2 w-[220px]'
+                onClick={() => {
+                  broadcastMessage({ type: 'RESET_READY_TO_EXECUTE' })
+                  dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
+                  resetState()
+                  setIsLoading(false)
+                  toggleRoomLock(false)
+                }}>
+                Detener ejecución
+              </Button>
+            )}
+          </div>
         </div>
       </div>
-
-      <LoadingButton
-        variant='outlined'
-        color='success'
-        onClick={handleIniciarProcesamiento}
-        loading={loading}
-        loadingPosition='center'
-        disabled={!allUsersReady || loading || !isReady}>
-        {processingButtonText}
-      </LoadingButton>
 
       <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
       {finished && (

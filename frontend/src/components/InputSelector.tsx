@@ -56,6 +56,7 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
             TransitionComponent={Zoom}
             title={`Deben ser ${ACCEPT_TYPE} de máximo ${MAX_SIZE_MB}Mb cada uno`}>
             <Button
+              className='w-[220px]'
               component='span'
               variant='outlined'
               startIcon={<CloudUploadIcon />}
@@ -64,7 +65,6 @@ export default function InputSelector({ enableEditing }: { enableEditing: boolea
             </Button>
           </Tooltip>
         </label>
-        <span className='text-center text-pretty opacity-80 text-sm'></span>
       </div>
     </div>
   )

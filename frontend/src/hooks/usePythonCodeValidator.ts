@@ -11,7 +11,7 @@ import { useCallback, useEffect, useState } from 'react'
 import useFiles from '@/hooks/useFiles'
 import { CONFIG } from '@/constants/config'
 
-export const usePythonCodeValidator = () => {
+export const usePythonCodeValidator = (executionStopped: boolean = false) => {
   const { runPython, stdout, stderr, isReady, readFile, writeFile, interruptExecution, isRunning } =
     usePython(CONFIG.REACTPY.USE_PYTHON_PROPS)
 
@@ -44,7 +44,7 @@ export const usePythonCodeValidator = () => {
   }
 
   useEffect(() => {
-    if (!stdout) return
+    if (!stdout || executionStopped) return
 
     setStdoutHistory((prevStdoutHistory) => {
       const { mergedString, newString } = mergeStrings(prevStdoutHistory.stdout, stdout)
@@ -57,9 +57,11 @@ export const usePythonCodeValidator = () => {
         prevNewStdout: prevStdoutHistory.prevNewStdout,
       }
     })
-  }, [stdout])
+  }, [executionStopped, stdout])
 
   useEffect(() => {
+    if (executionStopped) return
+
     let newString = stdoutHistory.newStdout
 
     if (!newString || stdoutHistory.prevNewStdout === newString) return
@@ -97,6 +99,7 @@ export const usePythonCodeValidator = () => {
     }))
   }, [
     dispatchMapReduce,
+    executionStopped,
     mapReduceState.reduceKeys,
     nodeHasFiles,
     roomOwner?.userID,

@@ -67,6 +67,8 @@ export default function Slave() {
     withErrors: -1,
   })
 
+  const executionStopped = useRef(false)
+
   const mapExecuted = !!mapReduceState.finishedMapNodes
 
   const {
@@ -78,13 +80,16 @@ export default function Slave() {
     resetStdoutHistory,
     interruptExecution,
     isRunning,
-  } = usePythonCodeValidator()
+  } = usePythonCodeValidator(executionStopped.current)
 
   const statistics = useStatistics(finalResults)
 
   const resetState = useCallback(
     async (resetReadyToExecute: boolean) => {
-      isRunning && interruptExecution()
+      if (isRunning) {
+        executionStopped.current = true
+        interruptExecution()
+      }
       setMapCombinerResults(initialMapCombinerResults)
       setReduceResults({})
       setFinalResults(initialFinalResults)
@@ -94,6 +99,7 @@ export default function Slave() {
       setStarted(false)
       resetStdoutHistory()
       setExecuting(false)
+
       resetReadyToExecute && setIsReadyToExecute(false)
     },
     [interruptExecution, resetStdoutHistory, setIsReadyToExecute, isRunning],
@@ -104,6 +110,7 @@ export default function Slave() {
       return
 
     timesReseted.current.global += 1
+    executionStopped.current = false
     resetState(false)
   }, [mapReduceState.resetState, resetState])
 
@@ -150,7 +157,7 @@ export default function Slave() {
   useEffect(() => {
     // This useEffect will be executed when the map code has been received and the python module is ready to execute the map phase.
     // The map combiner fase was be executed.
-    if (executing) return
+    if (executing || executionStopped.current) return
     if (mapCombinerExecuted) return
 
     if (mapReduceState.errors) return
@@ -182,7 +189,7 @@ export default function Slave() {
       await runPython(PY_MAIN_CODE)
 
       const errors = await readErrors()
-      if (errors) {
+      if (errors || executionStopped.current) {
         setExecuting(false)
         setStarted(false)
         return
@@ -236,7 +243,7 @@ export default function Slave() {
 
   useEffect(() => {
     // That means that the combiner has been executed. Now we can send the keys to the other users (reducers)
-    if (finished) return
+    if (finished || executionStopped.current) return
     if (!mapCombinerExecuted) return
     if (keysSent) return
 
@@ -284,7 +291,7 @@ export default function Slave() {
   useEffect(() => {
     // That useEffect will be executed when all the reducers (users) have sent their keys to the actual user. The map combiner has been executed.
 
-    if (executing) return
+    if (executing || executionStopped.current) return
 
     if (finished) return
     if (mapReduceState.errors) return
@@ -332,7 +339,7 @@ export default function Slave() {
       await runPython(PY_MAIN_CODE)
 
       const errors = await readErrors()
-      if (errors) {
+      if (errors || executionStopped.current) {
         setExecuting(false)
         setStarted(false)
         return
@@ -421,20 +428,24 @@ export default function Slave() {
               finished={finished}
             />
           </div>
-          <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full  min-w-fit lg:max-w-[300px]'>
+          <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full min-w-fit lg:max-w-[300px]'>
             <NodeList />
             <InputSelector enableEditing={!isReadyToExecute} />
+            <Button
+              className='w-[220px]'
+              variant='outlined'
+              color={!isReadyToExecute ? 'success' : 'error'}
+              onClick={() => setIsReadyToExecute(!isReadyToExecute)}
+              disabled={!isReady || started}>
+              {isReadyToExecute
+                ? 'Cancelar'
+                : !isReady
+                  ? 'Iniciando Python...'
+                  : 'Listo para ejecutar'}
+            </Button>
           </div>
         </div>
       </div>
-
-      <Button
-        variant={'outlined'}
-        color={!isReadyToExecute ? 'success' : 'error'}
-        onClick={() => setIsReadyToExecute(!isReadyToExecute)}
-        disabled={!isReady || started}>
-        {isReadyToExecute ? 'Cancelar' : !isReady ? 'Iniciando Python...' : 'Listo para ejecutar'}
-      </Button>
 
       <Output stderr={mapReduceState.errors} stdout={mapReduceState.output.stdout} />
 

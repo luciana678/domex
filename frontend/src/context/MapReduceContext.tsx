@@ -167,6 +167,7 @@ const reducer = (state: ReducerState, action: Action) => {
     case actionTypes.RESET_READY_TO_EXECUTE:
       return {
         ...initialState,
+        code: state.code,
         resetState: state.resetState,
         resetReadyToExecute: state.resetReadyToExecute + 1,
       }
