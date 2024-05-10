@@ -40,10 +40,6 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
         return next(new Error('Room does not exist'))
       }
 
-      if (roomsSessionStore.isLocked(roomID)) {
-        return next(new Error('Room is locked'))
-      }
-
       if (sessionID) {
         const session = roomsSessionStore.findSession(roomID, sessionID)
         if (session) {
@@ -54,6 +50,10 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
           socket.isRoomOwner = session.isRoomOwner
           return next()
         }
+      }
+
+      if (roomsSessionStore.isLocked(roomID)) {
+        return next(new Error('Room is locked'))
       }
     }
 
