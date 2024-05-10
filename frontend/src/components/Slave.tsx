@@ -86,10 +86,8 @@ export default function Slave() {
 
   const resetState = useCallback(
     async (resetReadyToExecute: boolean) => {
-      if (isRunning) {
-        executionStopped.current = true
-        interruptExecution()
-      }
+      executionStopped.current = resetReadyToExecute
+      isRunning && interruptExecution()
       setMapCombinerResults(initialMapCombinerResults)
       setReduceResults({})
       setFinalResults(initialFinalResults)
@@ -99,7 +97,6 @@ export default function Slave() {
       setStarted(false)
       resetStdoutHistory()
       setExecuting(false)
-
       resetReadyToExecute && setIsReadyToExecute(false)
     },
     [interruptExecution, resetStdoutHistory, setIsReadyToExecute, isRunning],
