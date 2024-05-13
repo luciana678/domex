@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react'
+
+import { Tree } from '@/types'
+
 import DeleteIconMUI from '@mui/icons-material/Delete'
 import DescriptionIcon from '@mui/icons-material/DescriptionOutlined'
 import FolderOpenOutlinedIcon from '@mui/icons-material/FolderOpenOutlined'
@@ -5,8 +9,7 @@ import { Box, Card, CardContent, IconButton, Typography } from '@mui/material'
 import DeleteSweepIcon from '@mui/icons-material/DeleteSweep'
 import FolderCopyOutlinedIcon from '@mui/icons-material/FolderCopyOutlined'
 
-import { Tree } from '@/types'
-import { useState } from 'react'
+import InputSelector from '@/components/InputSelector'
 
 type FileFolderRowProps = {
   tree: Tree
@@ -14,39 +17,49 @@ type FileFolderRowProps = {
   handleClick?: () => void
   handleDeleteFile: (name: Tree) => void
   enableDeleteFile?: boolean
+  forceEnableDeleteFile?: boolean
 }
 
 const FileFolderRow = ({
   type,
   tree,
   enableDeleteFile = false,
+  forceEnableDeleteFile = false,
   handleClick,
   handleDeleteFile,
 }: FileFolderRowProps) => {
-  const DeleteIcon = type === 'folder' ? DeleteSweepIcon : DeleteIconMUI
+  const isFolder = type === 'folder'
+  const DeleteIcon = isFolder ? DeleteSweepIcon : DeleteIconMUI
+  const FolderIcon = isFolder ? FolderOpenOutlinedIcon : DescriptionIcon
 
   return (
     <div className='flex justify-between'>
       <button
+        id={tree.ownerId}
         className={`flex items-center h-8 max-w-[280px] ${
-          type === 'folder' ? 'cursor-pointer' : null
+          isFolder ? 'cursor-pointer' : null
         } bg-transparent border-none `}
         onClick={handleClick}>
-        {type === 'folder' ? <FolderOpenOutlinedIcon /> : <DescriptionIcon />}
-        <h5 className={`ml-2 text-xs truncate ${type === 'file' ? 'font-normal' : ''}`}>
-          {tree.name}
-        </h5>
+        <FolderIcon color={tree.name.includes('local') ? 'primary' : ''} />
+        <h5 className={`ml-2 text-xs truncate ${!isFolder ? 'font-normal' : ''}`}>{tree.name}</h5>
       </button>
 
-      {enableDeleteFile && (
-        <IconButton
-          aria-label='delete'
-          size={type === 'folder' ? 'medium' : 'small'}
-          color='error'
-          onClick={() => handleDeleteFile(tree)}>
-          <DeleteIcon fontSize='inherit' />
-        </IconButton>
-      )}
+      <div>
+        {isFolder && forceEnableDeleteFile && (
+          <InputSelector enableEditing isMaster id={tree.ownerId} />
+        )}
+
+        {enableDeleteFile && (
+          <IconButton
+            aria-label='delete'
+            size={isFolder ? 'medium' : 'small'}
+            color='error'
+            disabled={isFolder ? !tree.items?.length : false}
+            onClick={() => handleDeleteFile(tree)}>
+            <DeleteIcon fontSize='inherit' />
+          </IconButton>
+        )}
+      </div>
     </div>
   )
 }
@@ -64,12 +77,11 @@ const FolderTree = ({
   enableDeleteFile,
   forceEnableDeleteFile,
 }: FolderTreeProps) => {
-  const [expand, setExpand] = useState(true)
-  const handleClick = () => {
-    setExpand(!expand)
-  }
+  const [expand, setExpand] = useState(!!tree.items?.length)
 
   const enableDelete = forceEnableDeleteFile || (enableDeleteFile && tree.isLocal)
+
+  useEffect(() => setExpand(!!tree.items?.length), [tree.items])
 
   return (
     <>
@@ -78,23 +90,33 @@ const FolderTree = ({
           <FileFolderRow
             type='folder'
             tree={tree}
-            handleClick={handleClick}
+            handleClick={() => setExpand((expand) => !expand)}
+            forceEnableDeleteFile={forceEnableDeleteFile}
             enableDeleteFile={enableDelete}
             handleDeleteFile={() => tree.items?.map(handleDeleteFile)}
           />
 
           <div style={{ display: expand ? 'block' : 'none' }} className='pl-3'>
-            {tree.items?.map((item) => {
-              return (
-                <FolderTree
-                  key={item.name}
-                  tree={item}
-                  handleDeleteFile={handleDeleteFile}
-                  enableDeleteFile={!!enableDelete}
-                  forceEnableDeleteFile={forceEnableDeleteFile}
-                />
-              )
-            })}
+            {!tree.items?.length ? (
+              <Box className='flex flex-row justify-center mt-1 text-center'>
+                <FolderCopyOutlinedIcon fontSize='small' color='action' />
+                <Typography className='italic text-gray-500 text-xs m-2 mt-[2px]'>
+                  Sin archivos...
+                </Typography>
+              </Box>
+            ) : (
+              tree.items?.map((item) => {
+                return (
+                  <FolderTree
+                    key={item.name}
+                    tree={item}
+                    handleDeleteFile={handleDeleteFile}
+                    enableDeleteFile={!!enableDelete}
+                    forceEnableDeleteFile={forceEnableDeleteFile}
+                  />
+                )
+              })
+            )}
           </div>
         </div>
       ) : (
@@ -104,6 +126,7 @@ const FolderTree = ({
             tree={tree}
             handleDeleteFile={handleDeleteFile}
             enableDeleteFile={enableDelete}
+            forceEnableDeleteFile={forceEnableDeleteFile}
           />
         </div>
       )}

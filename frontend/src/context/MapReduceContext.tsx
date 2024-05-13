@@ -20,6 +20,7 @@ export const actionTypes = {
   SET_READY_TO_EXECUTE: 'SET_READY_TO_EXECUTE',
   UPDATE_FILES: 'UPDATE_FILES',
   DELETE_FILE: 'DELETE_FILE',
+  ADD_FILES: 'ADD_FILES',
   SET_STDERR: 'SET_STDERR',
   SET_STDOUT: 'SET_STDOUT',
   MAP_EXECUTED: 'MAP_EXECUTED',
@@ -70,6 +71,10 @@ export type Action = {
   | {
       type: 'DELETE_FILE'
       payload: Tree
+    }
+  | {
+      type: 'ADD_FILES'
+      payload: File[]
     }
   | {
       type: 'SET_STDERR'
