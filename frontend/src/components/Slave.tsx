@@ -1,26 +1,34 @@
 'use client'
 
-import InputSelector from '@/components/InputSelector'
-import { Statistics } from '@/components/Statistics'
+import { useCallback, useEffect, useRef, useState } from 'react'
+
+import { FinalResults, KeyValue, KeyValues, MapCombinerResults, Sizes, UserID } from '@/types'
+
 import { placeholdersFunctions } from '@/constants/functionCodes'
-import { initialSizes } from '@/context/MapReduceContext'
+
+import { socket } from '@/socket'
+
+import { concatenateFiles, resetPythonFiles } from '@/utils/helpers'
+import { PY_MAIN_CODE } from '@/utils/python/tmp'
+
 import useFiles from '@/hooks/useFiles'
 import useMapReduce from '@/hooks/useMapReduce'
 import usePeers from '@/hooks/usePeers'
 import { usePythonCodeValidator } from '@/hooks/usePythonCodeValidator'
 import useRoom from '@/hooks/useRoom'
 import useStatistics from '@/hooks/useStatisticts'
-import { FinalResults, KeyValue, KeyValues, MapCombinerResults, Sizes, UserID } from '@/types'
-import { concatenateFiles, resetPythonFiles } from '@/utils/helpers'
-import { PY_MAIN_CODE } from '@/utils/python/tmp'
-import { Button } from '@mui/material'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import BasicAccordion from './Accordion'
-import Navbar from './Navbar'
-import NodeList from './NodeList'
-import Output from './Output'
-import Results from './Results'
 import { useExecutionStatus } from '@/hooks/useExecutionStatus'
+
+import { Button } from '@mui/material'
+import InputSelector from '@/components/InputSelector'
+import { Statistics } from '@/components/Statistics'
+import { initialSizes } from '@/context/MapReduceContext'
+import BasicAccordion from '@/components/Accordion'
+import Navbar from '@/components/Navbar'
+import NodeList from '@/components/NodeList'
+import Output from '@/components/Output'
+import Results from '@/components/Results'
+import { FolderList } from '@/components/ui/FolderTree'
 
 const initialMapCombinerResults: MapCombinerResults = {
   mapResults: {},
@@ -47,7 +55,7 @@ export default function Slave() {
 
   const { mapReduceState } = useMapReduce()
 
-  const { selectedFiles } = useFiles()
+  const { selectedFiles, deleteFile, fileTrees } = useFiles()
 
   const [mapCombinerResults, setMapCombinerResults] =
     useState<MapCombinerResults>(initialMapCombinerResults)
@@ -86,10 +94,8 @@ export default function Slave() {
 
   const resetState = useCallback(
     async (resetReadyToExecute: boolean) => {
-      if (isRunning) {
-        executionStopped.current = true
-        interruptExecution()
-      }
+      executionStopped.current = resetReadyToExecute
+      isRunning && interruptExecution()
       setMapCombinerResults(initialMapCombinerResults)
       setReduceResults({})
       setFinalResults(initialFinalResults)
@@ -99,7 +105,6 @@ export default function Slave() {
       setStarted(false)
       resetStdoutHistory()
       setExecuting(false)
-
       resetReadyToExecute && setIsReadyToExecute(false)
     },
     [interruptExecution, resetStdoutHistory, setIsReadyToExecute, isRunning],
@@ -430,7 +435,15 @@ export default function Slave() {
           </div>
           <div className='flex flex-col sm:flex-row lg:flex-col sm:justify-center lg:justify-start gap-10 items-center w-full min-w-fit lg:max-w-[300px]'>
             <NodeList />
-            <InputSelector enableEditing={!isReadyToExecute} />
+
+            <FolderList
+              fileTrees={fileTrees}
+              enableDeleteFile={!isReadyToExecute}
+              handleDeleteFile={deleteFile}
+            />
+
+            <InputSelector enableEditing={!isReadyToExecute} isMaster={false} id={socket.userID} />
+
             <Button
               className='w-[220px]'
               variant='outlined'
