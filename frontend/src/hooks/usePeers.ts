@@ -1,7 +1,7 @@
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { UserID } from '@/types'
-import { useCallback, useContext, useState } from 'react'
+import { useCallback, useContext } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 import { getIceServers } from '@/utils/iceServers'
 
@@ -41,18 +41,6 @@ const usePeers = () => {
       peer.write(JSON.stringify(data))
 
       return payloadSize
-    },
-    [peers],
-  )
-
-  const sendFile = useCallback(
-    async (userID: UserID, file: File) => {
-      const peer = peers[userID]
-
-      if (!peer) return
-
-      peer.send(JSON.stringify({ type: 'FILE_NAME', payload: file.name }))
-      peer.send(await file.arrayBuffer())
     },
     [peers],
   )
@@ -108,7 +96,6 @@ const usePeers = () => {
     addPeer,
     peers,
     broadcastMessage,
-    sendFile,
   }
 }
 

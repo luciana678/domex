@@ -3,7 +3,7 @@
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { UserID } from '@/types'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
 import useMapReduce from './useMapReduce'
@@ -16,8 +16,6 @@ const useInitializePeers = () => {
   const { addPeer, deletePeer } = usePeers()
   const { dispatchMapReduce } = useMapReduce()
   const { handleReceivingFiles } = useFiles()
-
-  const [fileNames, setFileNames] = useState<string[]>([])
 
   useEffect(() => {
     const onWebRTCUserJoined = (payload: { signal: SignalData; callerID: UserID }) => {
@@ -45,28 +43,14 @@ const useInitializePeers = () => {
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
-        try {
-          const decodedData = JSON.parse(data.toString('utf8'))
-          if (decodedData.type === 'FILE_NAME') {
-            setFileNames((fileNames) => [...fileNames, decodedData.payload])
-            return
-          }
-          decodedData['userID'] = userID
-          decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
-          handleActionSignal({ action: decodedData, setClusterUsers })
-          dispatchMapReduce(decodedData)
-          handleReceivingFiles(decodedData)
-        } catch (err) {
-          setFileNames((fileNames) => {
-            const [name, ...rest] = fileNames
-            const fileData = data as ArrayBuffer
-            const file = new File([fileData], name as string)
-            const action: Action = { type: 'ADD_FILES', payload: [file] }
-            name && handleReceivingFiles(action)
-            return [...rest]
-          })
-          return
-        }
+        const decodedData: Action = JSON.parse(data.toString('utf8'))
+        // handle the data here (e.g. dispatch an action)
+        decodedData['userID'] = userID
+        decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
+
+        handleActionSignal({ action: decodedData, setClusterUsers })
+        dispatchMapReduce(decodedData)
+        handleReceivingFiles(decodedData)
       }
 
       const handlePeerError = (err: Error) => {

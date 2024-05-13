@@ -1,62 +1,18 @@
 'use client'
 
-import { UserID } from '@/types'
-
+import { Tree } from '@/types'
 import { ENVS } from '@/constants/envs'
-
 import useFiles from '@/hooks/useFiles'
-
+import { FolderList } from '@/components/ui/FolderTree'
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
-import UploadFileIcon from '@mui/icons-material/UploadFile'
 import Button from '@mui/material/Button'
-import { IconButton, Tooltip, Zoom } from '@mui/material'
+import { Tooltip, Zoom } from '@mui/material'
 
-const { ACCEPT: ACCEPT_TYPE, MAX_SIZE } = ENVS.GENERAL.FILES
+export default function InputSelector({ enableEditing }: { enableEditing: boolean }) {
+  const { ACCEPT: ACCEPT_TYPE, MAX_SIZE } = ENVS.GENERAL.FILES
+  const MAX_SIZE_MB = MAX_SIZE / 1024 / 1024
 
-const MAX_SIZE_MB = MAX_SIZE / 1024 / 1024
-
-type InputSelectorProps = {
-  enableEditing: boolean
-  id: UserID
-}
-
-const SlaveInputSelector = ({ enableEditing, id }: InputSelectorProps) => {
-  return (
-    <Button
-      className='w-[220px]'
-      component='span'
-      variant='outlined'
-      startIcon={<CloudUploadIcon />}
-      disabled={!enableEditing}>
-      Cargar archivos
-    </Button>
-  )
-}
-
-const MasterInputSelector = ({ enableEditing, id }: InputSelectorProps) => {
-  return (
-    <IconButton
-      aria-label='upload'
-      size='medium'
-      color='primary'
-      onClick={() => document.getElementById(`fileInput-${id}`)?.click()}>
-      <UploadFileIcon fontSize='inherit' />
-    </IconButton>
-  )
-}
-
-export default function InputSelector({
-  id,
-  enableEditing,
-  isMaster,
-}: {
-  id: UserID
-  enableEditing: boolean
-  isMaster: boolean
-}) {
-  const { addFilesFromMaster, addFilesFromSlave } = useFiles()
-
-  const InputSelectorComponent = isMaster ? MasterInputSelector : SlaveInputSelector
+  const { deleteFile, addFiles, fileTrees } = useFiles()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files
@@ -68,36 +24,48 @@ export default function InputSelector({
       .filter((file) => file.type === 'text/plain')
       .filter((file) => file.size <= MAX_SIZE)
 
-    if (isMaster) {
-      addFilesFromMaster(txtFiles, id)
-    } else {
-      addFilesFromSlave(txtFiles)
-    }
+    addFiles(txtFiles)
   }
 
-  return (
-    <>
-      <input
-        type='file'
-        id={`fileInput-${id}`}
-        accept={ACCEPT_TYPE}
-        multiple
-        style={{ display: 'none' }}
-        onChange={handleFileChange}
-        disabled={!enableEditing}
-        onClick={(event) => {
-          const inputElement = event.target as HTMLInputElement
-          inputElement.value = ''
-        }}
-      />
+  const handleDeleteFile = (tree: Tree) => deleteFile(tree)
 
-      <Tooltip
-        TransitionComponent={Zoom}
-        title={`Deben ser ${ACCEPT_TYPE} de máximo ${MAX_SIZE_MB}Mb cada uno`}>
-        <label htmlFor={`fileInput-${id}`}>
-          <InputSelectorComponent enableEditing={enableEditing} id={id} />
+  return (
+    <div className='w-full'>
+      <div className='flex justify-center flex-col'>
+        <FolderList
+          fileTrees={fileTrees}
+          enableDeleteFile={enableEditing}
+          handleDeleteFile={handleDeleteFile}
+        />
+
+        <input
+          type='file'
+          id='fileInput'
+          accept={ACCEPT_TYPE}
+          multiple
+          style={{ display: 'none' }}
+          onChange={handleFileChange}
+          disabled={!enableEditing}
+          onClick={(event) => {
+            const inputElement = event.target as HTMLInputElement
+            inputElement.value = ''
+          }}
+        />
+        <label htmlFor='fileInput' className='mx-auto mt-5'>
+          <Tooltip
+            TransitionComponent={Zoom}
+            title={`Deben ser ${ACCEPT_TYPE} de máximo ${MAX_SIZE_MB}Mb cada uno`}>
+            <Button
+              className='w-[220px]'
+              component='span'
+              variant='outlined'
+              startIcon={<CloudUploadIcon />}
+              disabled={!enableEditing}>
+              Cargar archivos
+            </Button>
+          </Tooltip>
         </label>
-      </Tooltip>
-    </>
+      </div>
+    </div>
   )
 }

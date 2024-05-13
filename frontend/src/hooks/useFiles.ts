@@ -8,7 +8,7 @@ import { socket } from '@/socket'
 
 const useFiles = (loading: boolean = false) => {
   const { selectedFiles, setSelectedFiles, nodesFiles, setNodesFiles } = useContext(FilesContext)
-  const { broadcastMessage, sendFile } = usePeers()
+  const { broadcastMessage } = usePeers()
   const { clusterUsers, roomSession } = useRoom()
 
   const ownFileTree: Tree = useMemo(
@@ -31,22 +31,24 @@ const useFiles = (loading: boolean = false) => {
 
   const nodesFileTree: Tree[] = useMemo(
     () => [
-      ...Object.entries(nodesFiles).map(([userId, fileNames]) => {
-        const username = clusterUsers.find((user) => user.userID === userId)?.userName
+      ...Object.entries(nodesFiles)
+        .filter(([_, fileNames]) => fileNames.length > 0)
+        .map(([userId, fileNames]) => {
+          const username = clusterUsers.find((user) => user.userID === userId)?.userName
 
-        return {
-          name: `/ ${username} (remote)`,
-          isFolder: true,
-          ownerId: userId as UserID,
-          items: fileNames.map((file) => {
-            return {
-              name: file,
-              isFolder: false,
-              ownerId: userId as UserID,
-            }
-          }),
-        }
-      }),
+          return {
+            name: `/ ${username} (remote)`,
+            isFolder: true,
+            ownerId: userId as UserID,
+            items: fileNames.map((file) => {
+              return {
+                name: file,
+                isFolder: false,
+                ownerId: userId as UserID,
+              }
+            }),
+          }
+        }),
     ],
     [clusterUsers, nodesFiles],
   )
@@ -54,11 +56,9 @@ const useFiles = (loading: boolean = false) => {
   const nodeHasFiles = !!ownFileTree.items?.length
 
   const fileTrees = useMemo(
-    () => (!roomSession?.isRoomOwner ? [ownFileTree, ...nodesFileTree] : [...nodesFileTree]),
-    [nodesFileTree, ownFileTree, roomSession?.isRoomOwner],
+    () => (ownFileTree.items?.length ? [ownFileTree, ...nodesFileTree] : nodesFileTree),
+    [nodesFileTree, ownFileTree],
   )
-
-  console.log(fileTrees)
 
   const [mapNodesCount, setMapNodesCount] = useState(fileTrees.length)
 
@@ -67,12 +67,10 @@ const useFiles = (loading: boolean = false) => {
   }, [fileTrees, loading])
 
   useEffect(() => {
-    if (roomSession?.isRoomOwner) return
-
     // Broadcast own files to all peers
     const fileNames = selectedFiles.map((file) => file.name)
     broadcastMessage({ type: 'UPDATE_FILES', payload: { fileNames } })
-  }, [broadcastMessage, roomSession?.isRoomOwner, selectedFiles])
+  }, [broadcastMessage, selectedFiles])
 
   useEffect(() => {
     if (!roomSession) setSelectedFiles([])
@@ -101,47 +99,33 @@ const useFiles = (loading: boolean = false) => {
     setSelectedFiles((prevFiles) => prevFiles.filter((file) => file.name !== tree.name))
   }
 
-  const addFilesFromSlave = useCallback(
-    (files: File[]) => {
-      setSelectedFiles((prevFiles) => {
-        const uniqueFiles = files.filter(
-          (newFile) => !prevFiles.some((oldFile) => oldFile.name === newFile.name),
-        )
-        return [...prevFiles, ...uniqueFiles]
-      })
-    },
-    [setSelectedFiles],
-  )
-
-  const addFilesFromMaster = async (files: File[], userID: UserID) => {
-    for (const file of files) {
-      sendFile(userID, file)
-    }
+  const addFiles = (files: File[]) => {
+    setSelectedFiles((prevFiles) => {
+      const uniqueFiles = files.filter(
+        (newFile) => !prevFiles.some((oldFile) => oldFile.name === newFile.name),
+      )
+      return [...prevFiles, ...uniqueFiles]
+    })
   }
 
   const handleReceivingFiles = useCallback(
     (action: Action) => {
-      switch (action.type) {
-        case actionTypes.UPDATE_FILES:
-          setNodesFiles((prevFiles) => {
-            return { ...prevFiles, [action.userID as UserID]: action.payload.fileNames }
-          })
-          break
+      if (action.type === actionTypes.UPDATE_FILES) {
+        setNodesFiles((prevFiles) => {
+          return { ...prevFiles, [action.userID as UserID]: action.payload.fileNames }
+        })
+      }
 
-        case actionTypes.DELETE_FILE:
-          const target = action.payload
+      if (action.type === actionTypes.DELETE_FILE) {
+        const target = action.payload
 
-          const deletedFileNames = target.items?.map((item) => item.name) ?? [target.name]
-          setSelectedFiles((prevFiles) =>
-            prevFiles.filter((file) => !deletedFileNames.includes(file.name)),
-          )
-          break
-
-        case actionTypes.ADD_FILES:
-          addFilesFromSlave(action.payload)
+        const deletedFileNames = target.items?.map((item) => item.name) ?? [target.name]
+        setSelectedFiles((prevFiles) =>
+          prevFiles.filter((file) => !deletedFileNames.includes(file.name)),
+        )
       }
     },
-    [addFilesFromSlave, setNodesFiles, setSelectedFiles],
+    [setNodesFiles, setSelectedFiles],
   )
 
   return {
@@ -149,8 +133,7 @@ const useFiles = (loading: boolean = false) => {
     fileTrees,
     mapNodesCount,
     deleteFile,
-    addFilesFromMaster,
-    addFilesFromSlave,
+    addFiles,
     handleReceivingFiles,
     nodeHasFiles,
   }
