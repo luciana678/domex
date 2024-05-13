@@ -40,7 +40,7 @@ const FileFolderRow = ({
           isFolder ? 'cursor-pointer' : null
         } bg-transparent border-none `}
         onClick={handleClick}>
-        <FolderIcon color={tree.name.includes('local') ? 'primary' : ''} />
+        <FolderIcon color={tree.name.includes('local') ? 'primary' : undefined} />
         <h5 className={`ml-2 text-xs truncate ${!isFolder ? 'font-normal' : ''}`}>{tree.name}</h5>
       </button>
 

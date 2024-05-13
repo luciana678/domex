@@ -4,9 +4,15 @@ import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { RoomID } from '@/types'
 import { useRouter } from 'next/navigation'
-import { useCallback, useContext, useEffect } from 'react'
+import { useCallback, useContext } from 'react'
 import usePeers from '@/hooks/usePeers'
 import useMapReduce from '@/hooks/useMapReduce'
+
+type ClusterAuthProps = {
+  userName: string
+  roomID?: RoomID
+  creatingCluster: boolean
+}
 
 const useRoom = () => {
   const router = useRouter()
@@ -22,7 +28,7 @@ const useRoom = () => {
 
   const { dispatchMapReduce } = useMapReduce()
 
-  const connectRoom = useCallback((auth: { userName?: string; roomID?: RoomID }) => {
+  const joinCluster = useCallback((auth: ClusterAuthProps) => {
     socket.auth = auth
     socket.connect()
   }, [])
@@ -46,7 +52,7 @@ const useRoom = () => {
   return {
     clusterUsers,
     roomSession,
-    connectRoom,
+    joinCluster,
     leaveRoom,
     roomOwner,
     isReadyToExecute,

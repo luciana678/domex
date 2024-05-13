@@ -34,39 +34,31 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
   io.use((socket, next) => {
     const sessionID = socket.handshake.auth.sessionID as SessionID
     const roomID = socket.handshake.auth.roomID as RoomID
-
-    if (roomID) {
-      if (!roomsSessionStore.existsRoom(roomID)) {
-        return next(new Error('Room does not exist'))
-      }
-
-      if (sessionID) {
-        const session = roomsSessionStore.findSession(roomID, sessionID)
-        if (session) {
-          socket.sessionID = sessionID
-          socket.roomID = roomID
-          socket.userID = session.userID
-          socket.userName = session.userName
-          socket.isRoomOwner = session.isRoomOwner
-          return next()
-        }
-      }
-
-      if (roomsSessionStore.isLocked(roomID)) {
-        return next(new Error('Room is locked'))
-      }
-    }
-
+    const creatingCluster = !!socket.handshake.auth.creatingCluster
     const userName = socket.handshake.auth.userName
+
     if (!userName) {
-      return next(new Error('missing username'))
+      return next(new Error('USER_REQUIRED'))
     }
 
-    socket.sessionID = generateRandomUUID()
-    socket.userID = generateRandomUUID()
-    socket.userName = userName
-    socket.roomID = roomID || generateRandomRoomId()
-    socket.isRoomOwner = !roomID
+    if (roomsSessionStore.isLocked(roomID)) {
+      return next(new Error('CLUSTER_LOCKED'))
+    }
+
+    if (roomsSessionStore.existsRoom(roomID)) {
+      if (creatingCluster) {
+        return next(new Error('CLUSTERID_EXISTS'))
+      }
+    } else if (!creatingCluster) return next(new Error('CLUSTERID_NOT_EXISTS'))
+
+    const session = roomsSessionStore.findSession(roomID, sessionID)
+
+    socket.sessionID = session ? sessionID : generateRandomUUID()
+    socket.roomID = session ? roomID : roomID || generateRandomRoomId()
+    socket.userID = session?.userID ?? generateRandomUUID()
+    socket.userName = session?.userName ?? userName
+    socket.isRoomOwner = session?.isRoomOwner ?? creatingCluster
+
     next()
   })
 

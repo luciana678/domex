@@ -31,16 +31,17 @@ export default function Navbar({ title }: { title: string }) {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null)
   const [isLoadingAvatar, setIsLoadingAvatar] = useState(true)
 
+  const isRoomOwner = roomSession?.isRoomOwner
+  const userName = roomSession?.userName
+
   useEffect(() => {
-    if (roomSession?.userName) {
-      setIsLoadingAvatar(true)
-      generateInitialsAvatar(roomSession.userName)
-        .then((url) => {
-          setAvatarUrl(url)
-        })
-        .finally(() => setIsLoadingAvatar(false))
-    }
-  }, [roomSession?.userName])
+    if (!userName) return
+
+    setIsLoadingAvatar(true)
+    generateInitialsAvatar(userName)
+      .then(setAvatarUrl)
+      .finally(() => setIsLoadingAvatar(false))
+  }, [userName])
 
   return (
     <Box sx={{ width: '100%', mb: 5 }}>
@@ -90,7 +91,7 @@ export default function Navbar({ title }: { title: string }) {
                       {roomSession?.userName}
                     </Typography>
                     <Typography level='body-xs' textColor='text.tertiary'>
-                      Nodo <strong>{roomSession?.isRoomOwner ? 'Master' : 'Slave'}</strong>
+                      Nodo <strong>{isRoomOwner ? 'Master' : 'Slave'}</strong>
                     </Typography>
                   </Box>
                 </Box>
@@ -98,7 +99,7 @@ export default function Navbar({ title }: { title: string }) {
               <ListDivider />
               <MenuItem onClick={leaveRoom}>
                 <LogoutRoundedIcon />
-                <span className='ml-2'>Salir de la sala</span>
+                <span className='ml-2'>{isRoomOwner ? 'Cerrar cluster' : 'Abandonar cluster'}</span>
               </MenuItem>
             </Menu>
           </Dropdown>

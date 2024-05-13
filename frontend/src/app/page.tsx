@@ -10,49 +10,42 @@ import { useRef, useState } from 'react'
 
 export default function Home() {
   useInitializeRoom()
-  const { connectRoom } = useRoom()
+  const { joinCluster } = useRoom()
   const [missingUserName, setMissingUserName] = useState(false)
   const [missingClusterId, setMissingClusterId] = useState(false)
+
   const userRef = useRef<HTMLInputElement>(null)
-
-  const checkUserName = () => {
-    const userName = userRef.current?.value
-    const thereIsUserName = !!userName
-    setMissingUserName(!thereIsUserName)
-
-    // if (thereIsUserName) setUserName(userName)
-
-    return thereIsUserName
-  }
+  const clusterIDRef = useRef<HTMLInputElement>(null)
 
   const handleCreateCluster = () => {
-    const thereIsUserName = checkUserName()
+    const userName = userRef.current?.value
+    setMissingUserName(!userName)
 
-    if (!thereIsUserName) return
+    if (!userName) return
 
-    connectRoom({
-      userName: userRef.current?.value,
+    joinCluster({
+      userName: userName,
+      roomID: clusterIDRef.current?.value as RoomID,
+      creatingCluster: true,
     })
   }
 
   const handleSubmitJoinCluster = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+    const userName = userRef.current?.value
+    const clusterID = clusterIDRef.current?.value
 
-    const thereIsUserName = checkUserName()
+    setMissingUserName(!userName)
+    setMissingClusterId(!clusterID)
 
-    const clusterId = (e.currentTarget[0] as HTMLInputElement).value
+    if (!userName || !clusterID) return
 
-    setMissingClusterId(!clusterId)
-
-    if (!thereIsUserName || !clusterId) return
-
-    connectRoom({
-      userName: userRef.current?.value,
-      roomID: clusterId as RoomID,
+    joinCluster({
+      userName: userName,
+      roomID: clusterID as RoomID,
+      creatingCluster: false,
     })
   }
-
-  // TODO: Separate in components
 
   return (
     <main className='flex min-h-full justify-center items-center px-24 lg:p-0  '>
@@ -69,14 +62,17 @@ export default function Home() {
             label='Usuario*'
             inputRef={userRef}
             helperText={missingUserName ? 'Usuario necesario' : ''}
-            error={missingUserName}></TextField>
+            error={missingUserName}
+          />
         </div>
         <div className='flex gap-5'>
           <form className='flex gap-5 flex-col' onSubmit={handleSubmitJoinCluster}>
             <TextField
               label='Unirse a un cluster'
               helperText={missingClusterId ? 'Identificador de cluster necesario' : ''}
-              error={missingClusterId}></TextField>
+              error={missingClusterId}
+              inputRef={clusterIDRef}
+            />
             <Button variant='outlined' type='submit'>
               Unirse
             </Button>
@@ -91,9 +87,6 @@ export default function Home() {
             Crear un cluster
           </Button>
         </div>
-        <Typography variant='body2' className='self-start' color='text.secondary' margin={1}>
-          (*) Campos obligatorio
-        </Typography>
       </section>
     </main>
   )

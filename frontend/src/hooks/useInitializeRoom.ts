@@ -165,41 +165,20 @@ const useInitializeRoom = () => {
     }
 
     const onConnectError = (err: Error) => {
-      if (err.message === 'missing username') {
-        console.error('missing username')
-        sessionStorage.removeItem('session')
-
-        if (pathname !== '/') {
-          router.push('/')
-        }
+      const messages = {
+        USER_REQUIRED: 'El nombre de usuario es requerido',
+        CLUSTER_LOCKED: 'El cluster está bloqueado',
+        CLUSTERID_EXISTS: 'Ya existe un cluster con el mismo identificador',
+        CLUSTERID_NOT_EXISTS: 'No existe un cluster con el identificador proporcionado',
       }
 
-      // TODO: Manage better the error messages UI
-      if (err.message === 'Room does not exist') {
-        console.error('Room does not exist')
-        sessionStorage.removeItem('session')
+      sessionStorage.removeItem('session')
 
-        if (pathname !== '/') {
-          router.push('/')
-        }
+      toast.error(messages[err.message as keyof typeof messages] || err.message, {
+        position: 'top-center',
+      })
 
-        toast.error('La sala a la que intenta acceder NO EXISTE', {
-          position: 'top-center',
-        })
-      }
-
-      if (err.message === 'Room is locked') {
-        console.error('Room is locked')
-        sessionStorage.removeItem('session')
-
-        if (pathname !== '/') {
-          router.push('/')
-        }
-
-        toast.error('La sala a la que intenta acceder está BLOQUEADA', {
-          position: 'top-center',
-        })
-      }
+      pathname !== '/' && router.push('/')
     }
 
     socket.on('room:session', onSession)
