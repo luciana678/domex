@@ -9,7 +9,6 @@ const CompatibilityChecker = () => {
   const router = useRouter()
 
   useEffect(() => {
-    console.log('Checking WebRTC compatibility')
     const checkWebRTCCompatibility = () => {
       try {
         if (!WEBRTC_SUPPORT) throw new Error('WebRTC no es compatible')
