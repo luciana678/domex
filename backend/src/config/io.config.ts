@@ -45,11 +45,17 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
       return next(new Error('CLUSTER_LOCKED'))
     }
 
-    if (roomsSessionStore.existsRoom(roomID)) {
-      if (creatingCluster) {
-        return next(new Error('CLUSTERID_EXISTS'))
-      }
-    } else if (!creatingCluster) return next(new Error('CLUSTERID_NOT_EXISTS'))
+    const existRoom = roomsSessionStore.existsRoom(roomID)
+
+    // If the room exists and the user is trying to create a new room with the same ID
+    if (creatingCluster && existRoom) {
+      return next(new Error('CLUSTERID_EXISTS'))
+    }
+
+    // If the room does not exist and the user is trying to join a room that does not exist
+    if (!creatingCluster && !existRoom) {
+      return next(new Error('CLUSTERID_NOT_EXISTS'))
+    }
 
     const session = roomsSessionStore.findSession(roomID, sessionID)
 
