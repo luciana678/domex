@@ -68,7 +68,7 @@ export default function Home() {
         <div className='flex gap-5'>
           <form className='flex gap-5 flex-col' onSubmit={handleSubmitJoinCluster}>
             <TextField
-              label='Unirse a un cluster'
+              label='Indentificador de cluster'
               helperText={missingClusterId ? 'Identificador de cluster necesario' : ''}
               error={missingClusterId}
               inputRef={clusterIDRef}
