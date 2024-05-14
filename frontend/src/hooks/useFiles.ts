@@ -58,8 +58,6 @@ const useFiles = (loading: boolean = false) => {
     [nodesFileTree, ownFileTree, roomSession?.isRoomOwner],
   )
 
-  console.log(fileTrees)
-
   const [mapNodesCount, setMapNodesCount] = useState(fileTrees.length)
 
   useEffect(() => {
