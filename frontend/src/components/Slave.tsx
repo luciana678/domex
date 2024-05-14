@@ -442,20 +442,26 @@ export default function Slave() {
               handleDeleteFile={deleteFile}
             />
 
-            <InputSelector enableEditing={!isReadyToExecute} isMaster={false} id={socket.userID} />
+            <div className='flex flex-col gap-5'>
+              <InputSelector
+                enableEditing={!isReadyToExecute}
+                isMaster={false}
+                id={socket.userID}
+              />
 
-            <Button
-              className='w-[220px]'
-              variant='outlined'
-              color={!isReadyToExecute ? 'success' : 'error'}
-              onClick={() => setIsReadyToExecute(!isReadyToExecute)}
-              disabled={!isReady || started}>
-              {isReadyToExecute
-                ? 'Cancelar'
-                : !isReady
-                  ? 'Iniciando Python...'
-                  : 'Listo para ejecutar'}
-            </Button>
+              <Button
+                className='w-[220px]'
+                variant='outlined'
+                color={!isReadyToExecute ? 'success' : 'error'}
+                onClick={() => setIsReadyToExecute(!isReadyToExecute)}
+                disabled={!isReady || started}>
+                {isReadyToExecute
+                  ? 'Cancelar'
+                  : !isReady
+                    ? 'Iniciando Python...'
+                    : 'Listo para ejecutar'}
+              </Button>
+            </div>
           </div>
         </div>
       </div>
