@@ -8,8 +8,9 @@ import useFiles from '@/hooks/useFiles'
 
 import CloudUploadIcon from '@mui/icons-material/CloudUpload'
 import UploadFileIcon from '@mui/icons-material/UploadFile'
-import Button from '@mui/material/Button'
 import { IconButton, Tooltip, Zoom } from '@mui/material'
+import Button from '@mui/material/Button'
+import { useRef } from 'react'
 
 const { ACCEPT: ACCEPT_TYPE, MAX_SIZE } = ENVS.GENERAL.FILES
 
@@ -18,9 +19,10 @@ const MAX_SIZE_MB = MAX_SIZE / 1024 / 1024
 type InputSelectorProps = {
   enableEditing: boolean
   id: UserID
+  forwardRef?: React.RefObject<HTMLInputElement>
 }
 
-const SlaveInputSelector = ({ enableEditing, id }: InputSelectorProps) => {
+const SlaveInputSelector = ({ enableEditing }: InputSelectorProps) => {
   return (
     <Button
       className='w-[220px]'
@@ -33,13 +35,13 @@ const SlaveInputSelector = ({ enableEditing, id }: InputSelectorProps) => {
   )
 }
 
-const MasterInputSelector = ({ enableEditing, id }: InputSelectorProps) => {
+const MasterInputSelector = ({ forwardRef }: InputSelectorProps) => {
   return (
     <IconButton
       aria-label='upload'
       size='medium'
       color='primary'
-      onClick={() => document.getElementById(`fileInput-${id}`)?.click()}>
+      onClick={() => forwardRef?.current?.click()}>
       <UploadFileIcon fontSize='inherit' />
     </IconButton>
   )
@@ -54,6 +56,8 @@ export default function InputSelector({
   enableEditing: boolean
   isMaster: boolean
 }) {
+  const inputRef = useRef<HTMLInputElement>(null)
+
   const { addFilesFromMaster, addFilesFromSlave } = useFiles()
 
   const InputSelectorComponent = isMaster ? MasterInputSelector : SlaveInputSelector
@@ -80,6 +84,7 @@ export default function InputSelector({
       <input
         type='file'
         id={`fileInput-${id}`}
+        ref={inputRef}
         accept={ACCEPT_TYPE}
         multiple
         style={{ display: 'none' }}
@@ -95,7 +100,7 @@ export default function InputSelector({
         TransitionComponent={Zoom}
         title={`Deben ser ${ACCEPT_TYPE} de máximo ${MAX_SIZE_MB}Mb cada uno`}>
         <label htmlFor={`fileInput-${id}`}>
-          <InputSelectorComponent enableEditing={enableEditing} id={id} />
+          <InputSelectorComponent enableEditing={enableEditing} id={id} forwardRef={inputRef} />
         </label>
       </Tooltip>
     </>
