@@ -12,7 +12,7 @@ const CompatibilityChecker = () => {
     console.log('Checking WebRTC compatibility')
     const checkWebRTCCompatibility = () => {
       try {
-        if (WEBRTC_SUPPORT) throw new Error('WebRTC no es compatible')
+        if (!WEBRTC_SUPPORT) throw new Error('WebRTC no es compatible')
 
         const peer = new RTCPeerConnection()
         peer.close() // close the peer connection
