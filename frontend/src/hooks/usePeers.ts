@@ -1,9 +1,9 @@
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { UserID } from '@/types'
-import { useCallback, useContext, useState } from 'react'
-import SimplePeer, { SignalData } from 'simple-peer'
 import { getIceServers } from '@/utils/iceServers'
+import { useCallback, useContext } from 'react'
+import SimplePeer, { SignalData } from 'simple-peer'
 
 const usePeers = () => {
   const { peers, setPeers } = useContext(RoomContext)
