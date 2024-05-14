@@ -46,7 +46,7 @@ const useInitializePeers = () => {
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
         try {
-          const decodedData = JSON.parse(data.toString('utf8'))
+          const decodedData: Action = JSON.parse(data.toString('utf8'))
           if (decodedData.type === 'FILE_NAME') {
             setFileNames((fileNames) => [...fileNames, decodedData.payload])
             return
@@ -57,6 +57,7 @@ const useInitializePeers = () => {
           dispatchMapReduce(decodedData)
           handleReceivingFiles(decodedData)
         } catch (err) {
+          // If the data is not a JSON, it is a file buffer: Breaks when trying to parse it to string
           setFileNames((fileNames) => {
             const [name, ...rest] = fileNames
             const fileData = data as ArrayBuffer
@@ -65,7 +66,6 @@ const useInitializePeers = () => {
             name && handleReceivingFiles(action)
             return [...rest]
           })
-          return
         }
       }
 

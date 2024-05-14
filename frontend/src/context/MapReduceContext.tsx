@@ -90,6 +90,7 @@ export type Action = {
       type: 'SET_EXECUTION_STATUS'
       payload: string
     }
+  | { type: 'FILE_NAME'; payload: string }
 )
 
 export const initialSizes: Sizes = {
