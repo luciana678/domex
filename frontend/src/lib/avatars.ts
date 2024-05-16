@@ -1,6 +1,8 @@
 export const generateInitialsAvatar = async (name: string) => {
   try {
-    const res = await fetch(`https://avatar.iran.liara.run/username?username=${name}`)
+    const res = await fetch(`https://avatar.iran.liara.run/username?username=${name}`, {
+      mode: 'no-cors',
+    })
 
     if (!res.ok) throw new Error('Network response was not ok.')
 
