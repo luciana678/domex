@@ -3,7 +3,7 @@ import { FormLabel } from '@mui/material'
 
 export default function Output({ stdout, stderr }: { stdout: string; stderr: string }) {
   return (
-    <div className='mt-4 flex flex-col w-[600px] gap-5'>
+    <div className='mt-4 flex flex-col w-full lg:w-[600px] gap-5'>
       <div>
         <FormLabel>Salida estándar</FormLabel>
         <Textarea defaultValue={stdout} variant='soft' maxRows={5} />
