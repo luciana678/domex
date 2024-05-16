@@ -15,25 +15,39 @@ El presente trabajo de grado consiste en la implementación de DOMEX (Distribute
     git clone https://github.com/DavidScoffield/domex
    ```
 
-1. Navegar al directorio del proyecto:
+2. Navegar al directorio del proyecto:
 
    ```shell
    cd domex
    ```
 
-1. Configurar las variables de entorno
+3. Configurar las variables de entorno
 
    Ver en la sección de **[Configuración](#configuración)** para más información.
 
-1. Construir y levantar los contenedores de Docker:
+4. Construir y levantar los contenedores de Docker:
 
    ```shell
    docker-compose up -d
    ```
 
-1. Acceder a la aplicación en el navegador web:
+5. Acceder a la aplicación en el navegador web:
 
-   Abre tu navegador web y visita `http://localhost:port`. (Reemplaza `port` con el número de puerto correspondiente).
+   Abre tu navegador web y visita `http://<local-private-ip>:port`. (Reemplaza `port` con el número de puerto correspondiente).
+
+6. Detener y eliminar los contenedores de Docker:
+
+   ```shell
+   docker-compose down
+   ```
+
+En caso de que se haya modificado el archivo `.env`, o el propio código fuente de la aplicación, es necesario reconstruir los contenedores de Docker:
+
+```shell
+docker-compose up -d --build
+```
+
+> Nota: Para más información sobre cómo obtener la dirección IP privada de la máquina host, consulte la sección de **[Private IP](#private_ip)**.
 
 ## Configuración
 
@@ -129,3 +143,15 @@ Explain how others can contribute to the project.
 
 Specify the license under which the project is distributed.
 -->
+
+## Arquitectura
+
+La aplicación está compuesta por dos partes principales: el frontend y el backend.
+
+### Frontend
+
+El frontend de la aplicación es una aplicación web desarrollada con [Next.js](https://nextjs.org/). La aplicación web se encarga de la interfaz de usuario y de la comunicación con el backend a través de una API REST y un WebSocket. La aplicación web utiliza [WebRTC](https://webrtc.org/) para la comunicación en tiempo real entre los nodos del clúster. Es la encargada de gestionar la distribución de los trabajos MapReduce entre los nodos del clúster.
+
+### Backend
+
+El backend de la aplicación es un servidor desarrollado con [Express.js](https://expressjs.com/) que se encarga de gestionar las salas de chat y la comunicación como servidor de señalización para WebRTC.
