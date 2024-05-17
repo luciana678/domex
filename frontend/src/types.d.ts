@@ -67,6 +67,7 @@ export type ReducerState = {
     avgReduceTime: number
     maxReduceTime: number
     minReduceTime: number
+    totalTime: number
   }
   clavesRecibidas: { [user: UserID]: { [innerKey: string]: unknown[] } }
   receiveKeysFrom: UserID[] | null
@@ -134,7 +135,7 @@ export type FinalResults = {
 
 export type Statistics = {
   title: string
-  statistics: { label: string; value: string | number }[]
+  data: { label: string; value: string | number }[]
 }
 
 export type Tree = {

@@ -334,7 +334,7 @@ export default function Master() {
       {finished && (
         <>
           <Results className='mt-5' title='Resultados' data={mapReduceState.reduceResult} />
-          <Statistics statistics={statistics} />
+          <Statistics info={statistics} />
         </>
       )}
     </main>

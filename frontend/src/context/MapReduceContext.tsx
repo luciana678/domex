@@ -124,6 +124,7 @@ const initialTimeStatistics: ReducerState['timeStatistics'] = {
   avgReduceTime: 0,
   maxReduceTime: 0,
   minReduceTime: 0,
+  totalTime: 0,
 }
 
 export const initialOutput: Output = {
@@ -274,6 +275,11 @@ const reducer = (state: ReducerState, action: Action) => {
           maxReduceTime: Math.max(...newReduceTimes),
           minReduceTime: Math.min(...newReduceTimes),
         }
+
+        newTimeStatistics.totalTime =
+          newTimeStatistics.avgMapTime +
+          newTimeStatistics.avgCombinerTime +
+          newTimeStatistics.avgReduceTime
       }
 
       return {

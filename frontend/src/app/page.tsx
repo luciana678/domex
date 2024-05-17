@@ -87,9 +87,6 @@ export default function Home() {
             Crear un cluster
           </Button>
         </div>
-        <Typography variant='body2' className='self-start' color='text.secondary' margin={1}>
-          (*) Campos obligatorio
-        </Typography>
       </section>
     </main>
   )

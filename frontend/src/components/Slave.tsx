@@ -473,7 +473,7 @@ export default function Slave() {
           <Results title='Etapa map' data={mapCombinerResults.mapResults} />
           <Results title='Etapa combiner' data={mapCombinerResults.combinerResults} />
           <Results title='Etapa reduce' data={reduceResults} />
-          <Statistics statistics={statistics} />
+          <Statistics info={statistics} />
         </>
       )}
     </main>
