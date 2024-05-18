@@ -5,7 +5,8 @@ export const ENVS = {
   GENERAL: {
     FILES: {
       MAX_SIZE: 5 * 1024 * 1024, // 5Mb
-      ACCEPT: '.txt',
+      ACCEPT: ['.txt', ".csv"],
+      FILE_TYPES: ['text/plain', 'text/csv']
     },
   },
 }

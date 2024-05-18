@@ -12,7 +12,7 @@ import { IconButton, Tooltip, Zoom } from '@mui/material'
 import Button from '@mui/material/Button'
 import { useRef } from 'react'
 
-const { ACCEPT: ACCEPT_TYPE, MAX_SIZE } = ENVS.GENERAL.FILES
+const { ACCEPT: ACCEPT_TYPE, MAX_SIZE, FILE_TYPES } = ENVS.GENERAL.FILES
 
 const MAX_SIZE_MB = MAX_SIZE / 1024 / 1024
 
@@ -63,19 +63,19 @@ export default function InputSelector({
   const InputSelectorComponent = isMaster ? MasterInputSelector : SlaveInputSelector
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files
+    const selectedFiles = event.target.files
     // Check if there are files
-    if (!files) return
+    if (!selectedFiles) return
 
-    // Filter the text files and the ones that his size is less than MAX_SIZE
-    const txtFiles = Array.from(files)
-      .filter((file) => file.type === 'text/plain')
+    // Filter files by type and size
+    const files = Array.from(selectedFiles)
+      .filter((file) => FILE_TYPES.includes(file.type))
       .filter((file) => file.size <= MAX_SIZE)
 
     if (isMaster) {
-      addFilesFromMaster(txtFiles, id)
+      addFilesFromMaster(files, id)
     } else {
-      addFilesFromSlave(txtFiles)
+      addFilesFromSlave(files)
     }
   }
 
@@ -85,7 +85,7 @@ export default function InputSelector({
         type='file'
         id={`fileInput-${id}`}
         ref={inputRef}
-        accept={ACCEPT_TYPE}
+        accept={ACCEPT_TYPE.join(',')}
         multiple
         style={{ display: 'none' }}
         onChange={handleFileChange}
@@ -98,7 +98,7 @@ export default function InputSelector({
 
       <Tooltip
         TransitionComponent={Zoom}
-        title={`Deben ser ${ACCEPT_TYPE} de máximo ${MAX_SIZE_MB}Mb cada uno`}>
+        title={`Deben ser ${ACCEPT_TYPE.join(" / ")} de máximo ${MAX_SIZE_MB}Mb cada uno`}>
         <label htmlFor={`fileInput-${id}`}>
           <InputSelectorComponent enableEditing={enableEditing} id={id} forwardRef={inputRef} />
         </label>
