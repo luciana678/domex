@@ -4,7 +4,7 @@ import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { RoomID } from '@/types'
 import { useRouter } from 'next/navigation'
-import { useCallback, useContext } from 'react'
+import { useCallback, useContext, useEffect } from 'react'
 import usePeers from '@/hooks/usePeers'
 import useMapReduce from '@/hooks/useMapReduce'
 
@@ -45,9 +45,9 @@ const useRoom = () => {
     dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
   }, [destroyPeers, dispatchMapReduce, router, setRoomSession])
 
-  // useEffect(() => {
-  //   return () => window.addEventListener('beforeunload', (_) => leaveRoom())
-  // }, [leaveRoom])
+  useEffect(() => {
+     return () => window.addEventListener('beforeunload', (_) => leaveRoom())
+   }, [leaveRoom])
 
   return {
     clusterUsers,
