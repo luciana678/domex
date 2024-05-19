@@ -111,7 +111,9 @@ export type Sizes = {
   inputFiles: int
   mapInput: int
   mapOutput: int
+  mapCount: int
   combinerOutput: int
+  combinerCount: int
   totalKeysSent: int
   totalValuesSent: int
   totalBytesSent: int
@@ -120,6 +122,7 @@ export type Sizes = {
   totalBytesReceived: int
   reduceInput: int
   reduceOutput: int
+  reduceCount: int
   mapCodeTime: int
   combinerCodeTime: int
   reduceCodeTime: int

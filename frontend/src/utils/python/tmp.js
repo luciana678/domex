@@ -57,6 +57,7 @@ if os.path.exists('/reduce_keys.json'):
   with open('/reduce_results.json', 'w') as result_file:
     json.dump(context.reduce_results, result_file)
   sizes['reduceOutput'] = os.path.getsize("/reduce_results.json")
+  sizes['reduceCount'] = len(context.reduce_results)
   print("REDUCE EJECUTADO SATISFACTORIAMENTE")
 
 else:
@@ -64,8 +65,10 @@ else:
     exec(map_code.read())
     
   with open('/input.txt') as input:
-    results = safe_execute('mapCode', lambda: list(map(fmap, input.readlines())))
+    input_lines = input.readlines()
+    results = safe_execute('mapCode', lambda: list(map(fmap, input_lines)))
   sizes['mapInput'] = os.path.getsize("/input.txt")
+  sizes['mapCount'] = len(input_lines)
 
   with open('/map_results.json', 'w') as result_file:
     json.dump(context.map_results, result_file)
@@ -80,9 +83,13 @@ else:
 
   if not empty_combine:
     safe_execute('combinerCode', lambda: context.combine())
+    sizes['combinerCount'] = len(context.map_results)
+    results = context.combine_results
+  else:
+    sizes['combinerCount'] = 0
+    results = context.map_results
 
   with open('/combiner_results.json', 'w') as result_file:
-    results = context.map_results if empty_combine else context.combine_results
     json.dump(results, result_file) 
   sizes['combinerOutput'] = os.path.getsize('/combiner_results.json')
 

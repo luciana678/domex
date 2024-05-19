@@ -471,7 +471,9 @@ export default function Slave() {
       {finished && (
         <>
           <Results title='Etapa map' data={mapCombinerResults.mapResults} />
-          <Results title='Etapa combiner' data={mapCombinerResults.combinerResults} />
+          {mapReduceState.code.combinerCode && (
+            <Results title='Etapa combiner' data={mapCombinerResults.combinerResults} />
+          )}
           <Results title='Etapa reduce' data={reduceResults} />
           <Statistics info={statistics} />
         </>

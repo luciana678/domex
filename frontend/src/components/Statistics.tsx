@@ -17,6 +17,11 @@ export function StatisticsCard({ title, data }: StatisticsType) {
             {statistic.label}: {statistic.value}
           </Typography>
         ))}
+        {!data.length && (
+          <Typography color='text.secondary' className='italic'>
+            Etapa no ejecutada
+          </Typography>
+        )}
       </CardContent>
     </Card>
   )
@@ -32,7 +37,6 @@ export function Statistics({
     }
   }
 }) {
-
   return (
     <>
       <Typography variant='h4' component='div' className='pt-4'>
@@ -41,16 +45,22 @@ export function Statistics({
       <div className='m-5 w-full grid grid-cols-[repeat(auto-fit,minmax(350px,1fr))] gap-5'>
         {info.statistics?.map((statistic, index) => <StatisticsCard key={index} {...statistic} />)}
       </div>
-      <Box className='flex flex-col justify-center items-center gap-2'>
-        <PieChart
-          {...info.charts.executionTime}
-          className='pl-[55px]'
-          margin={{
-            left: 100,
-          }}
-        />
-        <Typography className='italic'>Tiempos de ejecución de cada etapa</Typography>
-      </Box>
+
+      {info.charts.executionTime && (
+        <Box className='flex flex-col justify-center items-center gap-2'>
+          <PieChart
+            {...info.charts.executionTime}
+            className='pl-[55px]'
+            width={550}
+            height={300}
+            margin={{
+              left: 100,
+            }}
+          />
+          <Typography className='italic'>{info.charts.executionTime.description}</Typography>
+          <Typography className='italic text-xs'>{info.charts.executionTime.helperText}</Typography>
+        </Box>
+      )}
     </>
   )
 }
