@@ -45,9 +45,10 @@ const useRoom = () => {
     dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
   }, [destroyPeers, dispatchMapReduce, router, setRoomSession])
 
-  useEffect(() => {
-     return () => window.addEventListener('beforeunload', (_) => leaveRoom())
-   }, [leaveRoom])
+  // TODO: If this will be used, we need to solve the issue of peers reconnections, or remove this and solve the inconsistency of states when the user refreshes the page while is executing a map-reduce job
+  // useEffect(() => {
+  //   return () => window.addEventListener('beforeunload', (_) => leaveRoom())
+  // }, [leaveRoom])
 
   return {
     clusterUsers,
