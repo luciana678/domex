@@ -41,10 +41,6 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
       return next(new Error('USER_REQUIRED'))
     }
 
-    if (roomsSessionStore.isLocked(roomID)) {
-      return next(new Error('CLUSTER_LOCKED'))
-    }
-
     const existRoom = roomsSessionStore.existsRoom(roomID)
 
     // If the room exists and the user is trying to create a new room with the same ID
@@ -58,6 +54,10 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
     }
 
     const session = roomsSessionStore.findSession(roomID, sessionID)
+
+    if (!session && roomsSessionStore.isLocked(roomID)) {
+      return next(new Error('CLUSTER_LOCKED'))
+    }
 
     socket.sessionID = session ? sessionID : generateRandomUUID()
     socket.roomID = session ? roomID : roomID || generateRandomRoomId()
