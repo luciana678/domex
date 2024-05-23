@@ -84,7 +84,7 @@ export default function BasicAccordion({
             }}>
             {title}
           </Typography>
-          <span className='text-red-500 mr-2'>{error}</span>
+          <span className='text-red-500 mr-2 cursor-text select-text'>{error}</span>
           {loading && <CircularProgress size={25} />}
           {finished && <DoneIcon color='success' fontSize='large' />}
           {showLoadFileButton && (
