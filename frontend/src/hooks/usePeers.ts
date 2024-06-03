@@ -1,9 +1,12 @@
+import { ENVS } from '@/constants/envs'
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { UserID } from '@/types'
 import { getIceServers } from '@/utils/iceServers'
 import { useCallback, useContext } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
+
+const CHUNK_SIZE = ENVS.GENERAL.CHUNK_SIZE
 
 const usePeers = () => {
   const { peers, setPeers } = useContext(RoomContext)
@@ -51,8 +54,19 @@ const usePeers = () => {
 
       if (!peer) return
 
-      peer.send(JSON.stringify({ type: 'FILE_NAME', payload: file.name }))
-      peer.send(await file.arrayBuffer())
+      peer.write(JSON.stringify({ type: 'FILE_NAME', payload: file.name }))
+
+      const fileBuffer = await file.arrayBuffer()
+      const totalSize = fileBuffer.byteLength
+      let offset = 0
+
+      while (offset < totalSize) {
+        const chunk = fileBuffer.slice(offset, offset + CHUNK_SIZE)
+        peer.write(Buffer.from(chunk))
+        offset += CHUNK_SIZE
+      }
+
+      console.log('File sent successfully:', file.name)
     },
     [peers],
   )

@@ -3,13 +3,16 @@
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
 import { UserID } from '@/types'
-import { useCallback, useContext, useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useRef } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
 import usePeers from './usePeers'
 import useMapReduce from './useMapReduce'
 import { Action } from '@/context/MapReduceContext'
 import { handleActionSignal } from '@/utils/handleActions'
 import useFiles from './useFiles'
+import { ENVS } from '@/constants/envs'
+
+const CHUNK_SIZE = ENVS.GENERAL.CHUNK_SIZE
 
 const useInitializePeers = () => {
   const { peers, setPeers, setClusterUsers, clusterUsers } = useContext(RoomContext)
@@ -17,7 +20,8 @@ const useInitializePeers = () => {
   const { dispatchMapReduce } = useMapReduce()
   const { handleReceivingFiles } = useFiles()
 
-  const [fileNames, setFileNames] = useState<string[]>([])
+  const fileNamesRef = useRef<string[]>([])
+  const fileChunksRef = useRef<{ [key: string]: Buffer[] }>({})
 
   useEffect(() => {
     const onWebRTCUserJoined = (payload: { signal: SignalData; callerID: UserID }) => {
@@ -45,27 +49,42 @@ const useInitializePeers = () => {
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
-        try {
-          const decodedData: Action = JSON.parse(data.toString('utf8'))
-          if (decodedData.type === 'FILE_NAME') {
-            setFileNames((fileNames) => [...fileNames, decodedData.payload])
-            return
+        // Check if the data is a JSON object or a binary file
+        if (data.toString().startsWith('{')) {
+          try {
+            const decodedData: Action = JSON.parse(data.toString('utf8'))
+
+            // Receive the file name before the file chunks
+            if (decodedData.type === 'FILE_NAME') {
+              // Save the file name in the queue to receive the file chunks
+              fileNamesRef.current = [...fileNamesRef.current, decodedData.payload]
+              fileChunksRef.current[decodedData.payload] = []
+              return
+            }
+
+            decodedData['userID'] = userID
+            decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
+            handleActionSignal({ action: decodedData, setClusterUsers })
+            dispatchMapReduce(decodedData)
+            handleReceivingFiles(decodedData)
+          } catch (err) {
+            console.error('Error parsing JSON data:', err)
           }
-          decodedData['userID'] = userID
-          decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
-          handleActionSignal({ action: decodedData, setClusterUsers })
-          dispatchMapReduce(decodedData)
-          handleReceivingFiles(decodedData)
-        } catch (err) {
-          // If the data is not a JSON, it is a file buffer: Breaks when trying to parse it to string
-          setFileNames((fileNames) => {
-            const [name, ...rest] = fileNames
-            const fileData = data as ArrayBuffer
-            const file = new File([fileData], name as string)
-            const action: Action = { type: 'ADD_FILES', payload: [file] }
-            name && handleReceivingFiles(action)
-            return [...rest]
-          })
+        } else {
+          const currentFileName = fileNamesRef.current[0]
+          if (currentFileName) {
+            fileChunksRef.current[currentFileName].push(data)
+            if (data.byteLength < CHUNK_SIZE) {
+              const fileBuffer = new Blob(fileChunksRef.current[currentFileName])
+              const file = new File([fileBuffer], currentFileName)
+              const action: Action = { type: 'ADD_FILES', payload: [file] }
+              handleReceivingFiles(action)
+              delete fileChunksRef.current[currentFileName]
+              fileNamesRef.current = fileNamesRef.current.slice(1)
+            }
+          } else {
+            console.error('Received binary data but no file name in the queue')
+          }
         }
       }
 
@@ -85,7 +104,6 @@ const useInitializePeers = () => {
             return user
           }),
         )
-        // delete peersRef.current[userID]
       }
 
       const handlePeerConnect = () => {
@@ -101,11 +119,8 @@ const useInitializePeers = () => {
       }
 
       peer.on('connect', handlePeerConnect)
-
       peer.on('data', handleReceivingData(userID))
-
       peer.on('error', handlePeerError)
-
       peer.on('close', handlePeerClose)
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
