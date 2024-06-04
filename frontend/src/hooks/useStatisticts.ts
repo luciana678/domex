@@ -131,8 +131,8 @@ export default function useStatistics({
       executionTime: showExecutionTimeGraph && {
         series: [
           {
-            arcLabel: (item) => `${item.label} (${formatTime(item.value)})`,
-            valueFormatter: (data) => formatTime(data.value),
+            arcLabel: (item: any) => `${item.label} (${formatTime(item.value)})`,
+            valueFormatter: (data: any) => formatTime(data.value),
             arcLabelMinAngle: 1,
             data: [
               { label: 'Map', value: isMaster ? times.avgMapTime : sizes.mapCodeTime },
