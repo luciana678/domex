@@ -70,6 +70,13 @@ const useInitializePeers = () => {
 
             try {
               const decodedData: Action = JSON.parse(completeMessage.toString('utf8'))
+
+              if (decodedData.type === 'FILE_NAME') {
+                fileNamesRef.current = [...fileNamesRef.current, decodedData.payload]
+                fileChunksRef.current[decodedData.payload] = []
+                return
+              }
+
               decodedData['userID'] = userID
               decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)
                 ?.userName
@@ -79,22 +86,6 @@ const useInitializePeers = () => {
             } catch (err) {
               console.error('Error parsing complete message:', err)
             }
-          }
-        } else if (data.toString().startsWith('{')) {
-          try {
-            const decodedData: Action = JSON.parse(data.toString('utf8'))
-            if (decodedData.type === 'FILE_NAME') {
-              fileNamesRef.current = [...fileNamesRef.current, decodedData.payload]
-              fileChunksRef.current[decodedData.payload] = []
-              return
-            }
-            decodedData['userID'] = userID
-            decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
-            handleActionSignal({ action: decodedData, setClusterUsers })
-            dispatchMapReduce(decodedData)
-            handleReceivingFiles(decodedData)
-          } catch (err) {
-            console.error('Error parsing JSON data:', err)
           }
         } else if (fileNamesRef.current.length > 0) {
           const currentFileName = fileNamesRef.current[0]

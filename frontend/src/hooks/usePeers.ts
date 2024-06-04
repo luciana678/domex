@@ -40,11 +40,6 @@ const usePeers = () => {
       const dataString = JSON.stringify(data)
       const dataBuffer = Buffer.from(dataString, 'utf8')
 
-      if (dataBuffer.length <= CHUNK_SIZE) {
-        peer.write(dataBuffer)
-        return dataBuffer.length
-      }
-
       const totalChunks = Math.ceil(dataBuffer.length / CHUNK_SIZE)
       let sentBytes = 0
 
@@ -68,7 +63,7 @@ const usePeers = () => {
 
       if (!peer) return
 
-      peer.write(JSON.stringify({ type: 'FILE_NAME', payload: file.name }))
+      sendDirectMessage(userID, { type: 'FILE_NAME', payload: file.name })
 
       const fileBuffer = await file.arrayBuffer()
       const totalSize = fileBuffer.byteLength
@@ -82,7 +77,7 @@ const usePeers = () => {
 
       console.log('File sent successfully:', file.name)
     },
-    [peers],
+    [peers, sendDirectMessage],
   )
 
   const broadcastMessage = useCallback(
