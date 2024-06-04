@@ -5,6 +5,7 @@ import { UserID } from '@/types'
 import { getIceServers } from '@/utils/iceServers'
 import { useCallback, useContext } from 'react'
 import SimplePeer, { SignalData } from 'simple-peer'
+import { v4 as uuidv4 } from 'uuid'
 
 const CHUNK_SIZE = ENVS.GENERAL.CHUNK_SIZE
 
@@ -47,7 +48,7 @@ const usePeers = () => {
         const start = i * CHUNK_SIZE
         const end = (i + 1) * CHUNK_SIZE
         const chunk = dataBuffer.subarray(start, end)
-        const chunkHeader = JSON.stringify({ type: 'CHUNK', totalChunks, chunkIndex: i })
+        const chunkHeader = JSON.stringify({ type: 'MSG_CHUNK', totalChunks, chunkIndex: i })
         peer.write(Buffer.concat([Buffer.from(chunkHeader), chunk]))
         sentBytes += chunk.length
       }
@@ -60,22 +61,34 @@ const usePeers = () => {
   const sendFile = useCallback(
     async (userID: UserID, file: File) => {
       const peer = peers[userID]
-
       if (!peer) return
 
-      sendDirectMessage(userID, { type: 'FILE_NAME', payload: file.name })
-
-      const fileBuffer = await file.arrayBuffer()
-      const totalSize = fileBuffer.byteLength
-      let offset = 0
-
-      while (offset < totalSize) {
-        const chunk = fileBuffer.slice(offset, offset + CHUNK_SIZE)
-        peer.write(Buffer.from(chunk))
-        offset += CHUNK_SIZE
+      const fileUUID = uuidv4()
+      const fileNameMessage = {
+        type: 'FILE_NAME',
+        payload: { uuid: fileUUID, name: file.name },
       }
 
-      console.log('File sent successfully:', file.name)
+      sendDirectMessage(userID, fileNameMessage)
+
+      const arrayBuffer = await file.arrayBuffer()
+      const totalChunks = Math.ceil(arrayBuffer.byteLength / CHUNK_SIZE)
+      const fileBuffer = Buffer.from(arrayBuffer)
+
+      for (let i = 0; i < totalChunks; i++) {
+        const start = i * CHUNK_SIZE
+        const end = (i + 1) * CHUNK_SIZE
+        const chunk = fileBuffer.subarray(start, end)
+        const chunkHeader = JSON.stringify({
+          type: 'FILE_CHUNK',
+          uuid: fileUUID,
+          chunkIndex: i,
+          totalChunks,
+        })
+        peer.write(Buffer.concat([Buffer.from(chunkHeader, 'utf8'), chunk]))
+      }
+
+      console.log('File sent:', file.name, 'UUID:', fileUUID)
     },
     [peers, sendDirectMessage],
   )

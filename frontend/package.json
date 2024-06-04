@@ -39,7 +39,8 @@
     "socket.io-client": "4.7.2",
     "sonner": "1.4.41",
     "tailwind-merge": "2.3.0",
-    "tailwindcss-animate": "1.0.7"
+    "tailwindcss-animate": "1.0.7",
+    "uuid": "9.0.1"
   },
   "devDependencies": {
     "@types/node": "20.10.4",
@@ -47,6 +48,7 @@
     "@types/react-data-grid": "4.0.12",
     "@types/react-dom": "18",
     "@types/simple-peer": "9.11.8",
+    "@types/uuid": "9.0.8",
     "autoprefixer": "10.0.1",
     "eslint": "8",
     "eslint-config-next": "14.0.4",

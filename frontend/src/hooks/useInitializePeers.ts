@@ -20,8 +20,8 @@ const useInitializePeers = () => {
   const { dispatchMapReduce } = useMapReduce()
   const { handleReceivingFiles } = useFiles()
 
-  const fileNamesRef = useRef<string[]>([])
-  const fileChunksRef = useRef<{ [key: string]: Buffer[] }>({})
+  const fileNamesRef = useRef<{ [uuid: string]: string }>({})
+  const fileChunksRef = useRef<{ [uuid: string]: Buffer[] }>({})
   const messageChunksRef = useRef<{ [userID: UserID]: { totalChunks: number; chunks: Buffer[] } }>(
     {},
   )
@@ -52,11 +52,11 @@ const useInitializePeers = () => {
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
-        if (data.toString().startsWith('{"type":"CHUNK"')) {
-          const headerEndIndex = data.indexOf('}') + 1
-          const chunkHeader = JSON.parse(data.slice(0, headerEndIndex).toString('utf8'))
-          const chunkData = data.slice(headerEndIndex)
+        const headerEndIndex = data.indexOf('}') + 1
+        const chunkHeader = JSON.parse(data.subarray(0, headerEndIndex).toString('utf8'))
+        const chunkData = data.subarray(headerEndIndex)
 
+        if (chunkHeader.type === 'MSG_CHUNK') {
           if (!messageChunksRef.current[userID]) {
             messageChunksRef.current[userID] = { totalChunks: chunkHeader.totalChunks, chunks: [] }
           }
@@ -64,7 +64,7 @@ const useInitializePeers = () => {
           messageChunksRef.current[userID].chunks[chunkHeader.chunkIndex] = chunkData
 
           const { totalChunks, chunks } = messageChunksRef.current[userID]
-          if (chunks.length === totalChunks && chunks.every((chunk) => chunk !== undefined)) {
+          if (chunks.filter((chunk) => chunk !== undefined).length === totalChunks) {
             const completeMessage = Buffer.concat(chunks)
             delete messageChunksRef.current[userID]
 
@@ -72,8 +72,9 @@ const useInitializePeers = () => {
               const decodedData: Action = JSON.parse(completeMessage.toString('utf8'))
 
               if (decodedData.type === 'FILE_NAME') {
-                fileNamesRef.current = [...fileNamesRef.current, decodedData.payload]
-                fileChunksRef.current[decodedData.payload] = []
+                const { uuid, name } = decodedData.payload
+                fileNamesRef.current[uuid] = name
+                fileChunksRef.current[uuid] = []
                 return
               }
 
@@ -87,21 +88,29 @@ const useInitializePeers = () => {
               console.error('Error parsing complete message:', err)
             }
           }
-        } else if (fileNamesRef.current.length > 0) {
-          const currentFileName = fileNamesRef.current[0]
-          if (currentFileName) {
-            fileChunksRef.current[currentFileName].push(data)
-            if (data.byteLength < CHUNK_SIZE) {
-              const fileBuffer = new Blob(fileChunksRef.current[currentFileName])
-              const file = new File([fileBuffer], currentFileName)
-              const action: Action = { type: 'ADD_FILES', payload: [file] }
-              handleReceivingFiles(action)
-              delete fileChunksRef.current[currentFileName]
-              fileNamesRef.current = fileNamesRef.current.slice(1)
-            }
-          } else {
-            console.error('Received binary data but no file name in the queue')
+        } else if (chunkHeader.type === 'FILE_CHUNK') {
+          const { uuid, chunkIndex, totalChunks } = chunkHeader
+
+          if (!fileChunksRef.current[uuid]) {
+            fileChunksRef.current[uuid] = []
           }
+
+          fileChunksRef.current[uuid][chunkIndex] = chunkData
+
+          if (
+            fileChunksRef.current[uuid].filter((chunk) => chunk !== undefined).length ===
+            totalChunks
+          ) {
+            const completeFileBuffer = Buffer.concat(fileChunksRef.current[uuid])
+            const fileName = fileNamesRef.current[uuid]
+            const file = new File([completeFileBuffer], fileName)
+            const action: Action = { type: 'ADD_FILES', payload: [file] }
+            handleReceivingFiles(action)
+            delete fileChunksRef.current[uuid]
+            delete fileNamesRef.current[uuid]
+          }
+        } else {
+          console.error('Received unknown data type:', chunkHeader.type)
         }
       }
 
