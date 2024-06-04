@@ -133,7 +133,7 @@ export default function useStatistics({
           {
             arcLabel: (item: any) => `${item.label} (${formatTime(item.value)})`,
             valueFormatter: (data: any) => formatTime(data.value),
-            arcLabelMinAngle: 1,
+            arcLabelMinAngle: 10,
             data: [
               { label: 'Map', value: isMaster ? times.avgMapTime : sizes.mapCodeTime },
               {
