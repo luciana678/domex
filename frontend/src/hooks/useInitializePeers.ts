@@ -22,6 +22,9 @@ const useInitializePeers = () => {
 
   const fileNamesRef = useRef<string[]>([])
   const fileChunksRef = useRef<{ [key: string]: Buffer[] }>({})
+  const messageChunksRef = useRef<{ [userID: UserID]: { totalChunks: number; chunks: Buffer[] } }>(
+    {},
+  )
 
   useEffect(() => {
     const onWebRTCUserJoined = (payload: { signal: SignalData; callerID: UserID }) => {
@@ -49,19 +52,42 @@ const useInitializePeers = () => {
   const onEventsOfPeer = useCallback(
     (peer: SimplePeer.Instance, userID: UserID) => {
       const handleReceivingData = (userID: UserID) => (data: Buffer) => {
-        // Check if the data is a JSON object or a binary file
-        if (data.toString().startsWith('{')) {
+        if (data.toString().startsWith('{"type":"CHUNK"')) {
+          const headerEndIndex = data.indexOf('}') + 1
+          const chunkHeader = JSON.parse(data.slice(0, headerEndIndex).toString('utf8'))
+          const chunkData = data.slice(headerEndIndex)
+
+          if (!messageChunksRef.current[userID]) {
+            messageChunksRef.current[userID] = { totalChunks: chunkHeader.totalChunks, chunks: [] }
+          }
+
+          messageChunksRef.current[userID].chunks[chunkHeader.chunkIndex] = chunkData
+
+          const { totalChunks, chunks } = messageChunksRef.current[userID]
+          if (chunks.length === totalChunks && chunks.every((chunk) => chunk !== undefined)) {
+            const completeMessage = Buffer.concat(chunks)
+            delete messageChunksRef.current[userID]
+
+            try {
+              const decodedData: Action = JSON.parse(completeMessage.toString('utf8'))
+              decodedData['userID'] = userID
+              decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)
+                ?.userName
+              handleActionSignal({ action: decodedData, setClusterUsers })
+              dispatchMapReduce(decodedData)
+              handleReceivingFiles(decodedData)
+            } catch (err) {
+              console.error('Error parsing complete message:', err)
+            }
+          }
+        } else if (data.toString().startsWith('{')) {
           try {
             const decodedData: Action = JSON.parse(data.toString('utf8'))
-
-            // Receive the file name before the file chunks
             if (decodedData.type === 'FILE_NAME') {
-              // Save the file name in the queue to receive the file chunks
               fileNamesRef.current = [...fileNamesRef.current, decodedData.payload]
               fileChunksRef.current[decodedData.payload] = []
               return
             }
-
             decodedData['userID'] = userID
             decodedData['userName'] = clusterUsers.find((user) => user.userID === userID)?.userName
             handleActionSignal({ action: decodedData, setClusterUsers })
@@ -70,7 +96,7 @@ const useInitializePeers = () => {
           } catch (err) {
             console.error('Error parsing JSON data:', err)
           }
-        } else {
+        } else if (fileNamesRef.current.length > 0) {
           const currentFileName = fileNamesRef.current[0]
           if (currentFileName) {
             fileChunksRef.current[currentFileName].push(data)
