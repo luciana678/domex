@@ -170,6 +170,7 @@ const useInitializeRoom = () => {
         CLUSTER_LOCKED: 'El cluster está bloqueado',
         CLUSTERID_EXISTS: 'Ya existe un cluster con el mismo identificador',
         CLUSTERID_NOT_EXISTS: 'No existe un cluster con el identificador proporcionado',
+        NODENAME_EXISTS: 'Ya existe un nodo con el mismo nombre',
       }
 
       sessionStorage.removeItem('session')

@@ -44,6 +44,14 @@ export class InMemoryRoomSessionStore implements RoomSessionStore {
     return this.rooms.has(roomID)
   }
 
+  isUniqueNodeName = (roomID: RoomID, userName: string): boolean => {
+    const room = this.rooms.get(roomID)
+
+    if (!room) return true
+
+    return ![...room.sessions.values()].some((session) => session.userName === userName)
+  }
+
   toggleRoomLock = (roomID: RoomID, lock: boolean): void => {
     const room = this.rooms.get(roomID)
     if (!room) return

@@ -59,6 +59,10 @@ export const createIOServer = (server: http.Server | https.Server): Server => {
       return next(new Error('CLUSTER_LOCKED'))
     }
 
+    if (!session && !roomsSessionStore.isUniqueNodeName(roomID, userName)) {
+      return next(new Error('NODENAME_EXISTS'))
+    }
+
     socket.sessionID = session ? sessionID : generateRandomUUID()
     socket.roomID = session ? roomID : roomID || generateRandomRoomId()
     socket.userID = session?.userID ?? generateRandomUUID()
