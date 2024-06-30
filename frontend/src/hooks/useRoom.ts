@@ -2,7 +2,7 @@
 
 import RoomContext from '@/context/RoomContext'
 import { socket } from '@/socket'
-import { RoomID } from '@/types'
+import { RoomID, UserID } from '@/types'
 import { useRouter } from 'next/navigation'
 import { useCallback, useContext, useEffect } from 'react'
 import usePeers from '@/hooks/usePeers'
@@ -35,15 +35,20 @@ const useRoom = () => {
 
   const toggleRoomLock = useCallback((lock: boolean) => socket.emit('room:toggle-lock', lock), [])
 
-  const leaveRoom = useCallback(() => {
-    socket.emit('room:leave-room')
-    sessionStorage.clear()
-    socket.disconnect()
-    setRoomSession(null)
-    destroyPeers()
-    router.push('/')
-    dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
-  }, [destroyPeers, dispatchMapReduce, router, setRoomSession])
+  const kickUser = useCallback((userID: UserID) => socket.emit('room:kick-user', userID), [])
+
+  const leaveRoom = useCallback(
+    (kicked = false) => {
+      socket.emit('room:leave-room', kicked)
+      sessionStorage.clear()
+      socket.disconnect()
+      setRoomSession(null)
+      destroyPeers()
+      router.push('/')
+      dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
+    },
+    [destroyPeers, dispatchMapReduce, router, setRoomSession],
+  )
 
   // TODO: If this will be used, we need to solve the issue of peers reconnections, or remove this and solve the inconsistency of states when the user refreshes the page while is executing a map-reduce job
   // useEffect(() => {
@@ -55,6 +60,7 @@ const useRoom = () => {
     roomSession,
     joinCluster,
     leaveRoom,
+    kickUser,
     roomOwner,
     isReadyToExecute,
     setIsReadyToExecute,

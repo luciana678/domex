@@ -15,7 +15,7 @@ export default function NodeList() {
       className='bg-white shadow-lg border border-gray-300 rounded-md w-full max-w-[500px]'
       variant='outlined'>
       <CardContent>
-        <h2 className='text-lg font-semibold text-center mb-3'>Nodos</h2>
+        <h2 className='text-lg font-semibold text-center'>Nodos</h2>
 
         <Box className='max-h-[300px] overflow-auto'>
           {!clusterUsers.length ? (

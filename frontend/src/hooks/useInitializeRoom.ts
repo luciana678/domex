@@ -6,15 +6,17 @@ import { Peers, RoomID, RoomSession, SessionID, BaseUser, UserID, User } from '@
 import { usePathname, useRouter } from 'next/navigation'
 import { useContext, useEffect } from 'react'
 import useInitializePeers from './useInitializePeers'
-import usePeers from './usePeers'
-import useRoom from './useRoom'
+import usePeers from '@/hooks/usePeers'
+import useRoom from '@/hooks/useRoom'
 import { toast } from 'sonner'
-import useAlertModal from './useAlertModal'
+import useAlertModal from '@/hooks/useAlertModal'
+import useMapReduce from '@/hooks/useMapReduce'
 
 const useInitializeRoom = () => {
   useInitializePeers()
   const { clusterUsers, setClusterUsers, setRoomSession, setPeers, roomOwner } =
     useContext(RoomContext)
+  const { dispatchMapReduce } = useMapReduce()
   const router = useRouter()
   const pathname = usePathname()
   const { deletePeer, createPeer, broadcastMessage } = usePeers()
@@ -92,6 +94,7 @@ const useInitializeRoom = () => {
     }
 
     const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
+      console.log('ENTRO ACA??')
       const isOwner = roomOwner?.userID === userID
 
       if (isOwner) {
@@ -164,6 +167,21 @@ const useInitializeRoom = () => {
       }
     }
 
+    const onUserKicked = ({ userID }: { userID: UserID }) => {
+      if (socket.userID === userID) {
+        toast.error('Has sido expulsado de la sala')
+        return leaveRoom(true)
+      }
+
+      setClusterUsers((prevUsers) => prevUsers.filter((user) => user.userID !== userID))
+      deletePeer(userID)
+
+      const user = clusterUsers.find((user) => user.userID === userID)
+      toast.error(`${user?.userName} ha sido expulsado de la sala`)
+
+      if (user?.readyToExecuteMap) dispatchMapReduce({ type: 'RESET_READY_TO_EXECUTE' })
+    }
+
     const onConnectError = (err: Error) => {
       const messages = {
         USER_REQUIRED: 'El nombre de usuario es requerido',
@@ -187,6 +205,7 @@ const useInitializeRoom = () => {
     socket.on('room:user-connected', onUserConnected)
     socket.on('room:user-leave', onUserLeave)
     socket.on('room:user-disconnected', onUserDisconnected)
+    socket.on('room:user-kicked', onUserKicked)
     socket.on('connect_error', onConnectError)
 
     return () => {
@@ -195,6 +214,7 @@ const useInitializeRoom = () => {
       socket.off('room:user-connected', onUserConnected)
       socket.off('room:user-leave', onUserLeave)
       socket.off('room:user-disconnected', onUserDisconnected)
+      socket.off('room:user-kicked', onUserKicked)
       socket.off('connect_error', onConnectError)
     }
   }, [
@@ -210,6 +230,7 @@ const useInitializeRoom = () => {
     setRoomSession,
     broadcastMessage,
     showConfirmAlert,
+    dispatchMapReduce,
   ])
 }
 

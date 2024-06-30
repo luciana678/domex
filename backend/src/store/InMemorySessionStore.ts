@@ -1,4 +1,4 @@
-import { type RoomID, type Rooms, type Session, type SessionID } from '../types.js'
+import { type UserID, type RoomID, type Rooms, type Session, type SessionID } from '../types.js'
 import { type RoomSessionStore } from './RoomSessionStore.js'
 
 export class InMemoryRoomSessionStore implements RoomSessionStore {
@@ -50,6 +50,16 @@ export class InMemoryRoomSessionStore implements RoomSessionStore {
     if (!room) return true
 
     return ![...room.sessions.values()].some((session) => session.userName === userName)
+  }
+
+  kickUser = (roomID: RoomID, userID: UserID): void => {
+    const room = this.rooms.get(roomID)
+    if (!room) return
+    const sessionID = [...room.sessions.entries()].find(
+      ([_, session]) => session.userID === userID,
+    )?.[0]
+    if (!sessionID) return
+    room.sessions.delete(sessionID)
   }
 
   toggleRoomLock = (roomID: RoomID, lock: boolean): void => {

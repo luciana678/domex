@@ -97,7 +97,7 @@ export default function Navbar({ title }: { title: string }) {
                 </Box>
               </MenuItem>
               <ListDivider />
-              <MenuItem onClick={leaveRoom}>
+              <MenuItem onClick={() => leaveRoom()}>
                 <LogoutRoundedIcon />
                 <span className='ml-2'>{isRoomOwner ? 'Cerrar cluster' : 'Abandonar cluster'}</span>
               </MenuItem>
