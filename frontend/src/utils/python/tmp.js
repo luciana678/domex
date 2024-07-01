@@ -39,6 +39,10 @@ def safe_execute(name, func):
       json.dump({name: f"[{name}] -> {str(e)}"}, errors_file)
     sys.exit(0)
 
+def safe_key_write(dict_to_write, file_name):
+  with open(file_name, 'w') as file:
+    json.dump({str(k) if isinstance(k, tuple) else k: v for k, v in dict_to_write.items()}, file)
+
 context = Context()
 
 sizes = {}
@@ -52,12 +56,13 @@ if os.path.exists('/reduce_keys.json'):
     reduce_keys = json.load(reduce_keys_file)
   sizes['reduceInput'] = os.path.getsize("/reduce_keys.json")
 
-  safe_execute('reduceCode', lambda: context.reduce(reduce_keys))
+  safe_execute('reduceCode', lambda: context.reduce({eval(k) if k.startswith("(") and k.endswith(")") else k: v for k, v in reduce_keys.items()}))
 
-  with open('/reduce_results.json', 'w') as result_file:
-    json.dump(context.reduce_results, result_file)
+  safe_key_write(context.reduce_results, '/reduce_results.json')
+
   sizes['reduceOutput'] = os.path.getsize("/reduce_results.json")
   sizes['reduceCount'] = len(context.reduce_results)
+
   print("REDUCE EJECUTADO SATISFACTORIAMENTE")
 
 else:
@@ -70,8 +75,8 @@ else:
   sizes['mapInput'] = os.path.getsize("/input.txt")
   sizes['mapCount'] = len(input_lines)
 
-  with open('/map_results.json', 'w') as result_file:
-    json.dump(context.map_results, result_file)
+  safe_key_write(context.map_results, '/map_results.json')
+  
   sizes['mapOutput'] = os.path.getsize('/map_results.json')
   print("MAP EJECUTADO SATISFACTORIAMENTE")
 
@@ -89,8 +94,8 @@ else:
     sizes['combinerCount'] = 0
     results = context.map_results
 
-  with open('/combiner_results.json', 'w') as result_file:
-    json.dump(results, result_file) 
+  safe_key_write(results, '/combiner_results.json')
+
   sizes['combinerOutput'] = os.path.getsize('/combiner_results.json')
 
   if not empty_combine:
