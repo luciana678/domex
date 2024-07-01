@@ -55,7 +55,7 @@ export async function concatenateFiles(files: File[]) {
   try {
     const readPromises = files.map((file) => file.text())
     const contents = await Promise.all(readPromises)
-    const concatenatedContent = contents.join('\n')
+    const concatenatedContent = contents.map((content) => content.trimEnd()).join('\n')
     return concatenatedContent
   } catch (error) {
     console.error('Error concatenando archivos:', error)
