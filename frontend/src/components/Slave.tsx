@@ -9,7 +9,6 @@ import { placeholdersFunctions } from '@/constants/functionCodes'
 import { socket } from '@/socket'
 
 import { concatenateFiles, resetPythonFiles } from '@/utils/helpers'
-import { PY_MAIN_CODE } from '@/utils/python/tmp'
 
 import useFiles from '@/hooks/useFiles'
 import useMapReduce from '@/hooks/useMapReduce'
@@ -53,7 +52,7 @@ export default function Slave() {
 
   const { sendDirectMessage, broadcastMessage } = usePeers()
 
-  const { mapReduceState } = useMapReduce()
+  const { mapReduceState, MapReduceJobCode } = useMapReduce()
 
   const { selectedFiles, deleteFile, fileTrees } = useFiles()
 
@@ -191,7 +190,7 @@ export default function Slave() {
       await writeFile('/map_code.py', mapReduceState.code.mapCode)
       await writeFile('/combine_code.py', mapReduceState.code.combineCode)
       await writeFile('/reduce_code.py', mapReduceState.code.reduceCode)
-      await runPython(PY_MAIN_CODE)
+      await runPython(MapReduceJobCode)
 
       const errors = await readErrors()
       if (errors || executionStopped.current) {
@@ -244,6 +243,7 @@ export default function Slave() {
     writeFile,
     mapCombineResults,
     readErrors,
+    MapReduceJobCode,
   ])
 
   useEffect(() => {
@@ -341,7 +341,7 @@ export default function Slave() {
 
     const readResult = async () => {
       await writeFile('/reduce_keys.json', JSON.stringify(newReduceKeys))
-      await runPython(PY_MAIN_CODE)
+      await runPython(MapReduceJobCode)
 
       const errors = await readErrors()
       if (errors || executionStopped.current) {
@@ -399,6 +399,7 @@ export default function Slave() {
     readErrors,
     setIsReadyToExecute,
     isReducerNode,
+    MapReduceJobCode,
   ])
 
   return (
