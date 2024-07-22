@@ -81,22 +81,22 @@ else:
   print("MAP EJECUTADO SATISFACTORIAMENTE")
 
   empty_combine = False
-  with open('/combiner_code.py') as combiner_code:
-    code = combiner_code.read()
+  with open('/combine_code.py') as combine_code:
+    code = combine_code.read()
     empty_combine = not code.strip()
     exec(code)
 
   if not empty_combine:
-    safe_execute('combinerCode', lambda: context.combine())
-    sizes['combinerCount'] = len(context.map_results)
+    safe_execute('combineCode', lambda: context.combine())
+    sizes['combineCount'] = len(context.map_results)
     results = context.combine_results
   else:
-    sizes['combinerCount'] = 0
+    sizes['combineCount'] = 0
     results = context.map_results
 
-  safe_key_write(results, '/combiner_results.json')
+  safe_key_write(results, '/combine_results.json')
 
-  sizes['combinerOutput'] = os.path.getsize('/combiner_results.json')
+  sizes['combineOutput'] = os.path.getsize('/combine_results.json')
 
   if not empty_combine:
     print("COMBINE EJECUTADO SATISFACTORIAMENTE")

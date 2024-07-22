@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react'
 
-import { FinalResults, KeyValue, KeyValues, MapCombinerResults, Sizes, UserID } from '@/types'
+import { FinalResults, KeyValue, KeyValues, MapCombineResults, Sizes, UserID } from '@/types'
 
 import { placeholdersFunctions } from '@/constants/functionCodes'
 
@@ -30,14 +30,14 @@ import Output from '@/components/Output'
 import Results from '@/components/Results'
 import { FolderList } from '@/components/ui/FolderTree'
 
-const initialMapCombinerResults: MapCombinerResults = {
+const initialMapCombineResults: MapCombineResults = {
   mapResults: {},
-  combinerResults: {},
+  combineResults: {},
 }
 
 const initialFinalResults: FinalResults = {
   mapTotalCount: {},
-  combinerTotalCount: {},
+  combineTotalCount: {},
   sizes: initialSizes,
 }
 
@@ -57,15 +57,15 @@ export default function Slave() {
 
   const { selectedFiles, deleteFile, fileTrees } = useFiles()
 
-  const [mapCombinerResults, setMapCombinerResults] =
-    useState<MapCombinerResults>(initialMapCombinerResults)
+  const [mapCombineResults, setMapCombineResults] =
+    useState<MapCombineResults>(initialMapCombineResults)
   const [reduceResults, setReduceResults] = useState<KeyValue>({})
   const [finalResults, setFinalResults] = useState<FinalResults>(initialFinalResults)
 
   const [keysSent, setKeysSent] = useState(false)
   const [started, setStarted] = useState(false)
   const [finished, setFinished] = useState(false)
-  const [mapCombinerExecuted, setMapCombinerExecuted] = useState(false)
+  const [mapCombineExecuted, setMapCombineExecuted] = useState(false)
   const [executing, setExecuting] = useState(false)
 
   const { isReducerNode } = useExecutionStatus({ started, isReadyToExecute })
@@ -96,12 +96,12 @@ export default function Slave() {
     async (resetReadyToExecute: boolean) => {
       executionStopped.current = resetReadyToExecute
       isRunning && interruptExecution()
-      setMapCombinerResults(initialMapCombinerResults)
+      setMapCombineResults(initialMapCombineResults)
       setReduceResults({})
       setFinalResults(initialFinalResults)
       setKeysSent(false)
       setFinished(false)
-      setMapCombinerExecuted(false)
+      setMapCombineExecuted(false)
       setStarted(false)
       resetStdoutHistory()
       setExecuting(false)
@@ -153,17 +153,17 @@ export default function Slave() {
     return { ...newSizes }
   }, [readFile, selectedFiles.length])
 
-  const countKeyValues = (combinerResults: KeyValues) =>
-    Object.keys(combinerResults).reduce((result: { [key: string]: number }, key: string) => {
-      result[key] = combinerResults[key].length
+  const countKeyValues = (combineResults: KeyValues) =>
+    Object.keys(combineResults).reduce((result: { [key: string]: number }, key: string) => {
+      result[key] = combineResults[key].length
       return result
     }, {})
 
   useEffect(() => {
     // This useEffect will be executed when the map code has been received and the python module is ready to execute the map phase.
-    // The map combiner fase was be executed.
+    // The map combine fase was be executed.
     if (executing || executionStopped.current) return
-    if (mapCombinerExecuted) return
+    if (mapCombineExecuted) return
 
     if (mapReduceState.errors) return
 
@@ -178,18 +178,18 @@ export default function Slave() {
     const runCode = async () => {
       await runPython(resetPythonFiles)
 
-      const readMapCombinerResults = async (): Promise<MapCombinerResults> => {
+      const readMapCombineResults = async (): Promise<MapCombineResults> => {
         const mapResults: KeyValues = JSON.parse((await readFile('/map_results.json')) || '')
-        const combinerResults: KeyValues = JSON.parse(
-          (await readFile('/combiner_results.json')) || '',
+        const combineResults: KeyValues = JSON.parse(
+          (await readFile('/combine_results.json')) || '',
         )
-        return { mapResults, combinerResults }
+        return { mapResults, combineResults }
       }
 
-      setMapCombinerResults(initialMapCombinerResults)
+      setMapCombineResults(initialMapCombineResults)
       await writeFile('/input.txt', await concatenateFiles(selectedFiles))
       await writeFile('/map_code.py', mapReduceState.code.mapCode)
-      await writeFile('/combiner_code.py', mapReduceState.code.combinerCode)
+      await writeFile('/combine_code.py', mapReduceState.code.combineCode)
       await writeFile('/reduce_code.py', mapReduceState.code.reduceCode)
       await runPython(PY_MAIN_CODE)
 
@@ -200,23 +200,23 @@ export default function Slave() {
         return
       }
 
-      const mapCombinerResults = await readMapCombinerResults()
-      setMapCombinerExecuted(true)
-      setMapCombinerResults(mapCombinerResults)
+      const mapCombineResults = await readMapCombineResults()
+      setMapCombineExecuted(true)
+      setMapCombineResults(mapCombineResults)
       const newSizes = await readSizes()
       updateSizes(newSizes)
 
       const finalResults: Partial<FinalResults> = {
-        mapTotalCount: countKeyValues(mapCombinerResults.mapResults),
-        combinerTotalCount: countKeyValues(mapCombinerResults.combinerResults),
+        mapTotalCount: countKeyValues(mapCombineResults.mapResults),
+        combineTotalCount: countKeyValues(mapCombineResults.combineResults),
       }
 
       setFinalResults((prevResults) => ({ ...prevResults, ...finalResults }))
 
       const data = {
-        type: 'MAP_COMBINER_EJECUTADO',
+        type: 'MAP_COMBINE_EJECUTADO',
         payload: {
-          combinerResults: finalResults.combinerTotalCount,
+          combineResults: finalResults.combineTotalCount,
           mapResults: finalResults.mapTotalCount,
         },
       }
@@ -230,9 +230,9 @@ export default function Slave() {
   }, [
     executing,
     isReady,
-    mapCombinerExecuted,
+    mapCombineExecuted,
     mapReduceState.errors,
-    mapReduceState.code.combinerCode,
+    mapReduceState.code.combineCode,
     mapReduceState.code.mapCode,
     mapReduceState.code.reduceCode,
     readFile,
@@ -242,14 +242,14 @@ export default function Slave() {
     selectedFiles,
     sendDirectMessage,
     writeFile,
-    mapCombinerResults,
+    mapCombineResults,
     readErrors,
   ])
 
   useEffect(() => {
-    // That means that the combiner has been executed. Now we can send the keys to the other users (reducers)
+    // That means that the combine has been executed. Now we can send the keys to the other users (reducers)
     if (finished || executionStopped.current) return
-    if (!mapCombinerExecuted) return
+    if (!mapCombineExecuted) return
     if (keysSent) return
 
     if (!mapReduceState.sendKeys) return
@@ -264,12 +264,12 @@ export default function Slave() {
     Object.entries(mapReduceState.sendKeys).forEach(([user, keys]) => {
       totalKeysSent += keys.length
       totalValuesSent += keys.reduce(
-        (acc, key) => acc + mapCombinerResults.combinerResults[key].length,
+        (acc, key) => acc + mapCombineResults.combineResults[key].length,
         0,
       )
 
       const keysForUser: { [key: string]: unknown[] } = {}
-      keys.forEach((key) => (keysForUser[key] = mapCombinerResults.combinerResults[key]))
+      keys.forEach((key) => (keysForUser[key] = mapCombineResults.combineResults[key]))
 
       totalBytesSent += sendDirectMessage(user as UserID, {
         type: 'RECIBIR_CLAVES',
@@ -285,22 +285,22 @@ export default function Slave() {
 
     setKeysSent(true)
   }, [
-    mapCombinerResults.combinerResults,
+    mapCombineResults.combineResults,
     finished,
-    mapCombinerExecuted,
+    mapCombineExecuted,
     sendDirectMessage,
     mapReduceState.sendKeys,
     keysSent,
   ])
 
   useEffect(() => {
-    // That useEffect will be executed when all the reducers (users) have sent their keys to the actual user. The map combiner has been executed.
+    // That useEffect will be executed when all the reducers (users) have sent their keys to the actual user. The map combine has been executed.
 
     if (executing || executionStopped.current) return
 
     if (finished) return
     if (mapReduceState.errors) return
-    if (!mapCombinerExecuted) return
+    if (!mapCombineExecuted) return
     if (!keysSent) return
     // Check if the python module is ready to execute the reduce phase.
     if (!isReady) return
@@ -315,7 +315,7 @@ export default function Slave() {
       return
 
     //  Combine all the keys received from the other users
-    const newCombinerResults = { ...mapCombinerResults.combinerResults }
+    const newCombineResults = { ...mapCombineResults.combineResults }
     let totalKeysReceived = 0
     let totalValuesReceived = 0
 
@@ -323,7 +323,7 @@ export default function Slave() {
       Object.entries(keyList).forEach(([key, values]) => {
         totalKeysReceived++
         totalValuesReceived += values.length
-        newCombinerResults[key] = [...(newCombinerResults[key] || []), ...values]
+        newCombineResults[key] = [...(newCombineResults[key] || []), ...values]
       })
     })
 
@@ -336,7 +336,7 @@ export default function Slave() {
     // Discard the keys that the user will not reduce
     const newReduceKeys: KeyValues = {}
     Object.keys(mapReduceState.reduceKeys).forEach(
-      (key) => (newReduceKeys[key] = newCombinerResults[key]),
+      (key) => (newReduceKeys[key] = newCombineResults[key]),
     )
 
     const readResult = async () => {
@@ -382,7 +382,7 @@ export default function Slave() {
     keysSent,
     finished,
     isReady,
-    mapCombinerExecuted,
+    mapCombineExecuted,
     mapReduceState.errors,
     roomOwner,
     mapReduceState.clavesRecibidas,
@@ -395,7 +395,7 @@ export default function Slave() {
     readSizes,
     sendDirectMessage,
     finalResults.sizes,
-    mapCombinerResults.combinerResults,
+    mapCombineResults.combineResults,
     readErrors,
     setIsReadyToExecute,
     isReducerNode,
@@ -413,23 +413,23 @@ export default function Slave() {
               title={placeholdersFunctions.map.title}
               codeState={[mapReduceState.code.mapCode]}
               error={mapReduceState.output.stderr.mapCode}
-              loading={started && !mapExecuted && !mapCombinerExecuted && !mapReduceState.errors}
-              finished={mapExecuted || mapCombinerExecuted}
+              loading={started && !mapExecuted && !mapCombineExecuted && !mapReduceState.errors}
+              finished={mapExecuted || mapCombineExecuted}
             />
             <BasicAccordion
               {...editorProps}
-              title={placeholdersFunctions.combiner.title}
-              codeState={[mapReduceState.code.combinerCode]}
-              error={mapReduceState.output.stderr.combinerCode}
-              loading={mapExecuted && !mapCombinerExecuted && !mapReduceState.errors}
-              finished={mapCombinerExecuted}
+              title={placeholdersFunctions.combine.title}
+              codeState={[mapReduceState.code.combineCode]}
+              error={mapReduceState.output.stderr.combineCode}
+              loading={mapExecuted && !mapCombineExecuted && !mapReduceState.errors}
+              finished={mapCombineExecuted}
             />
             <BasicAccordion
               {...editorProps}
               title={placeholdersFunctions.reduce.title}
               codeState={[mapReduceState.code.reduceCode]}
               error={mapReduceState.output.stderr.reduceCode}
-              loading={mapCombinerExecuted && !finished && !mapReduceState.errors}
+              loading={mapCombineExecuted && !finished && !mapReduceState.errors}
               finished={finished}
             />
           </div>
@@ -470,9 +470,9 @@ export default function Slave() {
 
       {finished && (
         <>
-          <Results title='Etapa map' data={mapCombinerResults.mapResults} />
-          {mapReduceState.code.combinerCode && (
-            <Results title='Etapa combiner' data={mapCombinerResults.combinerResults} />
+          <Results title='Etapa map' data={mapCombineResults.mapResults} />
+          {mapReduceState.code.combineCode && (
+            <Results title='Etapa combine' data={mapCombineResults.combineResults} />
           )}
           <Results title='Etapa reduce' data={reduceResults} />
           <Statistics info={statistics} />

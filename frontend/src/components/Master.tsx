@@ -27,7 +27,7 @@ const WordCountCode = {
   for w in words:
     context.write(w, 1)
   `,
-  combiner: `def fcomb(key, values):
+  combine: `def fcomb(key, values):
   context.write(key, sum(values))
   `,
   reduce: `def fred(key, values):
@@ -37,7 +37,7 @@ const WordCountCode = {
 
 const initialFinalResults: FinalResults = {
   mapTotalCount: {},
-  combinerTotalCount: {},
+  combineTotalCount: {},
   sizes: initialSizes,
   mapNodesCount: 0,
   reducerNodesCount: 0,
@@ -57,7 +57,7 @@ export default function Master() {
 
   const [code, setCode] = useState({
     mapCode: WordCountCode.map,
-    combinerCode: WordCountCode.combiner,
+    combineCode: WordCountCode.combine,
     reduceCode: WordCountCode.reduce,
   })
 
@@ -133,21 +133,21 @@ export default function Master() {
   }, [clusterUsers])
 
   useEffect(() => {
-    // If all the combiner results are in, then we can start the reduce phase. Check if isn´t finished yet
+    // If all the combine results are in, then we can start the reduce phase. Check if isn´t finished yet
     if (finished || !isLoading) return
-    if (!Object.keys(mapReduceState.combinerResults).length) return
-    if (Object.keys(mapReduceState.combinerResults).length < clusterUsers.length) return
+    if (!Object.keys(mapReduceState.combineResults).length) return
+    if (Object.keys(mapReduceState.combineResults).length < clusterUsers.length) return
 
     // Count the total of each key for all the map results
     const mapTotalCount: KeyValuesCount = {}
     getTotalCounts(mapTotalCount, mapReduceState.mapResults)
 
-    // Count the total of each key for all the combiners results
-    const combinerTotalCount: KeyValuesCount = {}
-    getTotalCounts(combinerTotalCount, mapReduceState.combinerResults)
+    // Count the total of each key for all the combine results
+    const combineTotalCount: KeyValuesCount = {}
+    getTotalCounts(combineTotalCount, mapReduceState.combineResults)
 
-    const users = Object.keys(mapReduceState.combinerResults) as UserID[]
-    const keys = Object.keys(combinerTotalCount)
+    const users = Object.keys(mapReduceState.combineResults) as UserID[]
+    const keys = Object.keys(combineTotalCount)
     const keysPerUser = Math.ceil(keys.length / clusterUsers.length)
     // userKeys is an object that contains the keys that each user will reduce
     const userKeys: { [key: UserID]: ReducerState['reduceKeys'] } = {} //TODO: check if string is the correct type, can be a serializable type
@@ -159,7 +159,7 @@ export default function Master() {
     // Divide the keys between the users
     for (let i = 0; i < keys.length; i += keysPerUser) {
       userKeys[users[userIndex]] = Object.fromEntries(
-        keys.slice(i, i + keysPerUser).map((key) => [key, combinerTotalCount[key]]),
+        keys.slice(i, i + keysPerUser).map((key) => [key, combineTotalCount[key]]),
       )
       userIndex++
     }
@@ -172,7 +172,7 @@ export default function Master() {
 
     users.forEach((user) => {
       sendKeys[user] = {}
-      Object.keys(mapReduceState.combinerResults[user]).forEach((key) => {
+      Object.keys(mapReduceState.combineResults[user]).forEach((key) => {
         if (!userKeys[user][key]) {
           let userWithKey = findUserWithKey(key)
           const userSendKeys = (sendKeys[user] as ReducerState['sendKeys']) || {}
@@ -218,7 +218,7 @@ export default function Master() {
     setFinalResults((prev) => ({
       ...prev,
       mapTotalCount,
-      combinerTotalCount,
+      combineTotalCount,
       reducerNodesCount: Object.keys(userKeys).filter(
         (user) => Object.values(userKeys[user as UserID]).length > 0,
       ).length,
@@ -226,7 +226,7 @@ export default function Master() {
   }, [
     clusterUsers.length,
     sendDirectMessage,
-    mapReduceState.combinerResults,
+    mapReduceState.combineResults,
     finished,
     mapReduceState.mapResults,
     isLoading,
@@ -260,17 +260,17 @@ export default function Master() {
             current={mapReduceState.finishedMapNodes}
           />
           <BasicAccordion
-            title={placeholdersFunctions.combiner.title}
+            title={placeholdersFunctions.combine.title}
             codeState={[
-              code.combinerCode,
-              (newCode: string) => setCode({ ...code, combinerCode: newCode }),
+              code.combineCode,
+              (newCode: string) => setCode({ ...code, combineCode: newCode }),
             ]}
-            error={mapReduceState.output.stderr.combinerCode}
+            error={mapReduceState.output.stderr.combineCode}
             fileButtonDisabled={loading}
             total={mapNodesCount}
             current={
-              mapReduceState.code.combinerCode
-                ? mapReduceState.finishedCombinerNodes
+              mapReduceState.code.combineCode
+                ? mapReduceState.finishedCombineNodes
                 : mapReduceState.finishedMapNodes
             }
           />

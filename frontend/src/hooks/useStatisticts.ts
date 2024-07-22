@@ -4,7 +4,7 @@ import useMapReduce from '@/hooks/useMapReduce'
 
 export default function useStatistics({
   mapTotalCount,
-  combinerTotalCount,
+  combineTotalCount,
   sizes,
   mapNodesCount,
   reducerNodesCount,
@@ -15,11 +15,11 @@ export default function useStatistics({
 
   const showExecutionTimeGraph =
     times.avgMapTime +
-      times.avgCombinerTime +
+      times.avgCombineTime +
       times.avgReduceTime +
-      sizes.mapCodeTime +
-      sizes.combinerCodeTime +
-      sizes.reduceCodeTime >
+      sizes.mapTime +
+      sizes.combineTime +
+      sizes.reduceTime >
     0
 
   const isMaster = !!mapNodesCount
@@ -48,45 +48,45 @@ export default function useStatistics({
                 { label: 'Tiempo máximo de ejecución', value: formatTime(times.maxMapTime) },
                 { label: 'Tiempo mínimo de ejecución', value: formatTime(times.minMapTime) },
               ]
-            : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.mapCodeTime) }]),
+            : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.mapTime) }]),
         ],
       },
       {
         title: 'Etapa combine',
-        data: mapReduceState.code.combinerCode
+        data: mapReduceState.code.combineCode
           ? [
               {
                 label: 'Cantidad de invocaciones',
-                value: sizes.combinerCount,
+                value: sizes.combineCount,
               },
               {
                 label: 'Cantidad de claves únicas generadas',
-                value: Object.keys(combinerTotalCount).length,
+                value: Object.keys(combineTotalCount).length,
               },
               {
                 label: 'Cantidad de valores escritos',
-                value: sumValues(combinerTotalCount),
+                value: sumValues(combineTotalCount),
               },
               {
                 label: 'Tamaño total de la salida generada',
-                value: `${sizes.combinerOutput} bytes`,
+                value: `${sizes.combineOutput} bytes`,
               },
               ...(isMaster
                 ? [
                     {
                       label: 'Tiempo promedio de ejecución',
-                      value: formatTime(times.avgCombinerTime),
+                      value: formatTime(times.avgCombineTime),
                     },
                     {
                       label: 'Tiempo máximo de ejecución',
-                      value: formatTime(times.maxCombinerTime),
+                      value: formatTime(times.maxCombineTime),
                     },
                     {
                       label: 'Tiempo mínimo de ejecución',
-                      value: formatTime(times.minCombinerTime),
+                      value: formatTime(times.minCombineTime),
                     },
                   ]
-                : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.combinerCodeTime) }]),
+                : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.combineTime) }]),
             ]
           : [],
       },
@@ -123,7 +123,7 @@ export default function useStatistics({
                 { label: 'Tiempo máximo de ejecución', value: formatTime(times.maxReduceTime) },
                 { label: 'Tiempo mínimo de ejecución', value: formatTime(times.minReduceTime) },
               ]
-            : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.reduceCodeTime) }]),
+            : [{ label: 'Tiempo de ejecución', value: formatTime(sizes.reduceTime) }]),
         ],
       },
     ],
@@ -135,14 +135,14 @@ export default function useStatistics({
             valueFormatter: (data: any) => formatTime(data.value),
             arcLabelMinAngle: 10,
             data: [
-              { label: 'Map', value: isMaster ? times.avgMapTime : sizes.mapCodeTime },
+              { label: 'Map', value: isMaster ? times.avgMapTime : sizes.mapTime },
               {
-                label: 'Combiner',
-                value: isMaster ? times.avgCombinerTime : sizes.combinerCodeTime,
+                label: 'Combine',
+                value: isMaster ? times.avgCombineTime : sizes.combineTime,
               },
               {
                 label: 'Reduce',
-                value: isMaster ? times.avgReduceTime : sizes.reduceCodeTime,
+                value: isMaster ? times.avgReduceTime : sizes.reduceTime,
               },
             ],
           },

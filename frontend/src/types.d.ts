@@ -38,7 +38,7 @@ export type UserID = UUID
 
 export type Code = {
   mapCode: string
-  combinerCode: string
+  combineCode: string
   reduceCode: string
 }
 
@@ -49,21 +49,21 @@ export type Output = {
 
 export type ReducerState = {
   code: Code
-  combinerResults: UserResults
+  combineResults: UserResults
   mapResults: UserResults
   reduceKeys: KeyValuesCount
   reduceResult: KeyValue
   sizes: Sizes
   timeStatistics: {
     mapTimes: number[]
-    combinerTimes: number[]
+    combineTimes: number[]
     reduceTimes: number[]
     avgMapTime: number
     maxMapTime: number
     minMapTime: number
-    avgCombinerTime: number
-    maxCombinerTime: number
-    minCombinerTime: number
+    avgCombineTime: number
+    maxCombineTime: number
+    minCombineTime: number
     avgReduceTime: number
     maxReduceTime: number
     minReduceTime: number
@@ -76,7 +76,7 @@ export type ReducerState = {
   }
   mapNodesCount: int
   finishedMapNodes: int
-  finishedCombinerNodes: int
+  finishedCombineNodes: int
   finishedReducerNodes: int
   output: Output
   errors: string
@@ -102,9 +102,9 @@ export type KeyValue = {
   [key: string]: unknown
 }
 
-export type MapCombinerResults = {
+export type MapCombineResults = {
   mapResults: KeyValues
-  combinerResults: KeyValues
+  combineResults: KeyValues
 }
 
 export type Sizes = {
@@ -112,8 +112,8 @@ export type Sizes = {
   mapInput: int
   mapOutput: int
   mapCount: int
-  combinerOutput: int
-  combinerCount: int
+  combineOutput: int
+  combineCount: int
   totalKeysSent: int
   totalValuesSent: int
   totalBytesSent: int
@@ -123,14 +123,14 @@ export type Sizes = {
   reduceInput: int
   reduceOutput: int
   reduceCount: int
-  mapCodeTime: int
-  combinerCodeTime: int
-  reduceCodeTime: int
+  mapTime: int
+  combineTime: int
+  reduceTime: int
 }
 
 export type FinalResults = {
   mapTotalCount: KeyValuesCount
-  combinerTotalCount: KeyValuesCount
+  combineTotalCount: KeyValuesCount
   sizes: Sizes
   mapNodesCount?: int
   reducerNodesCount?: int

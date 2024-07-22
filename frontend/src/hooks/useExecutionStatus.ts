@@ -15,7 +15,7 @@ export const useExecutionStatus = ({
   const { broadcastMessage } = usePeers()
 
   const mapExecuted = !!mapReduceState.finishedMapNodes
-  const combinerExecuted = !!mapReduceState.finishedCombinerNodes
+  const combineExecuted = !!mapReduceState.finishedCombineNodes
   const finishedNodes = !!mapReduceState.finishedNodes
 
   const isMapperNode = nodeHasFiles
@@ -44,8 +44,8 @@ export const useExecutionStatus = ({
       updateExecutionStatus(
         !mapExecuted
           ? 'Ejecutando map'
-          : mapReduceState.code.combinerCode && !combinerExecuted
-            ? 'Ejecutando combiner'
+          : mapReduceState.code.combineCode && !combineExecuted
+            ? 'Ejecutando combine'
             : 'Esperando claves',
       )
     }
@@ -53,9 +53,9 @@ export const useExecutionStatus = ({
     updateExecutionStatus,
     isMapperNode,
     mapExecuted,
-    mapReduceState.code.combinerCode,
+    mapReduceState.code.combineCode,
     started,
-    combinerExecuted,
+    combineExecuted,
   ])
 
   useEffect(() => {
@@ -77,7 +77,7 @@ export const useExecutionStatus = ({
 
     updateExecutionStatus(
       'Error en ' +
-        (errors.includes('map') ? 'map' : errors.includes('combiner') ? 'combine' : 'reduce'),
+        (errors.includes('map') ? 'map' : errors.includes('combine') ? 'combine' : 'reduce'),
     )
   }, [updateExecutionStatus, mapReduceState.errors])
 

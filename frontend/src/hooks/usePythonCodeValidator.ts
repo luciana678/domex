@@ -145,11 +145,11 @@ export const usePythonCodeValidator = (executionStopped: boolean = false) => {
       mapCode: !isValidFunctionHeader(code.mapCode, 'fmap', 1)
         ? "La función debe llamarse 'fmap' y recibir un argumento (value)"
         : await runPythonCodeValidator(code.mapCode),
-      combinerCode: !code.combinerCode
+      combineCode: !code.combineCode
         ? ''
-        : !isValidFunctionHeader(code.combinerCode, 'fcomb', 2)
+        : !isValidFunctionHeader(code.combineCode, 'fcomb', 2)
           ? "La función debe llamarse 'fcomb' y recibir dos argumentos (key, values)"
-          : await runPythonCodeValidator(code.combinerCode),
+          : await runPythonCodeValidator(code.combineCode),
       reduceCode: !isValidFunctionHeader(code.reduceCode, 'fred', 2)
         ? "La función debe llamarse 'fred' y recibir dos argumentos (key, values)"
         : await runPythonCodeValidator(code.reduceCode),

@@ -9,8 +9,8 @@ export const placeholdersFunctions = {
     code: `def fred(key, values):
     `,
   },
-  combiner: {
-    title: 'Código combiner',
+  combine: {
+    title: 'Código combine',
     code: `def fcomb(key, values):
     `,
   },

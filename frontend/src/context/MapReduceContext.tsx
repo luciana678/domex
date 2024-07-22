@@ -4,16 +4,17 @@ import { placeholdersFunctions } from '@/constants/functionCodes'
 import useRoom from '@/hooks/useRoom'
 import { Code, KeyValuesCount, Output, ReducerState, Sizes, Tree, UserID } from '@/types'
 import { average } from '@/utils/helpers'
-import { PropsWithChildren, createContext, useReducer } from 'react'
+import { createContext, useReducer } from 'react'
 
 export type MapReduceContextType = {
   mapReduceState: ReducerState
   dispatchMapReduce: React.Dispatch<Action>
+  MapReduceJobCode: string
 }
 
 export const actionTypes = {
   SET_CODES: 'SET_CODES',
-  MAP_COMBINER_EJECUTADO: 'MAP_COMBINER_EJECUTADO',
+  MAP_COMBINE_EJECUTADO: 'MAP_COMBINE_EJECUTADO',
   EJECUTAR_REDUCE: 'EJECUTAR_REDUCE',
   RECIBIR_CLAVES: 'RECIBIR_CLAVES',
   RESULTADO_FINAL: 'RESULTADO_FINAL',
@@ -35,9 +36,9 @@ export type Action = {
 } & (
   | { type: 'SET_CODES'; payload: ReducerState['code'] }
   | {
-      type: 'MAP_COMBINER_EJECUTADO'
+      type: 'MAP_COMBINE_EJECUTADO'
       payload: {
-        combinerResults: KeyValuesCount
+        combineResults: KeyValuesCount
         mapResults: KeyValuesCount
       }
     }
@@ -104,8 +105,8 @@ export const initialSizes: Sizes = {
   mapInput: 0,
   mapOutput: 0,
   mapCount: 0,
-  combinerOutput: 0,
-  combinerCount: 0,
+  combineOutput: 0,
+  combineCount: 0,
   totalKeysSent: 0,
   totalValuesSent: 0,
   totalBytesSent: 0,
@@ -115,21 +116,21 @@ export const initialSizes: Sizes = {
   reduceInput: 0,
   reduceOutput: 0,
   reduceCount: 0,
-  mapCodeTime: 0,
-  reduceCodeTime: 0,
-  combinerCodeTime: 0,
+  mapTime: 0,
+  reduceTime: 0,
+  combineTime: 0,
 }
 
 const initialTimeStatistics: ReducerState['timeStatistics'] = {
   mapTimes: [],
-  combinerTimes: [],
+  combineTimes: [],
   reduceTimes: [],
   avgMapTime: 0,
   maxMapTime: 0,
   minMapTime: 0,
-  avgCombinerTime: 0,
-  maxCombinerTime: 0,
-  minCombinerTime: 0,
+  avgCombineTime: 0,
+  maxCombineTime: 0,
+  minCombineTime: 0,
   avgReduceTime: 0,
   maxReduceTime: 0,
   minReduceTime: 0,
@@ -139,7 +140,7 @@ const initialTimeStatistics: ReducerState['timeStatistics'] = {
 export const initialOutput: Output = {
   stderr: {
     mapCode: '',
-    combinerCode: '',
+    combineCode: '',
     reduceCode: '',
   },
   stdout: '',
@@ -148,10 +149,10 @@ export const initialOutput: Output = {
 const initialState: ReducerState = {
   code: {
     mapCode: placeholdersFunctions.map.code,
-    combinerCode: placeholdersFunctions.combiner.code,
+    combineCode: placeholdersFunctions.combine.code,
     reduceCode: placeholdersFunctions.reduce.code,
   },
-  combinerResults: {},
+  combineResults: {},
   mapResults: {},
   reduceKeys: {},
   sendKeys: null,
@@ -162,7 +163,7 @@ const initialState: ReducerState = {
   timeStatistics: initialTimeStatistics,
   mapNodesCount: 0,
   finishedMapNodes: 0,
-  finishedCombinerNodes: 0,
+  finishedCombineNodes: 0,
   finishedReducerNodes: 0,
   output: initialOutput,
   errors: '',
@@ -175,6 +176,7 @@ const initialState: ReducerState = {
 const MapReduceContext = createContext<MapReduceContextType>({
   mapReduceState: initialState,
   dispatchMapReduce: () => {},
+  MapReduceJobCode: '',
 })
 
 const reducer = (state: ReducerState, action: Action) => {
@@ -194,12 +196,12 @@ const reducer = (state: ReducerState, action: Action) => {
         resetReadyToExecute: state.resetReadyToExecute,
         resetState: state.resetState + 1,
       }
-    case actionTypes.MAP_COMBINER_EJECUTADO:
+    case actionTypes.MAP_COMBINE_EJECUTADO:
       return {
         ...state,
-        combinerResults: {
-          ...state.combinerResults,
-          [userID]: action.payload.combinerResults,
+        combineResults: {
+          ...state.combineResults,
+          [userID]: action.payload.combineResults,
         },
         mapResults: {
           ...state.mapResults,
@@ -249,22 +251,22 @@ const reducer = (state: ReducerState, action: Action) => {
       }
 
       let newMapTimes = [...timeStatistics.mapTimes]
-      let newCombinerTimes = [...timeStatistics.combinerTimes]
+      let newCombineTimes = [...timeStatistics.combineTimes]
       let newReduceTimes = [...timeStatistics.reduceTimes]
 
       if (newSizes.inputFiles) {
-        newMapTimes = [...newMapTimes, newSizes.mapCodeTime]
-        newCombinerTimes = [...newCombinerTimes, newSizes.combinerCodeTime]
+        newMapTimes = [...newMapTimes, newSizes.mapTime]
+        newCombineTimes = [...newCombineTimes, newSizes.combineTime]
       }
 
       if (incrementReducerNodes) {
-        newReduceTimes = [...newReduceTimes, newSizes.reduceCodeTime]
+        newReduceTimes = [...newReduceTimes, newSizes.reduceTime]
       }
 
       let newTimeStatistics = {
         ...timeStatistics,
         mapTimes: newMapTimes,
-        combinerTimes: newCombinerTimes,
+        combineTimes: newCombineTimes,
         reduceTimes: newReduceTimes,
       }
 
@@ -276,9 +278,9 @@ const reducer = (state: ReducerState, action: Action) => {
           maxMapTime: Math.max(...newMapTimes),
           minMapTime: Math.min(...newMapTimes),
 
-          avgCombinerTime: average(newCombinerTimes),
-          maxCombinerTime: Math.max(...newCombinerTimes),
-          minCombinerTime: Math.min(...newCombinerTimes),
+          avgCombineTime: average(newCombineTimes),
+          maxCombineTime: Math.max(...newCombineTimes),
+          minCombineTime: Math.min(...newCombineTimes),
 
           avgReduceTime: average(newReduceTimes),
           maxReduceTime: Math.max(...newReduceTimes),
@@ -287,7 +289,7 @@ const reducer = (state: ReducerState, action: Action) => {
 
         newTimeStatistics.totalTime =
           newTimeStatistics.avgMapTime +
-          newTimeStatistics.avgCombinerTime +
+          newTimeStatistics.avgCombineTime +
           newTimeStatistics.avgReduceTime
       }
 
@@ -322,9 +324,9 @@ const reducer = (state: ReducerState, action: Action) => {
         finishedMapNodes:
           newStdoutState.match(/MAP EJECUTADO SATISFACTORIAMENTE/g)?.length ||
           state.finishedMapNodes,
-        finishedCombinerNodes:
+        finishedCombineNodes:
           newStdoutState.match(/COMBINE EJECUTADO SATISFACTORIAMENTE/g)?.length ||
-          state.finishedCombinerNodes,
+          state.finishedCombineNodes,
         output: {
           ...state.output,
           stdout: newStdoutState,
@@ -375,7 +377,15 @@ const reducer = (state: ReducerState, action: Action) => {
   }
 }
 
-export const MapReduceProvider: React.FC<PropsWithChildren> = ({ children }) => {
+interface MapReduceProviderProps {
+  children: React.ReactNode
+  MapReduceJobCode: string
+}
+
+export const MapReduceProvider: React.FC<MapReduceProviderProps> = ({
+  children,
+  MapReduceJobCode,
+}) => {
   const { clusterUsers } = useRoom()
   initialState.totalNodes = clusterUsers.length
   const [mapReduceState, dispatchMapReduce] = useReducer(reducer, initialState)
@@ -385,6 +395,7 @@ export const MapReduceProvider: React.FC<PropsWithChildren> = ({ children }) => 
       value={{
         mapReduceState,
         dispatchMapReduce,
+        MapReduceJobCode,
       }}>
       {children}
     </MapReduceContext.Provider>

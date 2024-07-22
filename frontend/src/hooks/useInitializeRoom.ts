@@ -94,7 +94,6 @@ const useInitializeRoom = () => {
     }
 
     const onUserLeave = ({ userID, userName }: { userID: UserID; userName: string }) => {
-      console.log('ENTRO ACA??')
       const isOwner = roomOwner?.userID === userID
 
       if (isOwner) {
