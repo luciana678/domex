@@ -38,11 +38,13 @@ const usePeers = () => {
       const peer = peers[userID]
       if (!peer) return 0
 
+      const payloadSize = data.payload ? Buffer.byteLength(JSON.stringify(data.payload)) : 0
+      data.payloadSize = payloadSize
+
       const dataString = JSON.stringify(data)
       const dataBuffer = Buffer.from(dataString, 'utf8')
 
       const totalChunks = Math.ceil(dataBuffer.length / CHUNK_SIZE)
-      let sentBytes = 0
 
       for (let i = 0; i < totalChunks; i++) {
         const start = i * CHUNK_SIZE
@@ -50,10 +52,9 @@ const usePeers = () => {
         const chunk = dataBuffer.subarray(start, end)
         const chunkHeader = JSON.stringify({ type: 'MSG_CHUNK', totalChunks, chunkIndex: i })
         peer.write(Buffer.concat([Buffer.from(chunkHeader), chunk]))
-        sentBytes += chunk.length
       }
 
-      return sentBytes
+      return payloadSize
     },
     [peers],
   )
