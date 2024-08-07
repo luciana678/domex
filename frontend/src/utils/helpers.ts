@@ -27,14 +27,14 @@ export const average = (values: number[]) =>
  * @returns The formatted time string.
  */
 export function formatTime(valueNs: number) {
-  // If is zero, return 0s
+  // If is zero, return 0ms
   if (valueNs === 0) return '0ms'
 
   // Convert nanoseconds to seconds
   const valueS = valueNs / 1e9
 
   // If less than one second, display in milliseconds
-  if (valueS < 1) return `${valueS * 1e3}ms`
+  if (valueS < 1) return `${(valueS * 1e3).toFixed(2)}ms`
 
   // If less than one minute, display in seconds
   if (valueS < 60) return `${valueS.toFixed(2)}s`
@@ -42,7 +42,7 @@ export function formatTime(valueNs: number) {
   // Else display in minutes
   let minutes = Math.floor(valueS / 60)
   let remainingSeconds = (valueS % 60).toFixed(2)
-  return `${minutes}n ${remainingSeconds}s`
+  return `${minutes}m ${remainingSeconds}s`
 }
 
 /**
