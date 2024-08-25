@@ -3,7 +3,7 @@ import { Box } from '@mui/material'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import Typography from '@mui/material/Typography'
-import { PieChart } from '@mui/x-charts'
+import { PieChart, pieArcLabelClasses } from '@mui/x-charts'
 
 export function StatisticsCard({ title, data }: StatisticsType) {
   return (
@@ -55,6 +55,13 @@ export function Statistics({
             height={300}
             margin={{
               left: 100,
+            }}
+            sx={{
+              [`& .${pieArcLabelClasses.root}`]: {
+                fill: 'white',
+                fontWeight: 'bold',
+                fontSize: '0.86rem',
+              },
             }}
           />
           <Typography className='italic'>{info.charts.executionTime.description}</Typography>
